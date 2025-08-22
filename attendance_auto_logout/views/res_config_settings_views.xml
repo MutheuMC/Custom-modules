@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <record id="res_config_settings_view_form_attendance_auto_logout" model="ir.ui.view">
+    <field name="name">res.config.settings.view.form.inherit.attendance.auto.logout</field>
+    <field name="model">res.config.settings</field>
+    <!-- Use base.* in v17 -->
+    <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+    <field name="priority" eval="20"/>
+    <field name="arch" type="xml">
+      <!-- In v17, target the <form> and add an <app>/<block>/<setting> -->
+      <xpath expr="//form" position="inside">
+        <app string="HR Attendance" data-string="HR Attendance" name="attendance_auto_logout">
+          <block title="Attendance Auto Logout" name="attendance_auto_logout_block">
+
+
+            <setting id="attendance_midnight_rollover_setting"
+                     string="Enable Midnight Rollover"
+                     help="At local midnight, force check-out of open attendances in the selected timezone.">
+              <field name="attendance_enable_midnight_rollover"/>
+              <div class="content-group" invisible="not attendance_enable_midnight_rollover">
+                <label for="attendance_rollover_tz" class="o_light_label"/>
+                <field name="attendance_rollover_tz" class="oe_inline"/>
+              </div>
+            </setting>
+
+          </block>
+        </app>
+      </xpath>
+    </field>
+  </record>
+
+  <!-- Optional shortcut to open settings under its own menu -->
+  <record id="action_attendance_auto_logout_settings" model="ir.actions.act_window">
+    <field name="name">Attendance Auto Logout Settings</field>
+    <field name="res_model">res.config.settings</field>
+    <field name="view_mode">form</field>
+    <field name="target">inline</field>
+    <!-- The context selects the app block in v17 -->
+    <field name="context">{'module': 'attendance_auto_logout'}</field>
+  </record>
+</odoo>
