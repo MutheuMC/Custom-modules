@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Dashboard View -->
+    <record id="view_asset_dashboard" model="ir.ui.view">
+        <field name="name">asset.dashboard</field>
+        <field name="model">asset.asset</field>
+        <field name="mode">primary</field>
+        <field name="arch" type="xml">
+            <dashboard>
+                <view type="graph" ref="view_asset_graph_value"/>
+                <group>
+                    <group>
+                        <aggregate name="total_assets" string="Total Assets" field="id" group_operator="count"/>
+                        <aggregate name="total_value" string="Total Purchase Value" field="purchase_value"/>
+                        <aggregate name="current_value" string="Total Current Value" field="current_value"/>
+                        <aggregate name="total_depreciation" string="Total Depreciation" field="accumulated_depreciation"/>
+                    </group>
+                    <group>
+                        <aggregate name="in_use" string="In Use" field="id" domain="[('state', '=', 'in_use')]" group_operator="count"/>
+                        <aggregate name="in_maintenance" string="In Maintenance" field="id" domain="[('state', '=', 'in_maintenance')]" group_operator="count"/>
+                        <aggregate name="in_repair" string="In Repair" field="id" domain="[('state', '=', 'in_repair')]" group_operator="count"/>
+                        <aggregate name="disposed" string="Disposed" field="id" domain="[('state', 'in', ['disposed', 'sold', 'lost', 'damaged'])]" group_operator="count"/>
+                    </group>
+                </group>
+                <view type="pivot" ref="view_asset_pivot"/>
+            </dashboard>
+        </field>
+    </record>
+
+    <!-- Graph View for Dashboard -->
+    <record id="view_asset_graph_value" model="ir.ui.view">
+        <field name="name">asset.graph.value</field>
+        <field name="model">asset.asset</field>
+        <field name="arch" type="xml">
+            <graph string="Asset Values by Category" type="bar">
+                <field name="category_id"/>
+                <field name="current_value" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Pivot View for Dashboard -->
+    <record id="view_asset_pivot" model="ir.ui.view">
+        <field name="name">asset.pivot</field>
+        <field name="model">asset.asset</field>
+        <field name="arch" type="xml">
+            <pivot string="Asset Analysis">
+                <field name="category_id" type="row"/>
+                <field name="state" type="col"/>
+                <field name="current_value" type="measure"/>
+                <field name="accumulated_depreciation" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Dashboard Action -->
+    <record id="action_asset_dashboard" model="ir.actions.act_window">
+        <field name="name">Asset Dashboard</field>
+        <field name="res_model">asset.asset</field>
+        <field name="view_mode">dashboard</field>
+        <field name="view_id" ref="view_asset_dashboard"/>
+    </record>
+</odoo>

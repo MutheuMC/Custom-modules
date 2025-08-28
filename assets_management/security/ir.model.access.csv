@@ -1,0 +1,14 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_asset_asset_user,asset.asset.user,model_asset_asset,group_asset_user,1,1,1,0
+access_asset_asset_manager,asset.asset.manager,model_asset_asset,group_asset_manager,1,1,1,1
+access_asset_category_user,asset.category.user,model_asset_category,group_asset_user,1,0,0,0
+access_asset_category_manager,asset.category.manager,model_asset_category,group_asset_manager,1,1,1,1
+access_asset_depreciation_line_user,asset.depreciation.line.user,model_asset_depreciation_line,group_asset_user,1,1,1,0
+access_asset_depreciation_line_manager,asset.depreciation.line.manager,model_asset_depreciation_line,group_asset_manager,1,1,1,1
+access_asset_movement_user,asset.movement.user,model_asset_movement,group_asset_user,1,1,1,0
+access_asset_movement_manager,asset.movement.manager,model_asset_movement,group_asset_manager,1,1,1,1
+access_asset_maintenance_user,asset.maintenance.user,model_asset_maintenance,group_asset_user,1,1,1,0
+access_asset_maintenance_manager,asset.maintenance.manager,model_asset_maintenance,group_asset_manager,1,1,1,1
+access_asset_repair_user,asset.repair.user,model_asset_repair,group_asset_user,1,1,1,0
+access_asset_repair_manager,asset.repair.manager,model_asset_repair,group_asset_manager,1,1,1,1
+access_asset_disposal_wizard,asset.disposal.wizard,model_asset_disposal_wizard,group_asset_user,1,1,1,1

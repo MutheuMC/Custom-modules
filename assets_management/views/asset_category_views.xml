@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Asset Category Form View -->
+    <record id="view_asset_category_form" model="ir.ui.view">
+        <field name="name">asset.category.form</field>
+        <field name="model">asset.category</field>
+        <field name="arch" type="xml">
+            <form string="Asset Category">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button class="oe_stat_button" type="object" name="action_view_assets" icon="fa-cubes">
+                            <field string="Assets" name="asset_count" widget="statinfo"/>
+                        </button>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="code"/>
+                            <field name="parent_id"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                        <group>
+                            <field name="auto_approve"/>
+                            <field name="require_serial"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Depreciation Settings">
+                            <group>
+                                <group>
+                                    <field name="depreciation_method"/>
+                                    <field name="depreciation_rate"
+                                           invisible="depreciation_method not in ['declining']"
+                                           required="depreciation_method in ['declining']"/>
+                                    <field name="useful_life"
+                                           invisible="depreciation_method not in ['straight','double_declining']"
+                                           required="depreciation_method in ['straight','double_declining']"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Accounting">
+                            <group>
+                                <group>
+                                    <field name="account_asset_id"/>
+                                    <field name="account_depreciation_id"/>
+                                    <field name="account_expense_id"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Notes">
+                            <field name="notes" nolabel="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Asset Category List View (Odoo 18) -->
+    <record id="view_asset_category_list" model="ir.ui.view">
+        <field name="name">asset.category.list</field>
+        <field name="model">asset.category</field>
+        <field name="arch" type="xml">
+            <list string="Asset Categories">
+                <field name="complete_name"/>
+                <field name="code"/>
+                <field name="depreciation_method"/>
+                <field name="asset_count"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Asset Category Search View -->
+    <record id="view_asset_category_search" model="ir.ui.view">
+        <field name="name">asset.category.search</field>
+        <field name="model">asset.category</field>
+        <field name="arch" type="xml">
+            <search string="Search Asset Category">
+                <field name="name"/>
+                <field name="code"/>
+                <filter string="Auto Approve" name="auto_approve" domain="[('auto_approve', '=', True)]"/>
+                <separator/>
+                <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Parent Category" name="parent" context="{'group_by': 'parent_id'}"/>
+                    <filter string="Depreciation Method" name="method" context="{'group_by': 'depreciation_method'}"/>
+                    <filter string="Company" name="company" context="{'group_by': 'company_id'}" groups="base.group_multi_company"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Asset Category Action -->
+    <record id="action_asset_category" model="ir.actions.act_window">
+        <field name="name">Asset Categories</field>
+        <field name="res_model">asset.category</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first asset category
+            </p>
+            <p>
+                Asset categories help you organize your assets and define default depreciation settings.
+            </p>
+        </field>
+    </record>
+</odoo>

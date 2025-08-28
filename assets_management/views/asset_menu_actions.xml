@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Main Menu -->
+    <menuitem id="menu_asset_management" name="Assets" sequence="45" web_icon="assets_management,static/description/icon.png"/>
+
+    <!-- Asset Management Submenu -->
+    <menuitem id="menu_asset_main" name="Assets" parent="menu_asset_management" sequence="10"/>
+    
+    <!-- Assets Menu -->
+    <menuitem id="menu_assets" name="Assets" parent="menu_asset_main" action="action_asset" sequence="10"/>
+    
+    <!-- Asset Categories Menu -->
+    <menuitem id="menu_asset_categories" name="Asset Categories" parent="menu_asset_main" action="action_asset_category" sequence="20"/>
+    
+    <!-- Dashboard Menu -->
+    <menuitem id="menu_asset_dashboard" name="Dashboard" parent="menu_asset_main" action="action_asset_dashboard" sequence="5"/>
+
+    <!-- Operations Submenu -->
+    <menuitem id="menu_asset_operations" name="Operations" parent="menu_asset_management" sequence="20"/>
+    
+    <!-- Movements Menu -->
+    <menuitem id="menu_asset_movements" name="Asset Movements" parent="menu_asset_operations" action="action_asset_movement" sequence="10"/>
+    
+    <!-- Maintenance Menu -->
+    <menuitem id="menu_asset_maintenance" name="Maintenance" parent="menu_asset_operations" action="action_asset_maintenance" sequence="20"/>
+    
+    <!-- Repairs Menu -->
+    <menuitem id="menu_asset_repairs" name="Repairs" parent="menu_asset_operations" action="action_asset_repair" sequence="30"/>
+
+    <!-- Depreciation Submenu -->
+    <menuitem id="menu_asset_depreciation" name="Depreciation" parent="menu_asset_management" sequence="30"/>
+    
+    <!-- Depreciation Lines Menu -->
+    <menuitem id="menu_depreciation_lines" name="Depreciation Lines" parent="menu_asset_depreciation" action="action_asset_depreciation_line" sequence="10"/>
+
+    <!-- Reports Submenu -->
+    <menuitem id="menu_asset_reports" name="Reports" parent="menu_asset_management" sequence="40"/>
+    
+    <!-- Asset Analysis Menu -->
+    <menuitem id="menu_asset_analysis" name="Asset Analysis" parent="menu_asset_reports" action="action_asset_analysis_report" sequence="10"/>
+
+    <!-- Configuration Submenu -->
+    <menuitem id="menu_asset_config" name="Configuration" parent="menu_asset_management" sequence="50" groups="assets_management.group_asset_manager"/>
+    
+    <!-- Settings Menu -->
+    <menuitem id="menu_asset_settings" name="Settings" parent="menu_asset_config" action="base.action_res_config_settings" sequence="10"/>
+
+    <!-- Asset Analysis Report Action -->
+    <record id="action_asset_analysis_report" model="ir.actions.act_window">
+        <field name="name">Asset Analysis</field>
+        <field name="res_model">asset.analysis.report</field>
+        <field name="view_mode">graph,pivot,tree</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No asset data available
+            </p>
+            <p>
+                This report provides comprehensive analysis of your assets including depreciation, maintenance costs, and utilization.
+            </p>
+        </field>
+    </record>
+
+    <!-- Asset Analysis Graph View -->
+    <record id="view_asset_analysis_graph" model="ir.ui.view">
+        <field name="name">asset.analysis.report.graph</field>
+        <field name="model">asset.analysis.report</field>
+        <field name="arch" type="xml">
+            <graph string="Asset Analysis" type="bar">
+                <field name="category_name"/>
+                <field name="current_value" type="measure"/>
+                <field name="accumulated_depreciation" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Asset Analysis Pivot View -->
+    <record id="view_asset_analysis_pivot" model="ir.ui.view">
+        <field name="name">asset.analysis.report.pivot</field>
+        <field name="model">asset.analysis.report</field>
+        <field name="arch" type="xml">
+            <pivot string="Asset Analysis">
+                <field name="category_name" type="row"/>
+                <field name="state" type="col"/>
+                <field name="current_value" type="measure"/>
+                <field name="total_maintenance_cost" type="measure"/>
+                <field name="total_repair_cost" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+</odoo>

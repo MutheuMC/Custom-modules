@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Asset Report -->
+    <record id="action_report_asset" model="ir.actions.report">
+        <field name="name">Asset Report</field>
+        <field name="model">asset.asset</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">assets_management.report_asset</field>
+        <field name="report_file">assets_management.report_asset</field>
+        <field name="binding_model_id" ref="model_asset_asset"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <!-- Asset Depreciation Schedule Report -->
+    <record id="action_report_asset_depreciation" model="ir.actions.report">
+        <field name="name">Depreciation Schedule</field>
+        <field name="model">asset.asset</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">assets_management.report_asset_depreciation</field>
+        <field name="report_file">assets_management.report_asset_depreciation</field>
+        <field name="binding_model_id" ref="model_asset_asset"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <!-- Asset List Report -->
+    <record id="action_report_asset_list" model="ir.actions.report">
+        <field name="name">Asset List</field>
+        <field name="model">asset.asset</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">assets_management.report_asset_list</field>
+        <field name="report_file">assets_management.report_asset_list</field>
+    </record>
+
+    <!-- Asset Report Template -->
+    <template id="report_asset">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <h2>Asset Information</h2>
+                        
+                        <div class="row">
+                            <div class="col-8">
+                                <table class="table table-sm">
+                                    <tr>
+                                        <td><strong>Asset Code:</strong></td>
+                                        <td><span t-field="o.asset_code"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Asset Name:</strong></td>
+                                        <td><span t-field="o.name"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Category:</strong></td>
+                                        <td><span t-field="o.category_id.name"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Asset Type:</strong></td>
+                                        <td><span t-field="o.asset_type"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Status:</strong></td>
+                                        <td><span t-field="o.state"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Serial Number:</strong></td>
+                                        <td><span t-field="o.serial_no"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Model:</strong></td>
+                                        <td><span t-field="o.model"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Manufacturer:</strong></td>
+                                        <td><span t-field="o.manufacturer"/></td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div class="col-4 text-center">
+                                <img t-if="o.image" t-att-src="image_data_uri(o.image)" style="max-height: 200px; max-width: 200px;" alt="Asset Image"/>
+                            </div>
+                        </div>
+
+                        <h3>Financial Information</h3>
+                        <table class="table table-sm">
+                            <tr>
+                                <td><strong>Purchase Date:</strong></td>
+                                <td><span t-field="o.purchase_date"/></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Purchase Value:</strong></td>
+                                <td><span t-field="o.purchase_value" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Current Value:</strong></td>
+                                <td><span t-field="o.current_value" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Accumulated Depreciation:</strong></td>
+                                <td><span t-field="o.accumulated_depreciation" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Vendor:</strong></td>
+                                <td><span t-field="o.vendor_id.name"/></td>
+                            </tr>
+                        </table>
+
+                        <h3>Location &amp; Assignment</h3>
+                        <table class="table table-sm">
+                            <tr>
+                                <td><strong>Current Location:</strong></td>
+                                <td><span t-field="o.location_id.name"/></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Department:</strong></td>
+                                <td><span t-field="o.department_id.name"/></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Custodian:</strong></td>
+                                <td><span t-field="o.custodian_id.name"/></td>
+                            </tr>
+                        </table>
+
+                        <t t-if="o.warranty_end_date">
+                            <h3>Warranty Information</h3>
+                            <table class="table table-sm">
+                                <tr>
+                                    <td><strong>Warranty Start Date:</strong></td>
+                                    <td><span t-field="o.warranty_start_date"/></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Warranty End Date:</strong></td>
+                                    <td><span t-field="o.warranty_end_date"/></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Warranty Vendor:</strong></td>
+                                    <td><span t-field="o.warranty_vendor_id.name"/></td>
+                                </tr>
+                            </table>
+                        </t>
+
+                        <t t-if="o.notes">
+                            <h3>Notes</h3>
+                            <p><span t-field="o.notes"/></p>
+                        </t>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <!-- Asset Depreciation Schedule Template -->
+    <template id="report_asset_depreciation">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <h2>Depreciation Schedule</h2>
+                        
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <strong>Asset:</strong> <span t-field="o.name"/><br/>
+                                <strong>Asset Code:</strong> <span t-field="o.asset_code"/><br/>
+                                <strong>Category:</strong> <span t-field="o.category_id.name"/>
+                            </div>
+                            <div class="col-6">
+                                <strong>Purchase Value:</strong> <span t-field="o.purchase_value" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/><br/>
+                                <strong>Depreciation Method:</strong> <span t-field="o.depreciation_method"/><br/>
+                                <strong>Useful Life:</strong> <span t-field="o.useful_life"/> years
+                            </div>
+                        </div>
+
+                        <table class="table table-sm table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th class="text-right">Depreciation Amount</th>
+                                    <th class="text-right">Accumulated Depreciation</th>
+                                    <th class="text-right">Remaining Value</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="o.depreciation_line_ids" t-as="line">
+                                    <tr>
+                                        <td><span t-field="line.date"/></td>
+                                        <td class="text-right">
+                                            <span t-field="line.depreciation_amount" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                                        </td>
+                                        <td class="text-right">
+                                            <span t-field="line.accumulated_depreciation" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                                        </td>
+                                        <td class="text-right">
+                                            <span t-field="line.remaining_value" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                                        </td>
+                                        <td><span t-field="line.state"/></td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <!-- Asset List Template -->
+    <template id="report_asset_list">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <div class="page">
+                    <h2>Asset List</h2>
+                    
+                    <table class="table table-sm table-striped">
+                        <thead>
+                            <tr>
+                                <th>Asset Code</th>
+                                <th>Asset Name</th>
+                                <th>Category</th>
+                                <th>Status</th>
+                                <th>Department</th>
+                                <th>Custodian</th>
+                                <th class="text-right">Purchase Value</th>
+                                <th class="text-right">Current Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="docs" t-as="asset">
+                                <tr>
+                                    <td><span t-field="asset.asset_code"/></td>
+                                    <td><span t-field="asset.name"/></td>
+                                    <td><span t-field="asset.category_id.name"/></td>
+                                    <td><span t-field="asset.state"/></td>
+                                    <td><span t-field="asset.department_id.name"/></td>
+                                    <td><span t-field="asset.custodian_id.name"/></td>
+                                    <td class="text-right">
+                                        <span t-field="asset.purchase_value" t-options="{'widget': 'monetary', 'display_currency': asset.currency_id}"/>
+                                    </td>
+                                    <td class="text-right">
+                                        <span t-field="asset.current_value" t-options="{'widget': 'monetary', 'display_currency': asset.currency_id}"/>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>

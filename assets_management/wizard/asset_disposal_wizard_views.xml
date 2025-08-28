@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Asset Disposal Wizard Form View -->
+    <record id="view_asset_disposal_wizard_form" model="ir.ui.view">
+        <field name="name">asset.disposal.wizard.form</field>
+        <field name="model">asset.disposal.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Asset Disposal">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <span>Dispose Asset</span>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="asset_id" readonly="1"/>
+                            <field name="disposal_type" widget="radio"/>
+                            <field name="disposal_date"/>
+                        </group>
+                        <group>
+                            <field name="disposal_value" widget="monetary" attrs="{'invisible': [('disposal_type', 'in', ['scrap', 'donate', 'lost', 'damaged'])], 'required': [('disposal_type', '=', 'sale')]}"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="customer_id" attrs="{'invisible': [('disposal_type', '!=', 'sale')], 'required': [('disposal_type', '=', 'sale')]}"/>
+                            <field name="create_journal_entry"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="reason" nolabel="1" placeholder="Reason for disposal..."/>
+                    </group>
+                    <footer>
+                        <button name="action_dispose" string="Dispose Asset" type="object" class="btn-primary"/>
+                        <button string="Cancel" class="btn-secondary" special="cancel"/>
+                    </footer>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Sample Asset Categories -->
+        <record id="asset_category_it" model="asset.category">
+            <field name="name">IT Equipment</field>
+            <field name="code">IT</field>
+            <field name="depreciation_method">straight</field>
+            <field name="useful_life">3</field>
+        </record>
+        
+        <record id="asset_category_furniture" model="asset.category">
+            <field name="name">Furniture and  Fixtures</field>
+            <field name="code">FF</field>
+            <field name="depreciation_method">straight</field>
+            <field name="useful_life">10</field>
+        </record>
+        
+        <record id="asset_category_vehicle" model="asset.category">
+            <field name="name">Vehicles</field>
+            <field name="code">VEH</field>
+            <field name="depreciation_method">declining</field>
+            <field name="depreciation_rate">20</field>
+        </record>
+        
+        <record id="asset_category_building" model="asset.category">
+            <field name="name">Buildings</field>
+            <field name="code">BLD</field>
+            <field name="depreciation_method">straight</field>
+            <field name="useful_life">40</field>
+        </record>
+        
+        <record id="asset_category_machinery" model="asset.category">
+            <field name="name">Machinery</field>
+            <field name="code">MACH</field>
+            <field name="depreciation_method">double_declining</field>
+            <field name="useful_life">15</field>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Asset Sequence -->
+        <record id="seq_asset_asset" model="ir.sequence">
+            <field name="name">Asset Sequence</field>
+            <field name="code">asset.asset</field>
+            <field name="prefix">AST/%(year)s/</field>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+        </record>
+        
+        <!-- Movement Sequence -->
+        <record id="seq_asset_movement" model="ir.sequence">
+            <field name="name">Asset Movement Sequence</field>
+            <field name="code">asset.movement</field>
+            <field name="prefix">MOV/%(year)s/</field>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+        </record>
+        
+        <!-- Maintenance Sequence -->
+        <record id="seq_asset_maintenance" model="ir.sequence">
+            <field name="name">Asset Maintenance Sequence</field>
+            <field name="code">asset.maintenance</field>
+            <field name="prefix">MAINT/%(year)s/</field>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+        </record>
+        
+        <!-- Repair Sequence -->
+        <record id="seq_asset_repair" model="ir.sequence">
+            <field name="name">Asset Repair Sequence</field>
+            <field name="code">asset.repair</field>
+            <field name="prefix">REP/%(year)s/</field>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+        </record>
+    </data>
+</odoo>

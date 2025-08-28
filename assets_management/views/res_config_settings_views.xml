@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Settings View -->
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.assets</field>
+        <field name="model">res.config.settings</field>
+        <field name="priority" eval="40"/>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[hasclass('settings')]" position="inside">
+                <div class="app_settings_block" data-string="Assets Management" string="Assets Management" data-key="assets_management" groups="assets_management.group_asset_manager">
+                    <h2>Asset Management</h2>
+                    <div class="row mt16 o_settings_container">
+                        <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_left_pane">
+                                <field name="asset_auto_approve"/>
+                            </div>
+                            <div class="o_setting_right_pane">
+                                <label for="asset_auto_approve"/>
+                                <div class="text-muted">
+                                    Automatically approve newly created assets
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_left_pane">
+                                <field name="asset_generate_code"/>
+                            </div>
+                            <div class="o_setting_right_pane">
+                                <label for="asset_generate_code"/>
+                                <div class="text-muted">
+                                    Automatically generate asset codes
+                                </div>
+                                <div class="content-group" attrs="{'invisible': [('asset_generate_code', '=', False)]}">
+                                    <div class="mt16">
+                                        <field name="asset_code_prefix" class="o_light_label" placeholder="AST"/>
+                                        <span>Prefix for auto-generated asset codes</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h2>Depreciation</h2>
+                    <div class="row mt16 o_settings_container">
+                        <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_left_pane">
+                                <field name="depreciation_auto_post"/>
+                            </div>
+                            <div class="o_setting_right_pane">
+                                <label for="depreciation_auto_post"/>
+                                <div class="text-muted">
+                                    Automatically post depreciation entries when due
+                                </div>
+                                <div class="content-group" attrs="{'invisible': [('depreciation_auto_post', '=', False)]}">
+                                    <div class="mt16">
+                                        <field name="depreciation_journal_id" class="o_light_label"/>
+                                        <span>Journal for depreciation entries</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h2>Maintenance</h2>
+                    <div class="row mt16 o_settings_container">
+                        <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_left_pane">
+                                <field name="maintenance_auto_create"/>
+                            </div>
+                            <div class="o_setting_right_pane">
+                                <label for="maintenance_auto_create"/>
+                                <div class="text-muted">
+                                    Automatically create recurring maintenance tasks
+                                </div>
+                                <div class="content-group" attrs="{'invisible': [('maintenance_auto_create', '=', False)]}">
+                                    <div class="mt16">
+                                        <field name="maintenance_advance_days" class="o_light_label"/>
+                                        <span>Days in advance to create maintenance tasks</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h2>Notifications</h2>
+                    <div class="row mt16 o_settings_container">
+                        <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_left_pane">
+                                <field name="notify_warranty_expiry"/>
+                            </div>
+                            <div class="o_setting_right_pane">
+                                <label for="notify_warranty_expiry"/>
+                                <div class="text-muted">
+                                    Send notifications for warranty expiry
+                                </div>
+                                <div class="content-group" attrs="{'invisible': [('notify_warranty_expiry', '=', False)]}">
+                                    <div class="mt16">
+                                        <field name="warranty_expiry_days" class="o_light_label"/>
+                                        <span>Days before warranty expiry to send notification</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_left_pane">
+                                <field name="notify_insurance_expiry"/>
+                            </div>
+                            <div class="o_setting_right_pane">
+                                <label for="notify_insurance_expiry"/>
+                                <div class="text-muted">
+                                    Send notifications for insurance expiry
+                                </div>
+                                <div class="content-group" attrs="{'invisible': [('notify_insurance_expiry', '=', False)]}">
+                                    <div class="mt16">
+                                        <field name="insurance_expiry_days" class="o_light_label"/>
+                                        <span>Days before insurance expiry to send notification</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>
