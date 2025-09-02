@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Graph View for Dashboard -->
+    <record id="view_document_tracker_graph" model="ir.ui.view">
+        <field name="name">document.tracker.graph</field>
+        <field name="model">document.tracker</field>
+        <field name="arch" type="xml">
+            <graph string="Document Analysis" type="bar">
+                <field name="document_type" type="row"/>
+                <field name="status" type="col"/>
+            </graph>
+        </field>
+    </record>
+    
+    <!-- Pivot View for Dashboard -->
+    <record id="view_document_tracker_pivot" model="ir.ui.view">
+        <field name="name">document.tracker.pivot</field>
+        <field name="model">document.tracker</field>
+        <field name="arch" type="xml">
+            <pivot string="Document Analysis">
+                <field name="current_location_id" type="row"/>
+                <field name="document_type" type="col"/>
+            </pivot>
+        </field>
+    </record>
+    
+    <!-- Dashboard Action -->
+    <record id="action_document_dashboard" model="ir.actions.act_window">
+        <field name="name">Document Dashboard</field>
+        <field name="res_model">document.tracker</field>
+        <field name="view_mode">graph,pivot,tree,kanban</field>
+        <field name="context">{}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No documents found
+            </p>
+            <p>
+                Start tracking your documents
+            </p>
+        </field>
+    </record>
+</odoo>

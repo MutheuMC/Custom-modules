@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Form View -->
+    <record id="view_office_location_form" model="ir.ui.view">
+        <field name="name">office.location.form</field>
+        <field name="model">office.location</field>
+        <field name="arch" type="xml">
+            <form string="Office Location">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button class="oe_stat_button" type="action" 
+                                name="%(action_document_tracker)d"
+                                icon="fa-file-text-o"
+                                context="{'search_default_current_location_id': active_id}">
+                            <field string="Documents" name="document_count" widget="statinfo"/>
+                        </button>
+                        <button class="oe_stat_button" type="object" 
+                                name="action_view_incoming"
+                                icon="fa-inbox">
+                            <field string="Incoming Today" name="incoming_count" widget="statinfo"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="Office Name"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="code"/>
+                            <field name="department"/>
+                            <field name="active"/>
+                        </group>
+                        <group>
+                            <field name="responsible_person_id"/>
+                            <field name="backup_person_id"/>
+                        </group>
+                    </group>
+                    <group string="Contact Information">
+                        <field name="email" widget="email"/>
+                        <field name="phone" widget="phone"/>
+                        <field name="address"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    
+    <!-- Tree View -->
+    <record id="view_office_location_tree" model="ir.ui.view">
+        <field name="name">office.location.tree</field>
+        <field name="model">office.location</field>
+        <field name="arch" type="xml">
+            <tree string="Office Locations">
+                <field name="name"/>
+                <field name="code"/>
+                <field name="department"/>
+                <field name="responsible_person_id"/>
+                <field name="document_count"/>
+                <field name="incoming_count"/>
+                <field name="active"/>
+            </tree>
+        </field>
+    </record>
+    
+    <!-- Search View -->
+    <record id="view_office_location_search" model="ir.ui.view">
+        <field name="name">office.location.search</field>
+        <field name="model">office.location</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="department"/>
+                <field name="responsible_person_id"/>
+                <filter string="Active" name="active" domain="[('active', '=', True)]"/>
+                <filter string="Inactive" name="inactive" domain="[('active', '=', False)]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Department" name="group_department" 
+                            context="{'group_by': 'department'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    
+    <!-- Action -->
+    <record id="action_office_location" model="ir.actions.act_window">
+        <field name="name">Office Locations</field>
+        <field name="res_model">office.location</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_office_location_search"/>
+    </record>
+</odoo>

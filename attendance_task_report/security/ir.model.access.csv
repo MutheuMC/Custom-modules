@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_attendance_task_report_user,attendance.task.report.user,model_attendance_task_report,hr.group_hr_user,1,0,0,0
+access_attendance_task_report_manager,attendance.task.report.manager,model_attendance_task_report,hr.group_hr_manager,1,0,0,0
+access_export_attendance_tasks_wizard_user,export.attendance.tasks.wizard.user,model_export_attendance_tasks_wizard,hr.group_hr_user,1,1,1,1
+access_export_attendance_tasks_wizard_manager,export.attendance.tasks.wizard.manager,model_export_attendance_tasks_wizard,hr.group_hr_manager,1,1,1,1

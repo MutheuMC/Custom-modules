@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- List / Tree View -->
+    <record id="view_attendance_task_report_list" model="ir.ui.view">
+        <field name="name">attendance.task.report.list</field>
+        <field name="model">attendance.task.report</field>
+        <field name="arch" type="xml">
+            <list string="Attendance Task Report" create="false" edit="false" delete="false">
+                <field name="employee_id"/>
+                <field name="department_id"/>
+                <field name="attendance_date"/>
+                <field name="check_in"/>
+                <field name="check_out"/>
+                <field name="worked_hours" widget="float_time"/>
+                <field name="total_task_hours" widget="float_time"/>
+                <field name="project_names"/>
+                <field name="tasks"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Search View (no .replace anywhere; only datetime.timedelta) -->
+    <record id="view_attendance_task_report_search" model="ir.ui.view">
+        <field name="name">attendance.task.report.search</field>
+        <field name="model">attendance.task.report</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="employee_id"/>
+                <field name="department_id"/>
+                <field name="attendance_date"/>
+                <field name="tasks"/>
+                <field name="project_names"/>
+
+                <!-- Today -->
+                <filter name="today" string="Today"
+                        domain="[('attendance_date', '=', context_today())]"/>
+
+                <!-- This Week: Monday .. next Monday (exclusive) -->
+                <filter name="this_week" string="This Week"
+                        domain="[
+                            ('attendance_date','&gt;=', context_today() - datetime.timedelta(days=context_today().weekday())),
+                            ('attendance_date','&lt;',  context_today() - datetime.timedelta(days=context_today().weekday()) + datetime.timedelta(days=7))
+                        ]"/>
+
+                <!-- This Month: first day .. first day of next month (exclusive)
+                     start_of_month = context_today() - timedelta(days=context_today().day - 1)
+                     first_of_next  = (context_today() + timedelta(days=32)) - timedelta(days=(context_today() + timedelta(days=32)).day - 1)
+                -->
+                <filter name="this_month" string="This Month" groups="hr.group_hr_user"
+                        domain="[
+                            ('attendance_date','&gt;=', context_today() - datetime.timedelta(days=(context_today().day - 1))),
+                            ('attendance_date','&lt;',  (context_today() + datetime.timedelta(days=32)) - datetime.timedelta(days=((context_today() + datetime.timedelta(days=32)).day - 1)))
+                        ]"/>
+
+                <separator/>
+                <filter name="has_tasks" string="Has Tasks" domain="[('total_task_hours','&gt;',0)]"/>
+                <filter name="no_tasks" string="No Tasks" domain="[('total_task_hours','=',0)]"/>
+
+                <group expand="0" string="Group By">
+                    <filter name="group_employee" string="Employee" context="{'group_by':'employee_id'}"/>
+                    <filter name="group_department" string="Department" context="{'group_by':'department_id'}"/>
+                    <filter name="group_date" string="Date" context="{'group_by':'attendance_date'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_attendance_task_report" model="ir.actions.act_window">
+        <field name="name">Attendance Task Report</field>
+        <field name="res_model">attendance.task.report</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="view_attendance_task_report_list"/>
+        <field name="search_view_id" ref="view_attendance_task_report_search"/>
+        <!-- keep default "This Month" -->
+        <field name="context">{'search_default_this_month': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No attendance records with tasks found!</p>
+            <p>This report shows attendance records along with the tasks performed by employees on each day.</p>
+        </field>
+    </record>
+
+    <!-- Menus -->
+    <menuitem id="menu_attendance_task_report_root" 
+              name="Attendance Tasks" 
+              parent="hr.menu_hr_root" 
+              sequence="50"/>
+    <menuitem id="menu_attendance_task_report" 
+              name="Attendance Task Report" 
+              parent="menu_attendance_task_report_root" 
+              action="action_attendance_task_report" 
+              sequence="10"/>
+
+</odoo>

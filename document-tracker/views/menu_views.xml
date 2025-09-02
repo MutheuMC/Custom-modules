@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Main Menu -->
+    <menuitem id="menu_document_tracking_root" 
+              name="Document Tracking" 
+              sequence="10"/>
+    
+    <!-- Dashboard Menu -->
+    <menuitem id="menu_dashboard" 
+              name="Dashboard" 
+              parent="menu_document_tracking_root"
+              action="action_document_tracker"
+              sequence="1"/>
+    
+    <!-- Documents Menu -->
+    <menuitem id="menu_documents" 
+              name="Documents" 
+              parent="menu_document_tracking_root"
+              sequence="10"/>
+    
+    <menuitem id="menu_all_documents" 
+              name="All Documents" 
+              parent="menu_documents"
+              action="action_document_tracker"
+              sequence="1"/>
+    
+    <menuitem id="menu_create_document" 
+              name="Create Document" 
+              parent="menu_documents"
+              action="action_document_tracker"
+              sequence="2"
+              context="{'default_status': 'created'}"/>
+    
+    <!-- Movements Menu -->
+    <menuitem id="menu_movements" 
+              name="Movements" 
+              parent="menu_document_tracking_root"
+              sequence="20"/>
+    
+    <menuitem id="menu_all_movements" 
+              name="All Movements" 
+              parent="menu_movements"
+              action="action_document_movement"
+              sequence="1"/>
+    
+    <menuitem id="menu_today_movements" 
+              name="Today's Movements" 
+              parent="menu_movements"
+              action="action_document_movement"
+              sequence="2"
+              context="{'search_default_today': 1}"/>
+    
+    <!-- Reports Menu -->
+    <menuitem id="menu_reports" 
+              name="Reports" 
+              parent="menu_document_tracking_root"
+              sequence="30"/>
+    
+    <menuitem id="menu_overdue_documents" 
+              name="Overdue Documents" 
+              parent="menu_reports"
+              action="action_document_tracker"
+              sequence="1"
+              context="{'search_default_overdue': 1}"/>
+    
+    <menuitem id="menu_movement_report" 
+              name="Movement Analysis" 
+              parent="menu_reports"
+              action="action_document_movement"
+              sequence="2"/>
+    
+    <!-- Configuration Menu -->
+    <menuitem id="menu_configuration" 
+              name="Configuration" 
+              parent="menu_document_tracking_root"
+              groups="group_document_manager"
+              sequence="100"/>
+    
+    <menuitem id="menu_office_locations" 
+              name="Office Locations" 
+              parent="menu_configuration"
+              action="action_office_location"
+              sequence="1"/>
+</odoo>

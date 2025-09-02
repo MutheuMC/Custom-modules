@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Sequence for Document Numbers -->
+    <record id="seq_document_tracker" model="ir.sequence">
+        <field name="name">Document Tracker</field>
+        <field name="code">document.tracker</field>
+        <field name="prefix">DOC/%(year)s/</field>
+        <field name="padding">5</field>
+        <field name="company_id" eval="False"/>
+    </record>
+    
+    <!-- Default Office Locations -->
+    <record id="location_hr" model="office.location">
+        <field name="name">HR Office</field>
+        <field name="code">HR</field>
+        <field name="department">Human Resources</field>
+    </record>
+    
+    <record id="location_finance" model="office.location">
+        <field name="name">Finance Office</field>
+        <field name="code">FIN</field>
+        <field name="department">Finance</field>
+    </record>
+    
+    <record id="location_vc" model="office.location">
+        <field name="name">VC Office</field>
+        <field name="code">VC</field>
+        <field name="department">Vice Chancellor</field>
+    </record>
+    
+    <record id="location_registry" model="office.location">
+        <field name="name">Registry</field>
+        <field name="code">REG</field>
+        <field name="department">Administration</field>
+    </record>
+</odoo>

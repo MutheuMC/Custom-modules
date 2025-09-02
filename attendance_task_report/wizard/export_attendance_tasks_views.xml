@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Wizard Form View -->
+    <record id="view_export_attendance_tasks_wizard_form" model="ir.ui.view">
+        <field name="name">export.attendance.tasks.wizard.form</field>
+        <field name="model">export.attendance.tasks.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Export Attendance Tasks">
+                <group>
+                    <group string="Date Range">
+                        <field name="date_from"/>
+                        <field name="date_to"/>
+                    </group>
+                    <group string="Filters">
+                        <field name="employee_ids" widget="many2many_tags"/>
+                        <field name="department_ids" widget="many2many_tags"/>
+                        <field name="format_type"/>
+                    </group>
+                </group>
+                <footer>
+                    <button name="action_export" string="Export" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Wizard Action -->
+    <record id="action_export_attendance_tasks_wizard" model="ir.actions.act_window">
+        <field name="name">Export Attendance Tasks</field>
+        <field name="res_model">export.attendance.tasks.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="view_id" ref="view_export_attendance_tasks_wizard_form"/>
+    </record>
+
+    <!-- (Optional) Bind to the list view "Action" menu (Odoo 16/17+) 
+         If your version errors on model xmlid, comment these two fields. -->
+    <!--
+    <record id="action_export_attendance_tasks_wizard" model="ir.actions.act_window">
+        <field name="binding_model_id" ref="model_attendance_task_report"/>
+        <field name="binding_view_types">list</field>
+    </record>
+    -->
+
+    <!-- Simple Menu entry to launch the wizard -->
+    <menuitem id="menu_export_attendance_tasks"
+              name="Export Attendance Tasks"
+              parent="attendance_task_report.menu_attendance_task_report_root"
+              action="action_export_attendance_tasks_wizard"
+              sequence="20"/>
+</odoo>

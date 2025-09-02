@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Form View -->
+    <record id="view_document_tracker_form" model="ir.ui.view">
+        <field name="name">document.tracker.form</field>
+        <field name="model">document.tracker</field>
+        <field name="arch" type="xml">
+            <form string="Document">
+                <header>
+                    <button name="action_move_document" type="object" string="Move Document" 
+                            class="btn-primary" invisible="status in ['lost', 'completed']"/>
+                    <button name="action_return_document" type="object" string="Return Document" 
+                            invisible="status not in ['in_transit', 'at_office']"/>
+                    <button name="action_mark_lost" type="object" string="Mark as Lost" 
+                            invisible="status in ['lost', 'completed', 'returned']"/>
+                    <field name="status" widget="statusbar" 
+                           statusbar_visible="created,available,in_transit,at_office,returned,completed"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button class="oe_stat_button" type="object" name="action_view_movements" 
+                                icon="fa-exchange">
+                            <field string="Movements" name="movement_count" widget="statinfo"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Overdue" bg_color="bg-danger"
+                            invisible="is_overdue == False"/>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="document_type"/>
+                            <field name="title"/>
+                            <field name="priority" widget="priority"/>
+                            <field name="barcode"/>
+                        </group>
+                        <group>
+                            <field name="current_location_id"/>
+                            <field name="current_holder_id"/>
+                            <field name="expected_return_date"/>
+                            <field name="is_overdue" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Document Details">
+                            <group>
+                                <group string="Description">
+                                    <field name="description" nolabel="1" colspan="2"/>
+                                </group>
+                            </group>
+                            <group>
+                                <group string="Upload Document">
+                                    <field name="document_file" filename="document_filename" 
+                                           widget="binary"/>
+                                    <field name="document_filename" invisible="1"/>
+                                </group>
+                                <group string="Scan Document">
+                                    <field name="document_scan" filename="scan_filename" 
+                                           widget="image" options="{'size': [300, 300]}"/>
+                                    <field name="scan_filename" invisible="1"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Movement History">
+                            <field name="movement_ids" readonly="1">
+                                <tree>
+                                    <field name="taken_date"/>
+                                    <field name="from_location_id"/>
+                                    <field name="to_location_id"/>
+                                    <field name="taken_by_id"/>
+                                    <field name="purpose"/>
+                                    <field name="status" widget="badge" 
+                                           decoration-success="status == 'received'"
+                                           decoration-warning="status == 'taken'"
+                                           decoration-info="status == 'returned'"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Statistics">
+                            <group>
+                                <group>
+                                    <field name="date_created"/>
+                                    <field name="last_movement_date"/>
+                                </group>
+                                <group>
+                                    <field name="days_in_current_location"/>
+                                    <field name="movement_count"/>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+    
+    <!-- Tree View -->
+    <record id="view_document_tracker_tree" model="ir.ui.view">
+        <field name="name">document.tracker.tree</field>
+        <field name="model">document.tracker</field>
+        <field name="arch" type="xml">
+            <tree string="Documents" decoration-danger="is_overdue == True"
+                  decoration-warning="status == 'in_transit'"
+                  decoration-success="status == 'available'">
+                <field name="name"/>
+                <field name="document_type"/>
+                <field name="title"/>
+                <field name="current_location_id"/>
+                <field name="current_holder_id"/>
+                <field name="status" widget="badge"/>
+                <field name="expected_return_date"/>
+                <field name="is_overdue" invisible="1"/>
+                <field name="priority" widget="priority"/>
+            </tree>
+        </field>
+    </record>
+    
+    <!-- Search View -->
+    <record id="view_document_tracker_search" model="ir.ui.view">
+        <field name="name">document.tracker.search</field>
+        <field name="model">document.tracker</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="title"/>
+                <field name="document_type"/>
+                <field name="current_location_id"/>
+                <field name="current_holder_id"/>
+                <field name="barcode"/>
+                <filter string="Available" name="available" 
+                        domain="[('status', '=', 'available')]"/>
+                <filter string="In Transit" name="in_transit" 
+                        domain="[('status', '=', 'in_transit')]"/>
+                <filter string="At Office" name="at_office" 
+                        domain="[('status', '=', 'at_office')]"/>
+                <filter string="Overdue" name="overdue" 
+                        domain="[('is_overdue', '=', True)]"/>
+                <separator/>
+                <filter string="High Priority" name="high_priority" 
+                        domain="[('priority', 'in', ['2', '3'])]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Document Type" name="group_type" 
+                            context="{'group_by': 'document_type'}"/>
+                    <filter string="Current Location" name="group_location" 
+                            context="{'group_by': 'current_location_id'}"/>
+                    <filter string="Status" name="group_status" 
+                            context="{'group_by': 'status'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    
+    <!-- Kanban View -->
+    <record id="view_document_tracker_kanban" model="ir.ui.view">
+        <field name="name">document.tracker.kanban</field>
+        <field name="model">document.tracker</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="status">
+                <field name="name"/>
+                <field name="title"/>
+                <field name="document_type"/>
+                <field name="current_location_id"/>
+                <field name="is_overdue"/>
+                <field name="priority"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_card oe_kanban_global_click">
+                            <div class="oe_kanban_content">
+                                <div class="o_kanban_record_top">
+                                    <div class="o_kanban_record_headings">
+                                        <strong class="o_kanban_record_title">
+                                            <field name="name"/>
+                                        </strong>
+                                    </div>
+                                    <field name="priority" widget="priority"/>
+                                </div>
+                                <div class="o_kanban_record_body">
+                                    <div><field name="title"/></div>
+                                    <div class="text-muted">
+                                        <i class="fa fa-map-marker"/> 
+                                        <field name="current_location_id"/>
+                                    </div>
+                                </div>
+                                <div class="o_kanban_record_bottom">
+                                    <div class="oe_kanban_bottom_left">
+                                        <field name="document_type" widget="badge"/>
+                                    </div>
+                                    <div class="oe_kanban_bottom_right" 
+                                         t-if="record.is_overdue.raw_value">
+                                        <span class="badge badge-danger">Overdue</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+    
+    <!-- Graph View -->
+    <record id="view_document_tracker_graph" model="ir.ui.view">
+        <field name="name">document.tracker.graph</field>
+        <field name="model">document.tracker</field>
+        <field name="arch" type="xml">
+            <graph string="Document Analysis" type="bar">
+                <field name="document_type" type="row"/>
+                <field name="status" type="col"/>
+            </graph>
+        </field>
+    </record>
+    
+    <!-- Pivot View -->
+    <record id="view_document_tracker_pivot" model="ir.ui.view">
+        <field name="name">document.tracker.pivot</field>
+        <field name="model">document.tracker</field>
+        <field name="arch" type="xml">
+            <pivot string="Document Analysis">
+                <field name="current_location_id" type="row"/>
+                <field name="document_type" type="col"/>
+            </pivot>
+        </field>
+    </record>
+    
+    <!-- Action -->
+    <record id="action_document_tracker" model="ir.actions.act_window">
+        <field name="name">Documents</field>
+        <field name="res_model">document.tracker</field>
+        <field name="view_mode">tree,kanban,form,graph,pivot</field>
+        <field name="search_view_id" ref="view_document_tracker_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first document
+            </p>
+            <p>
+                Start tracking documents as they move between offices.
+            </p>
+        </field>
+    </record>
+</odoo>

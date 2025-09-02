@@ -1,0 +1,11 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_document_tracker_user,document.tracker.user,model_document_tracker,group_document_user,1,0,0,0
+access_document_tracker_officer,document.tracker.officer,model_document_tracker,group_document_officer,1,1,1,0
+access_document_tracker_manager,document.tracker.manager,model_document_tracker,group_document_manager,1,1,1,1
+access_office_location_user,office.location.user,model_office_location,group_document_user,1,0,0,0
+access_office_location_officer,office.location.officer,model_office_location,group_document_officer,1,1,0,0
+access_office_location_manager,office.location.manager,model_office_location,group_document_manager,1,1,1,1
+access_document_movement_user,document.movement.user,model_document_movement,group_document_user,1,0,0,0
+access_document_movement_officer,document.movement.officer,model_document_movement,group_document_officer,1,1,1,0
+access_document_movement_manager,document.movement.manager,model_document_movement,group_document_manager,1,1,1,1
+access_document_movement_wizard,document.movement.wizard,model_document_movement_wizard,group_document_user,1,1,1,1
