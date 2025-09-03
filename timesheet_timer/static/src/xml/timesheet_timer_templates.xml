@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates>
+    <t t-name="timesheet_timer.TimerWidget" owl="1">
+        <div class="o_timesheet_timer">
+            <!-- Display the formatted time. -->
+            <span class="o_timesheet_timer_display me-2" t-esc="formattedTime" />
+            <!-- Timer button, toggles between play and pause icon. -->
+            <button class="o_timesheet_timer_button btn btn-secondary btn-sm" t-on-click="onClick">
+                <i t-if="state.isRunning" class="fa fa-pause"/>
+                <i t-else="" class="fa fa-play"/>
+            </button>
+        </div>
+    </t>
+</templates>

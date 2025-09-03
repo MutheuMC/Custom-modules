@@ -1,0 +1,26 @@
+<odoo>
+  <!-- LIST / TREE extension -->
+  <record id="view_account_analytic_line_tree_timer_extension" model="ir.ui.view">
+    <field name="name">account.analytic.line.tree.timer.extension</field>
+    <field name="model">account.analytic.line</field>
+    <field name="inherit_id" ref="hr_timesheet.hr_timesheet_line_tree"/>
+    <field name="arch" type="xml">
+
+      <!-- Add hidden fields after unit_amount -->
+      <xpath expr="//list//field[@name='unit_amount']" position="after">
+        <field name="is_running" invisible="1"/>
+        <field name="timer_start_time" invisible="1"/>
+      </xpath>
+
+      <!-- Swap widget on unit_amount -->
+      <xpath expr="//list//field[@name='unit_amount']" position="attributes">
+        <attribute name="widget">timesheet_timer</attribute>
+      </xpath>
+
+      <!-- If you prefer a future-proof union, use this instead of the two expr above:
+      <xpath expr="//tree//field[@name='unit_amount'] | //list//field[@name='unit_amount']" position="after">...</xpath>
+      and the same union for position="attributes".
+      -->
+    </field>
+  </record>
+</odoo>
