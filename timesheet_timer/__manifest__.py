@@ -15,8 +15,9 @@
     ],
     'assets': {
         'web.assets_backend': [
-            'timesheet_timer/static/src/js/timesheet_timer.js',
-            'timesheet_timer/static/src/xml/timesheet_timer_templates.xml',
+        'timesheet_timer/static/src/components/timesheet_timer_widget.js',
+            'timesheet_timer/static/src/components/timesheet_timer_widget.xml',
+            # 'timesheet_timer/static/src/components/timesheet_timer_widget.scss',
         ],
     },
     'installable': True,

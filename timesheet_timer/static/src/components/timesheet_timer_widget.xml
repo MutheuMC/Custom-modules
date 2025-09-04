@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+  <t t-name="timesheet_timer.TimerWidget">
+    <div class="o_field_timesheet_timer o_ts_timer d-flex align-items-center justify-content-end w-100">
+      <div class="o_field_widget o_field_float_time me-2">
+        <span class="o_timer_display o_ts_timer_time fw-bold text-end" t-esc="state.displayTime"/>
+      </div>
+      <button
+        class="btn btn-sm o_ts_timer_btn"
+        t-att-class="buttonClass"
+        t-att-title="buttonTitle"
+        t-on-click="onTimerClick">
+        <i class="fa" t-att-class="buttonIcon"/>
+      </button>
+    </div>
+  </t>
+</templates>
