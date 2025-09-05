@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Employee Form View - Add PF Number field -->
+    <record id="view_employee_form_inherit_pf" model="ir.ui.view">
+        <field name="name">hr.employee.form.inherit.pf</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+            <!-- Try multiple possible locations for the PF Number field -->
+            
+            <!-- Option 1: Add after work_phone -->
+            <xpath expr="//field[@name='work_phone']" position="after">
+                <field name="pf_no"/>
+            </xpath>
+            
+            <!-- Option 2: If work_phone doesn't exist, try after mobile_phone -->
+            <!-- <xpath expr="//field[@name='mobile_phone']" position="after">
+                <field name="pf_no"/>
+            </xpath> -->
+            
+            <!-- Option 3: Add in a specific group if the above don't work -->
+            <!-- <xpath expr="//group[@name='identification_group']" position="inside">
+                <field name="pf_no"/>
+            </xpath> -->
+            
+            <!-- Option 4: Add after identification_id (Employee ID) -->
+            <!-- <xpath expr="//field[@name='identification_id']" position="after">
+                <field name="pf_no"/>
+            </xpath> -->
+            
+            <!-- Option 5: Add after employee_id if it exists -->
+            <!-- <xpath expr="//field[@name='employee_id']" position="after">
+                <field name="pf_no"/>
+            </xpath> -->
+        </field>
+    </record>
+
+    <!-- Employee List/Tree View - Add PF Number column -->
+    <record id="view_employee_tree_inherit_pf" model="ir.ui.view">
+        <field name="name">hr.employee.tree.inherit.pf</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="pf_no" string="PF Number"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Alternative approach: Create a completely new section -->
+    <record id="view_employee_form_inherit_pf_section" model="ir.ui.view">
+        <field name="name">hr.employee.form.inherit.pf.section</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+            <!-- Add a new page/section for HR Information -->
+            <xpath expr="//notebook" position="inside">
+                <page string="HR Information" name="hr_info">
+                    <group>
+                        <group string="Identification">
+                            <field name="pf_no"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>
