@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <data>
+
+    <!-- Document Kanban View -->
+    <record id="view_document_document_kanban" model="ir.ui.view">
+      <field name="name">document.document.kanban</field>
+      <field name="model">document.document</field>
+      <field name="arch" type="xml">
+        <kanban default_group_by="folder_id">
+          <field name="name"/>
+          <field name="folder_id"/>
+          <field name="tag_ids"/>
+          <field name="thumbnail"/>
+          <field name="is_favorite"/>
+          <templates>
+            <t t-name="kanban-box">
+              <div class="oe_kanban_global_click">
+                <div class="o_kanban_image">
+                  <t t-if="record.thumbnail.raw_value">
+                    <img t-att-src="'data:image/png;base64,' + record.thumbnail.raw_value" alt="Document thumbnail"/>
+                  </t>
+                  <t t-else="">
+                    <i class="fa fa-file-o fa-3x"/>
+                  </t>
+                </div>
+                <div class="o_kanban_details">
+                  <div class="o_kanban_record_title">
+                    <field name="name"/>
+                  </div>
+                  <div>
+                    <field name="folder_id" widget="many2one_avatar"/>
+                  </div>
+                  <div>
+                    <field name="tag_ids" widget="many2many_tags"/>
+                  </div>
+                </div>
+              </div>
+            </t>
+          </templates>
+        </kanban>
+      </field>
+    </record>
+
+    <!-- Document List View -->
+    <record id="view_document_document_list" model="ir.ui.view">
+      <field name="name">document.document.list</field>
+      <field name="model">document.document</field>
+      <field name="arch" type="xml">
+        <list string="Documents">
+          <field name="name"/>
+          <field name="folder_id"/>
+          <field name="tag_ids" widget="many2many_tags"/>
+          <field name="owner_id"/>
+          <field name="file_size"/>
+        </list>
+      </field>
+    </record>
+
+    <!-- Document Form View -->
+    <record id="view_document_document_form" model="ir.ui.view">
+      <field name="name">document.document.form</field>
+      <field name="model">document.document</field>
+      <field name="arch" type="xml">
+        <form string="Document">
+          <header>
+            <!-- show this star only when not favorite -->
+            <button name="action_toggle_favorite"
+                    type="object"
+                    class="oe_stat_button"
+                    icon="fa-star"
+                    invisible="is_favorite"/>
+            <!-- show this emphasized star only when favorite -->
+            <button name="action_toggle_favorite"
+                    type="object"
+                    class="oe_stat_button"
+                    icon="fa-star"
+                    options="{'emphasis': true}"
+                    invisible="not is_favorite"/>
+          </header>
+
+          <sheet>
+            <group>
+              <group>
+                <field name="name"/>
+                <field name="folder_id"/>
+                <field name="tag_ids" widget="many2many_tags"/>
+                <field name="type" widget="radio"/>
+                <!-- replaced attrs with python-style expression -->
+                <field name="url" invisible="type != 'url'"/>
+                <field name="datas" filename="name" invisible="type != 'binary'"/>
+              </group>
+              <group>
+                <field name="owner_id"/>
+                <field name="partner_id"/>
+                <field name="company_id"/>
+                <field name="file_size" readonly="True"/>
+                <field name="extension" readonly="True"/>
+              </group>
+            </group>
+
+            <group>
+              <field name="description"/>
+            </group>
+          </sheet>
+        </form>
+      </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="view_document_document_search" model="ir.ui.view">
+      <field name="name">document.document.search</field>
+      <field name="model">document.document</field>
+      <field name="arch" type="xml">
+        <search>
+          <field name="name"/>
+          <field name="folder_id"/>
+          <field name="tag_ids"/>
+          <filter string="My Documents" name="my_documents" domain="[('owner_id', '=', uid)]"/>
+          <filter string="Favorites" name="favorites" domain="[('favorite_ids', 'in', [uid])]"/>
+          <group expand="0" string="Group By">
+            <filter string="Folder" name="folder" context="{'group_by': 'folder_id'}"/>
+            <filter string="Owner" name="owner" context="{'group_by': 'owner_id'}"/>
+            <filter string="Tag" name="tag" context="{'group_by': 'tag_ids'}"/>
+          </group>
+        </search>
+      </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_document_document" model="ir.actions.act_window">
+      <field name="name">Documents</field>
+      <field name="res_model">document.document</field>
+      <field name="view_mode">kanban,list,form</field>
+      <field name="context">{'search_default_my_documents': 1}</field>
+      <field name="help" type="html">
+        <p class="o_view_nocontent_smiling_face">Upload your first document</p>
+      </field>
+    </record>
+
+  </data>
+</odoo>
