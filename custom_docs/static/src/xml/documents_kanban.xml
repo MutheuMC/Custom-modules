@@ -1,62 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates xml:space="preserve">
-    <t t-name="custom_documents.DocumentsKanbanController" t-inherit="web.KanbanController" t-inherit-mode="primary">
-        <xpath expr="//div[hasclass('o_control_panel_main_buttons')]" position="inside">
-            <div class="d-inline-flex gap-1">
-                <!-- Hidden file input -->
-                <input type="file" 
-                       class="d-none" 
-                       multiple="multiple" 
-                       accept="*"
-                       t-ref="fileInput"
-                       t-on-change="onFileInputChange"/>
-                
-                <!-- Main dropdown button -->
-                <div class="dropdown">
-                    <button type="button" 
-                            class="btn btn-primary dropdown-toggle" 
-                            data-bs-toggle="dropdown" 
-                            aria-haspopup="true" 
-                            aria-expanded="false">
-                        <i class="fa fa-plus me-1"/>
-                        New
-                    </button>
-                    <ul class="dropdown-menu">
-                        <li>
-                            <a class="dropdown-item" href="#" t-on-click="onUploadClick">
-                                <i class="fa fa-upload fa-fw me-2"/>
-                                Upload
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item" href="#" t-on-click="onRequestClick">
-                                <i class="fa fa-clock-o fa-fw me-2"/>
-                                Request
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item" href="#" t-on-click="onAddUrlClick">
-                                <i class="fa fa-link fa-fw me-2"/>
-                                Link
-                            </a>
-                        </li>
-                        <li><hr class="dropdown-divider"/></li>
-                        <li>
-                            <a class="dropdown-item" href="#" t-on-click="onAddSpreadsheetClick">
-                                <i class="fa fa-table fa-fw me-2"/>
-                                Spreadsheet
-                            </a>
-                        </li>
-                        <li><hr class="dropdown-divider"/></li>
-                        <li>
-                            <a class="dropdown-item" href="#" t-on-click="onAddFolderClick">
-                                <i class="fa fa-folder fa-fw me-2"/>
-                                Folder
-                            </a>
-                        </li>
-                    </ul>
-                </div>
+    <t t-name="DocumentsKanbanView.buttons">
+        <div class="btn-group">
+            <button type="button" class="btn btn-primary o_documents_upload">
+                <i class="fa fa-upload"/> Upload
+            </button>
+            <button type="button" class="btn btn-secondary dropdown-toggle dropdown-toggle-split" 
+                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <span class="sr-only">Toggle Dropdown</span>
+            </button>
+            <div class="dropdown-menu">
+                <a class="dropdown-item o_documents_request" href="#">
+                    <i class="fa fa-clock-o"/> Request
+                </a>
+                <a class="dropdown-item o_documents_url" href="#">
+                    <i class="fa fa-link"/> Add URL
+                </a>
             </div>
-        </xpath>
+        </div>
     </t>
 </templates>

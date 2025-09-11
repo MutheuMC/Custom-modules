@@ -38,9 +38,13 @@
     ],
     'assets': {
         'web.assets_backend': [
-           'custom_docs/static/src/js/documents_kanban_controller.js',
-            'custom_docs/static/src/js/documents_kanban_view.js',
-            'custom_docs/static/src/xml/documents_kanban_controller.xml',
+        #    'custom_docs/static/src/js/documents_create_menu.js',
+            # 'custom_docs/static/src/xml/documents_create_menu_assets.xml',
+
+
+           'custom_docs/static/src/js/documents_kanban.js',
+    
+            'custom_docs/static/src/xml/documents_kanban.xml',
             'custom_docs/static/src/scss/documents.scss',
         ],
           
