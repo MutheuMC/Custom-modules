@@ -1,0 +1,224 @@
+.o_documents_kanban {
+    .o_kanban_view {
+        background-color: #f8f9fa;
+    }
+    
+    .o_kanban_record {
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        margin: 8px;
+        padding: 12px;
+        background: white;
+        min-height: 150px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        
+        &:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+        
+        .o_kanban_image {
+            text-align: center;
+            padding: 20px 0;
+            
+            .o_kanban_image_wrapper {
+                display: inline-block;
+                
+                i {
+                    color: #6c757d;
+                    
+                    &.fa-file-pdf-o {
+                        color: #dc3545;
+                    }
+                    
+                    &.fa-file-image-o {
+                        color: #28a745;
+                    }
+                    
+                    &.fa-link {
+                        color: #007bff;
+                    }
+                    
+                    &.fa-clock-o {
+                        color: #ffc107;
+                    }
+                }
+            }
+        }
+        
+        .o_kanban_record_title {
+            font-weight: 600;
+            margin-bottom: 5px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .o_kanban_tags {
+            margin: 8px 0;
+        }
+        
+        .o_kanban_record_bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+            
+            .oe_kanban_bottom_left {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                
+                .fa-lock, .fa-share-alt {
+                    color: #6c757d;
+                    font-size: 14px;
+                }
+            }
+        }
+    }
+    
+    .o_kanban_group {
+        .o_kanban_header {
+            background: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+            
+            .o_kanban_header_title {
+                font-weight: 600;
+                color: #495057;
+            }
+        }
+    }
+}
+
+// Document viewer styles
+.o_documents_viewer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 1050;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    .o_viewer_content {
+        max-width: 90%;
+        max-height: 90%;
+        background: white;
+        border-radius: 4px;
+        overflow: auto;
+        
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+        
+        iframe {
+            width: 100%;
+            min-height: 600px;
+            border: none;
+        }
+    }
+    
+    .o_viewer_toolbar {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        display: flex;
+        gap: 10px;
+        
+        button {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 8px 12px;
+            cursor: pointer;
+            
+            &:hover {
+                background: #f8f9fa;
+            }
+        }
+    }
+}
+
+// Share portal styles
+.o_documents_share_portal {
+    .document-card {
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+        transition: all 0.3s ease;
+        
+        &:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .document-icon {
+            font-size: 48px;
+            color: #6c757d;
+            margin-bottom: 15px;
+        }
+        
+        .document-name {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #343a40;
+        }
+        
+        .document-meta {
+            color: #6c757d;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        
+        .btn-download {
+            width: 100%;
+        }
+    }
+    
+    .upload-zone {
+        border: 2px dashed #dee2e6;
+        border-radius: 8px;
+        padding: 40px;
+        text-align: center;
+        background: #f8f9fa;
+        
+        &.drag-over {
+            border-color: #007bff;
+            background: #e7f3ff;
+        }
+        
+        .upload-icon {
+            font-size: 64px;
+            color: #6c757d;
+            margin-bottom: 20px;
+        }
+        
+        .upload-text {
+            color: #495057;
+            margin-bottom: 20px;
+        }
+    }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+    .o_documents_kanban {
+        .o_kanban_record {
+            margin: 4px;
+            padding: 8px;
+            
+            .o_kanban_image {
+                padding: 10px 0;
+                
+                i {
+                    font-size: 32px !important;
+                }
+            }
+        }
+    }
+}

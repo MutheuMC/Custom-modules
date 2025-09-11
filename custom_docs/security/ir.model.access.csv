@@ -1,0 +1,16 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_documents_document_user,documents.document.user,model_documents_document,group_documents_user,1,1,1,0
+access_documents_document_manager,documents.document.manager,model_documents_document,group_documents_manager,1,1,1,1
+access_documents_folder_user,documents.folder.user,model_documents_folder,group_documents_user,1,0,0,0
+access_documents_folder_manager,documents.folder.manager,model_documents_folder,group_documents_manager,1,1,1,1
+access_documents_tag_user,documents.tag.user,model_documents_tag,group_documents_user,1,0,0,0
+access_documents_tag_manager,documents.tag.manager,model_documents_tag,group_documents_manager,1,1,1,1
+access_documents_facet_user,documents.facet.user,model_documents_facet,group_documents_user,1,0,0,0
+access_documents_facet_manager,documents.facet.manager,model_documents_facet,group_documents_manager,1,1,1,1
+access_documents_workflow_rule_user,documents.workflow.rule.user,model_documents_workflow_rule,group_documents_user,1,0,0,0
+access_documents_workflow_rule_manager,documents.workflow.rule.manager,model_documents_workflow_rule,group_documents_manager,1,1,1,1
+access_documents_share_user,documents.share.user,model_documents_share,group_documents_user,1,1,1,0
+access_documents_share_manager,documents.share.manager,model_documents_share,group_documents_manager,1,1,1,1
+access_documents_request_wizard_user,documents.request.wizard.user,model_documents_request_wizard,group_documents_user,1,1,1,1
+access_documents_share_public,documents.share.public,model_documents_share,,1,0,0,0
+access_documents_document_public,documents.document.public,model_documents_document,,1,0,0,0

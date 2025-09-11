@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Share Form View -->
+    <record id="documents_share_view_form" model="ir.ui.view">
+        <field name="name">documents.share.form</field>
+        <field name="model">documents.share</field>
+        <field name="arch" type="xml">
+            <form string="Share Documents">
+                <header>
+                    <button name="action_send_share" type="object" string="Send by Email" class="btn-primary"/>
+                    <button name="action_deactivate" type="object" string="Deactivate"
+                            invisible="[('active','=',False)]"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <widget name="web_ribbon" title="Expired"  bg_color="bg-danger"
+                            invisible="[('state','!=','expired')]"/>
+                    <widget name="web_ribbon" title="Consumed" bg_color="bg-warning"
+                            invisible="[('state','!=','consumed')]"/>
+
+                    <div class="oe_title">
+                        <h1><field name="name" placeholder="Share Name"/></h1>
+                    </div>
+
+                    <group>
+                        <group string="Share Settings">
+                            <field name="share_type"/>
+                            <field name="folder_id"
+                                   invisible="[('share_type','!=','folder')]"
+                                   required="[('share_type','=','folder')]"/>
+                            <field name="document_ids" widget="many2many_tags"
+                                   invisible="[('share_type','!=','ids')]"
+                                   required="[('share_type','=','ids')]"/>
+                            <field name="include_sub_folders"
+                                   invisible="[('share_type','!=','folder')]"/>
+                        </group>
+                        <group string="Access Control">
+                            <field name="action"/>
+                            <field name="date_deadline"/>
+                            <field name="download_limit"/>
+                            <field name="download_count" readonly="1"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                    </group>
+
+                    <group>
+                        <group string="Contact Information">
+                            <field name="partner_id"/>
+                            <field name="email" required="[('partner_id','=',False)]"/>
+                        </group>
+                        <group string="Share Link">
+                            <field name="access_token" readonly="1" groups="base.group_no_one"/>
+                            <field name="full_url" widget="CopyClipboardChar" readonly="1"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Documents" invisible="[('share_type','!=','ids')]">
+                            <field name="document_ids">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="folder_id"/>
+                                    <field name="mimetype"/>
+                                    <field name="file_size"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers"/>
+                    <field name="message_ids" widget="mail_thread"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- Share List View (v17+/v18: use <list/>) -->
+    <record id="documents_share_view_list" model="ir.ui.view">
+        <field name="name">documents.share.list</field>
+        <field name="model">documents.share</field>
+        <field name="arch" type="xml">
+            <list string="Share Links"
+                  decoration-danger="state == 'expired'"
+                  decoration-warning="state == 'consumed'"
+                  decoration-success="state == 'live'">
+                <field name="name"/>
+                <field name="share_type"/>
+                <field name="partner_id" optional="show"/>
+                <field name="email" optional="hide"/>
+                <field name="date_deadline"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'live'"
+                       decoration-danger="state == 'expired'"
+                       decoration-warning="state == 'consumed'"/>
+                <field name="download_count" sum="Total Downloads"/>
+                <field name="download_limit" optional="show"/>
+                <field name="active" invisible="1"/>
+                <button name="action_send_share" type="object" string="Send Email" icon="fa-envelope"
+                        invisible="[('state','!=','live')]"/>
+                <button name="action_deactivate" type="object" string="Deactivate" icon="fa-times"
+                        invisible="['|',('active','=',False),('state','!=','live')]"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Share Kanban View -->
+    <record id="documents_share_view_kanban" model="ir.ui.view">
+        <field name="name">documents.share.kanban</field>
+        <field name="model">documents.share</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_mobile">
+                <field name="name"/>
+                <field name="share_type"/>
+                <field name="state"/>
+                <field name="date_deadline"/>
+                <field name="partner_id"/>
+                <field name="download_count"/>
+                <field name="download_limit"/>
+                <field name="active"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div t-attf-class="oe_kanban_card oe_kanban_global_click">
+                            <div class="o_kanban_record_top mb-2">
+                                <div class="o_kanban_record_headings">
+                                    <strong class="o_kanban_record_title"><field name="name"/></strong>
+                                </div>
+                                <field name="state" widget="label_selection"
+                                       options="{'classes': {'live': 'success', 'expired': 'danger', 'consumed': 'warning'}}"/>
+                            </div>
+                            <div class="o_kanban_record_body">
+                                <div t-if="record.partner_id.value">
+                                    <i class="fa fa-user"/> <field name="partner_id"/>
+                                </div>
+                                <div>
+                                    <i class="fa fa-calendar"/> Valid until: <field name="date_deadline"/>
+                                </div>
+                                <div t-if="record.download_limit.raw_value">
+                                    <i class="fa fa-download"/>
+                                    <field name="download_count"/> / <field name="download_limit"/> downloads
+                                </div>
+                            </div>
+                            <div class="o_kanban_record_bottom mt-2">
+                                <button name="action_send_share" type="object" class="btn btn-sm btn-primary"
+                                        t-if="record.state.raw_value == 'live'">
+                                    <i class="fa fa-envelope"/> Send
+                                </button>
+                                <button name="action_deactivate" type="object" class="btn btn-sm btn-secondary float-right"
+                                        t-if="record.active.raw_value and record.state.raw_value == 'live'">
+                                    Deactivate
+                                </button>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Share Search View -->
+    <record id="documents_share_view_search" model="ir.ui.view">
+        <field name="name">documents.share.search</field>
+        <field name="model">documents.share</field>
+        <field name="arch" type="xml">
+            <search string="Share Links">
+                <field name="name" string="Share"/>
+                <field name="partner_id"/>
+                <field name="email"/>
+                <field name="folder_id"/>
+
+                <filter string="Live"     name="live"     domain="[('state','=','live')]"/>
+                <filter string="Expired"  name="expired"  domain="[('state','=','expired')]"/>
+                <filter string="Consumed" name="consumed" domain="[('state','=','consumed')]"/>
+                <separator/>
+                <filter string="Documents" name="share_documents" domain="[('share_type','=','ids')]"/>
+                <filter string="Folders"   name="share_folders"   domain="[('share_type','=','folder')]"/>
+                <separator/>
+                <!-- ESCAPED AMPERSAND HERE -->
+                <filter string="Download &amp; Upload" name="download_upload" domain="[('action','=','downloadupload')]"/>
+                <filter string="Download Only"         name="download_only"  domain="[('action','=','download')]"/>
+                <separator/>
+                <filter string="Archived" name="inactive" domain="[('active','=',False)]"/>
+
+                <group expand="0" string="Group By">
+                    <filter string="Status"           name="group_by_state"    domain="[]" context="{'group_by':'state'}"/>
+                    <filter string="Type"             name="group_by_type"     domain="[]" context="{'group_by':'share_type'}"/>
+                    <filter string="Contact"          name="group_by_partner"  domain="[]" context="{'group_by':'partner_id'}"/>
+                    <filter string="Expiration Month" name="group_by_deadline" domain="[]" context="{'group_by':'date_deadline:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Share Action -->
+    <record id="action_documents_shares" model="ir.actions.act_window">
+        <field name="name">Share Links</field>
+        <field name="res_model">documents.share</field>
+        <field name="view_mode">list,kanban,form</field>
+        <field name="search_view_id" ref="documents_share_view_search"/>
+        <field name="context">{'search_default_live': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create a share link</p>
+            <p>
+                Share documents securely with external users through time-limited links.
+                You can control whether they can only download or also upload documents.
+            </p>
+        </field>
+    </record>
+
+    <!-- Share Creation Wizard (when sharing from document) -->
+    <record id="documents_share_wizard_view_form" model="ir.ui.view">
+        <field name="name">documents.share.wizard.form</field>
+        <field name="model">documents.share</field>
+        <field name="arch" type="xml">
+            <form string="Share Documents">
+                <group>
+                    <group>
+                        <field name="name" placeholder="Give this share a name..."/>
+                        <field name="share_type" invisible="1"/>
+                        <field name="document_ids" invisible="1"/>
+                        <field name="folder_id" invisible="1"/>
+                    </group>
+                    <group>
+                        <field name="action" widget="radio_button"/>
+                        <field name="date_deadline"/>
+                        <field name="download_limit" placeholder="Leave empty for unlimited"/>
+                    </group>
+                </group>
+                <group string="Send to">
+                    <field name="partner_id" placeholder="Select a contact..."/>
+                    <field name="email" placeholder="Or enter an email address..."
+                           invisible="[('partner_id','!=',False)]"/>
+                </group>
+                <footer>
+                    <button name="action_send_share" type="object" string="Create &amp; Send" class="btn-primary"/>
+                    <button string="Create Link Only" name="create" type="object" class="btn-secondary"
+                            context="{'share_link_only': True}"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

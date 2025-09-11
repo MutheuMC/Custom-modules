@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <!-- Workflow Rule Form View -->
+  <record id="documents_workflow_rule_view_form" model="ir.ui.view">
+    <field name="name">documents.workflow.rule.form</field>
+    <field name="model">documents.workflow.rule</field>
+    <field name="arch" type="xml">
+      <form string="Workflow Rule">
+        <sheet>
+          <widget name="web_ribbon" title="Archived" bg_color="bg-danger"
+                  invisible="[('active','=',True)]"/>
+          <div class="oe_title">
+            <h1><field name="name" placeholder="Action Name"/></h1>
+          </div>
+
+          <group>
+            <group string="Conditions">
+              <field name="folder_id"/>
+              <field name="condition_type"/>
+              <field name="required_tag_ids" widget="many2many_tags"
+                     invisible="[('condition_type','!=','tag')]"/>
+              <field name="excluded_tag_ids" widget="many2many_tags"
+                     invisible="[('condition_type','!=','tag')]"/>
+              <field name="domain" widget="domain" options="{'model': 'documents.document'}"
+                     invisible="[('condition_type','!=','domain')]"/>
+            </group>
+
+            <group string="Settings">
+              <field name="sequence"/>
+              <field name="active" invisible="1"/>
+            </group>
+          </group>
+
+          <separator string="Actions"/>
+
+          <group>
+            <group string="Document Actions">
+              <field name="set_partner_id"/>
+              <field name="set_owner_id" widget="many2one_avatar_user"/>
+              <field name="move_folder_id"/>
+            </group>
+
+            <group string="Tag Actions">
+              <field name="add_tag_ids" widget="many2many_tags"/>
+              <field name="remove_tag_ids" widget="many2many_tags"/>
+            </group>
+          </group>
+
+          <group string="Create Actions">
+            <field name="create_model"/>
+          </group>
+
+          <group string="Activity Actions" col="4">
+            <field name="create_activity"/>
+            <field name="activity_type_id"
+                   invisible="[('create_activity','=',False)]"
+                   required="[('create_activity','=',True)]"/>
+            <field name="activity_summary"
+                   invisible="[('create_activity','=',False)]"/>
+            <field name="activity_date_deadline_range"
+                   invisible="[('create_activity','=',False)]"/>
+            <field name="activity_user_id" widget="many2one_avatar_user"
+                   invisible="[('create_activity','=',False)]"/>
+          </group>
+        </sheet>
+      </form>
+    </field>
+  </record>
+
+  <!-- Workflow Rule List View (v17+/v18: use <list/>, not <tree/>) -->
+  <record id="documents_workflow_rule_view_list" model="ir.ui.view">
+    <field name="name">documents.workflow.rule.list</field>
+    <field name="model">documents.workflow.rule</field>
+    <field name="arch" type="xml">
+      <list string="Workflow Rules">
+        <field name="sequence" widget="handle"/>
+        <field name="name"/>
+        <field name="folder_id"/>
+        <field name="condition_type"/>
+        <field name="active" widget="boolean_toggle"/>
+      </list>
+    </field>
+  </record>
+
+  <!-- Action -->
+  <record id="action_documents_workflow_rules" model="ir.actions.act_window">
+    <field name="name">Workflow Rules</field>
+    <field name="res_model">documents.workflow.rule</field>
+    <field name="view_mode">list,form</field>
+  </record>
+</odoo>
