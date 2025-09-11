@@ -38,14 +38,15 @@
     ],
     'assets': {
         'web.assets_backend': [
-        #    'custom_docs/static/src/js/documents_create_menu.js',
-            # 'custom_docs/static/src/xml/documents_create_menu_assets.xml',
-
-
-           'custom_docs/static/src/js/documents_kanban.js',
-    
-            'custom_docs/static/src/xml/documents_kanban.xml',
-            'custom_docs/static/src/scss/documents.scss',
+       'custom_docs/static/src/scss/documents.scss',
+            
+            # JavaScript Controllers and Views
+            'custom_docs/static/src/js/documents_kanban_controller.js',
+            'custom_docs/static/src/js/documents_kanban_renderer.js',
+            'custom_docs/static/src/js/documents_kanban_view.js',
+            
+            # XML Templates
+            'custom_docs/static/src/xml/documents_kanban_controller.xml',
         ],
           
     },

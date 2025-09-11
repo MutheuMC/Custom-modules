@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="custom_docs.DocumentsKanbanController" t-inherit="web.KanbanController" t-inherit-mode="primary">
+        <xpath expr="//div[hasclass('o_control_panel_main_buttons')]" position="inside">
+            <div class="d-inline-flex gap-1">
+                <button type="button" class="btn btn-primary" t-on-click="onUploadDocuments">
+                    <i class="fa fa-upload me-1"/>
+                    Upload
+                </button>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fa fa-plus me-1"/>
+                        New
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a class="dropdown-item" href="#" t-on-click.prevent="onAddUrl">
+                                <i class="fa fa-link me-2"/>
+                                Add URL
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="#" t-on-click.prevent="onRequestDocument">
+                                <i class="fa fa-clock-o me-2"/>
+                                Request Document
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <t t-if="model.root.selection.length > 0">
+                    <div class="btn-group ms-2">
+                        <button type="button" class="btn btn-secondary" t-on-click="onDownloadDocuments">
+                            <i class="fa fa-download me-1"/>
+                            Download (<t t-esc="model.root.selection.length"/>)
+                        </button>
+                        <button type="button" class="btn btn-secondary" t-on-click="onShareDocuments">
+                            <i class="fa fa-share-alt me-1"/>
+                            Share (<t t-esc="model.root.selection.length"/>)
+                        </button>
+                    </div>
+                </t>
+            </div>
+        </xpath>
+    </t>
+</templates>
