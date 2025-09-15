@@ -1,6 +1,6 @@
 {
     'name': 'Custom Documents Management',
-    'version': '1.0.0',
+    'version': '18.0.1.0.0',
     'category': 'Productivity/Documents',
     'summary': 'Centralized document management system',
     'description': """
@@ -14,6 +14,8 @@
         - Document sharing
         - Activity management
         - Access control
+        - Drag & Drop file upload
+        - Bulk operations
     """,
     'author': 'Your Company',
     'website': 'https://www.yourcompany.com',
@@ -38,17 +40,19 @@
     ],
     'assets': {
         'web.assets_backend': [
-       'custom_docs/static/src/scss/documents.scss',
+            # SCSS styles
+            'custom_docs/static/src/scss/documents.scss',
+
+             # XML Templates
+            'custom_docs/static/src/xml/documents_kanban_controller.xml',
             
-            # JavaScript Controllers and Views
+            # JavaScript modules
             'custom_docs/static/src/js/documents_kanban_controller.js',
             'custom_docs/static/src/js/documents_kanban_renderer.js',
             'custom_docs/static/src/js/documents_kanban_view.js',
             
-            # XML Templates
-            'custom_docs/static/src/xml/documents_kanban_controller.xml',
+           
         ],
-          
     },
     'application': True,
     'installable': True,

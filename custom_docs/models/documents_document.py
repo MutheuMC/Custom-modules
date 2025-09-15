@@ -23,8 +23,8 @@ class DocumentsDocument(models.Model):
 
     # File fields
     datas = fields.Binary(string='File Content', attachment=True)
-    file_size = fields.Integer(string='File Size', readonly=True)
-    checksum = fields.Char(string='Checksum', readonly=True)
+    file_size = fields.Integer(string='File Size', readonly=True, compute='_compute_file_info', store=True)
+    checksum = fields.Char(string='Checksum', readonly=True, compute='_compute_file_info', store=True)
     mimetype = fields.Char(string='Mime Type', readonly=True)
     url = fields.Char(string='URL')
 
@@ -46,7 +46,6 @@ class DocumentsDocument(models.Model):
     is_locked = fields.Boolean(string='Locked', default=False)
     locked_by = fields.Many2one('res.users', string='Locked by')
 
-    # IMPORTANT: make it searchable via search=; don't depend on 'id'
     is_shared = fields.Boolean(
         string='Shared',
         compute='_compute_is_shared',
@@ -62,9 +61,19 @@ class DocumentsDocument(models.Model):
     company_id = fields.Many2one('res.company', string='Company',
                                  related='folder_id.company_id', store=True)
     
-
-       # Visual field
+    # Visual field
     color = fields.Integer(string='Color Index', default=0)
+
+    @api.depends('datas')
+    def _compute_file_info(self):
+        for record in self:
+            if record.datas:
+                data = base64.b64decode(record.datas or b'')
+                record.file_size = len(data)
+                record.checksum = hashlib.sha1(data).hexdigest()
+            else:
+                record.file_size = 0
+                record.checksum = False
 
     @api.depends('folder_id', 'tag_ids')
     def _compute_available_rules(self):
@@ -79,7 +88,6 @@ class DocumentsDocument(models.Model):
             ]
             document.available_rule_ids = self.env['documents.workflow.rule'].search(domain)
 
-    # No @api.depends — it derives from other models; we compute on read
     def _compute_is_shared(self):
         Share = self.env['documents.share'].sudo()
         today = fields.Date.today()
@@ -128,23 +136,28 @@ class DocumentsDocument(models.Model):
     @api.model_create_multi
     def create(self, vals_list):
         for vals in vals_list:
-            if vals.get('datas'):
-                vals['checksum'] = self._get_checksum(vals['datas'])
-                vals['file_size'] = len(base64.b64decode(vals['datas']))
-                if not vals.get('mimetype'):
-                    vals['mimetype'] = self._get_mimetype(vals.get('name', ''))
+            # Auto-detect mimetype if not provided
+            if not vals.get('mimetype') and vals.get('name'):
+                vals['mimetype'] = self._get_mimetype(vals.get('name'))
+            
+            # Ensure type is set based on content
+            if vals.get('datas') and not vals.get('type'):
+                vals['type'] = 'binary'
+            elif vals.get('url') and not vals.get('type'):
+                vals['type'] = 'url'
+            elif not vals.get('type'):
+                vals['type'] = 'empty'
+                
         return super().create(vals_list)
 
     def write(self, vals):
-        if vals.get('datas'):
-            vals['checksum'] = self._get_checksum(vals['datas'])
-            vals['file_size'] = len(base64.b64decode(vals['datas']))
-            if not vals.get('mimetype'):
-                vals['mimetype'] = self._get_mimetype(vals.get('name', self.name))
+        # Auto-detect mimetype on write if changing name or data
+        if not vals.get('mimetype'):
+            if vals.get('name'):
+                vals['mimetype'] = self._get_mimetype(vals.get('name'))
+            elif vals.get('datas') and self.name:
+                vals['mimetype'] = self._get_mimetype(self.name)
         return super().write(vals)
-
-    def _get_checksum(self, datas):
-        return hashlib.sha1(base64.b64decode(datas)).hexdigest()
 
     def _get_mimetype(self, filename):
         return mimetypes.guess_type(filename)[0] or 'application/octet-stream'
@@ -168,7 +181,7 @@ class DocumentsDocument(models.Model):
         self.ensure_one()
         return {
             'type': 'ir.actions.act_url',
-            'url': '/web/content/%s?download=true' % self.id,
+            'url': f'/web/content/documents.document/{self.id}/datas?download=true',
             'target': 'self',
         }
 
@@ -183,6 +196,7 @@ class DocumentsDocument(models.Model):
             'context': {
                 'default_document_ids': [(6, 0, self.ids)],
                 'default_folder_id': self.folder_id.id,
+                'default_share_type': 'ids',
             }
         }
 
@@ -191,6 +205,11 @@ class DocumentsDocument(models.Model):
 
     def action_unarchive(self):
         return self.write({'active': True})
+
+    def toggle_active(self):
+        """ Toggle active field for Odoo 18 compatibility """
+        for record in self:
+            record.active = not record.active
 
     def apply_actions(self):
         self.ensure_one()

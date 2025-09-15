@@ -38,7 +38,7 @@ class DocumentsRequestWizard(models.TransientModel):
             })
         
         # Send email notification
-        template = self.env.ref('custom_documents.email_template_document_request', raise_if_not_found=False)
+        template = self.env.ref('custom_docs.email_template_document_request', raise_if_not_found=False)
         if template:
             template.send_mail(document.id, force_send=True)
         

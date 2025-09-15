@@ -14,3 +14,9 @@ access_documents_share_manager,documents.share.manager,model_documents_share,gro
 access_documents_request_wizard_user,documents.request.wizard.user,model_documents_request_wizard,group_documents_user,1,1,1,1
 access_documents_share_public,documents.share.public,model_documents_share,,1,0,0,0
 access_documents_document_public,documents.document.public,model_documents_document,,1,0,0,0
+access_documents_document_admin,documents.document.admin,model_documents_document,base.group_system,1,1,1,1
+access_documents_folder_admin,documents.folder.admin,model_documents_folder,base.group_system,1,1,1,1
+access_documents_tag_admin,documents.tag.admin,model_documents_tag,base.group_system,1,1,1,1
+access_documents_facet_admin,documents.facet.admin,model_documents_facet,base.group_system,1,1,1,1
+access_documents_workflow_rule_admin,documents.workflow.rule.admin,model_documents_workflow_rule,base.group_system,1,1,1,1
+access_documents_share_admin,documents.share.admin,model_documents_share,base.group_system,1,1,1,1

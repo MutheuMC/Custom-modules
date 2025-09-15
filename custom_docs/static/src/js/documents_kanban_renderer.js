@@ -1,13 +1,17 @@
+/** @odoo-module **/
+
 import { KanbanRenderer } from "@web/views/kanban/kanban_renderer";
 import { useService } from "@web/core/utils/hooks";
 import { _t } from "@web/core/l10n/translation";
-import { onMounted, onWillUnmount } from "@odoo/owl";
+import { onMounted, onWillUnmount, useRef } from "@odoo/owl";
 
 export class DocumentsKanbanRenderer extends KanbanRenderer {
     setup() {
         super.setup();
         this.rpc = useService("rpc");
         this.notification = useService("notification");
+        this.orm = useService("orm");
+        this.rootRef = useRef("root");
         
         onMounted(() => {
             this.setupDragDrop();
@@ -22,15 +26,15 @@ export class DocumentsKanbanRenderer extends KanbanRenderer {
         const kanbanEl = this.rootRef.el;
         if (!kanbanEl) return;
         
-        // Prevent default drag behaviors
-        kanbanEl.addEventListener('dragover', this.onDragOver.bind(this));
-        kanbanEl.addEventListener('dragleave', this.onDragLeave.bind(this));
-        kanbanEl.addEventListener('drop', this.onDrop.bind(this));
-        
-        // Store references for cleanup
+        // Store bound handlers for cleanup
         this._dragOverHandler = this.onDragOver.bind(this);
         this._dragLeaveHandler = this.onDragLeave.bind(this);
         this._dropHandler = this.onDrop.bind(this);
+        
+        // Add event listeners
+        kanbanEl.addEventListener('dragover', this._dragOverHandler);
+        kanbanEl.addEventListener('dragleave', this._dragLeaveHandler);
+        kanbanEl.addEventListener('drop', this._dropHandler);
     }
 
     cleanupDragDrop() {
@@ -101,16 +105,16 @@ export class DocumentsKanbanRenderer extends KanbanRenderer {
         const files = event.dataTransfer.files;
         if (files.length === 0) return;
         
-        // Get the folder from context or try to determine from drop location
+        // Get the folder from context
         const context = this.props.list.context;
         let folderId = context.default_folder_id;
         
         // If dropped on a specific column, try to get that folder
         const columnEl = event.target.closest('.o_kanban_group');
-        if (columnEl && this.props.list.groupByField === 'folder_id') {
-            const groupId = columnEl.dataset.id;
-            if (groupId) {
-                folderId = parseInt(groupId);
+        if (columnEl && this.props.list.groupBy && this.props.list.groupBy.includes('folder_id')) {
+            const groupValue = columnEl.dataset.groupId;
+            if (groupValue && groupValue !== 'false') {
+                folderId = parseInt(groupValue);
             }
         }
         
@@ -151,18 +155,13 @@ export class DocumentsKanbanRenderer extends KanbanRenderer {
                 const base64 = e.target.result.split(',')[1];
                 
                 try {
-                    await this.rpc("/web/dataset/call_kw/documents.document/create", {
-                        model: "documents.document",
-                        method: "create",
-                        args: [{
-                            name: file.name,
-                            datas: base64,
-                            folder_id: folderId || false,
-                            mimetype: file.type || 'application/octet-stream',
-                            type: 'binary',
-                        }],
-                        kwargs: {},
-                    });
+                    await this.orm.create("documents.document", [{
+                        name: file.name,
+                        datas: base64,
+                        folder_id: folderId || false,
+                        mimetype: file.type || 'application/octet-stream',
+                        type: 'binary',
+                    }]);
                     resolve();
                 } catch (error) {
                     reject(error);

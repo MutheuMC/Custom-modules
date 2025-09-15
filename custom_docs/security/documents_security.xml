@@ -41,4 +41,21 @@
             ('company_id', 'in', company_ids)
         ]</field>
     </record>
+
+    
+    <!-- Admin bypass for Documents -->
+    <record id="documents_document_rule_admin" model="ir.rule">
+        <field name="name">Documents: Admin Full Access</field>
+        <field name="model_id" ref="model_documents_document"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('base.group_system'))]"/>
+    </record>
+
+    <!-- Admin bypass for Folders (overrides company restriction) -->
+    <record id="documents_folder_rule_admin" model="ir.rule">
+        <field name="name">Documents Folder: Admin Full Access</field>
+        <field name="model_id" ref="model_documents_folder"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('base.group_system'))]"/>
+    </record>
 </odoo>

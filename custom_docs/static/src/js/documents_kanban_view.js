@@ -7,6 +7,7 @@ export const documentsKanbanView = {
     ...kanbanView,
     Controller: DocumentsKanbanController,
     Renderer: DocumentsKanbanRenderer,
+    buttonTemplate: "custom_docs.DocumentsKanbanController.Buttons",
 };
 
 // Register the custom view

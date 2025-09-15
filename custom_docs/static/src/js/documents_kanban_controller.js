@@ -1,22 +1,30 @@
-/** @odoo-module **/
-
 import { KanbanController } from "@web/views/kanban/kanban_controller";
 import { useService } from "@web/core/utils/hooks";
 import { _t } from "@web/core/l10n/translation";
+import { DropdownItem } from "@web/core/dropdown/dropdown_item";
+import { Dropdown } from "@web/core/dropdown/dropdown";
+import { Component } from "@odoo/owl";
 
 export class DocumentsKanbanController extends KanbanController {
+    static template = "custom_docs.DocumentsKanbanController";
+    static components = {
+        ...KanbanController.components,
+        Dropdown,
+        DropdownItem,
+    };
+
     setup() {
         super.setup();
         this.action = useService("action");
         this.rpc = useService("rpc");
         this.notification = useService("notification");
-        this.dialog = useService("dialog");
+        this.orm = useService("orm");
     }
 
     /**
      * Handle file upload
      */
-    async onUploadDocuments() {
+    async onUploadDocuments(ev) {
         const input = document.createElement('input');
         input.type = 'file';
         input.multiple = true;
@@ -26,7 +34,7 @@ export class DocumentsKanbanController extends KanbanController {
             const files = event.target.files;
             if (files.length === 0) return;
             
-            const context = this.model.config.context;
+            const context = this.props.context;
             const folderId = context.default_folder_id || false;
             
             try {
@@ -41,7 +49,6 @@ export class DocumentsKanbanController extends KanbanController {
                 
                 // Reload the view to show new documents
                 await this.model.load();
-                this.render(true);
                 
             } catch (error) {
                 this.notification.add(
@@ -66,18 +73,13 @@ export class DocumentsKanbanController extends KanbanController {
                 const base64 = e.target.result.split(',')[1];
                 
                 try {
-                    await this.rpc("/web/dataset/call_kw/documents.document/create", {
-                        model: "documents.document",
-                        method: "create",
-                        args: [{
-                            name: file.name,
-                            datas: base64,
-                            folder_id: folderId,
-                            mimetype: file.type || 'application/octet-stream',
-                            type: 'binary',
-                        }],
-                        kwargs: {},
-                    });
+                    await this.orm.create("documents.document", [{
+                        name: file.name,
+                        datas: base64,
+                        folder_id: folderId,
+                        mimetype: file.type || 'application/octet-stream',
+                        type: 'binary',
+                    }]);
                     resolve();
                 } catch (error) {
                     reject(error);
@@ -92,8 +94,8 @@ export class DocumentsKanbanController extends KanbanController {
     /**
      * Handle URL document creation
      */
-    async onAddUrl() {
-        const context = this.model.config.context;
+    async onAddUrl(ev) {
+        const context = this.props.context;
         
         this.action.doAction({
             type: "ir.actions.act_window",
@@ -111,8 +113,8 @@ export class DocumentsKanbanController extends KanbanController {
     /**
      * Handle document request
      */
-    async onRequestDocument() {
-        const context = this.model.config.context;
+    async onRequestDocument(ev) {
+        const context = this.props.context;
         
         this.action.doAction({
             type: "ir.actions.act_window",
@@ -126,12 +128,42 @@ export class DocumentsKanbanController extends KanbanController {
     }
 
     /**
+     * Handle new folder creation
+     */
+    async onNewFolder(ev) {
+        const context = this.props.context;
+        
+        this.action.doAction({
+            type: "ir.actions.act_window",
+            res_model: "documents.folder",
+            views: [[false, "form"]],
+            target: "new",
+            context: {
+                default_parent_folder_id: context.default_folder_id || false,
+            },
+        });
+    }
+
+    /**
+     * Create new spreadsheet
+     */
+    async onNewSpreadsheet(ev) {
+        const context = this.props.context;
+        
+        // For now, create an empty document - you can integrate with Odoo spreadsheet module later
+        this.notification.add(
+            _t("Spreadsheet creation will be available soon"),
+            { type: "info" }
+        );
+    }
+
+    /**
      * Handle bulk download
      */
     async onDownloadDocuments() {
-        const selectedRecords = this.model.root.selection;
+        const selection = [...this.model.root.selection];
         
-        if (selectedRecords.length === 0) {
+        if (selection.length === 0) {
             this.notification.add(
                 _t("Please select documents to download"),
                 { type: "warning" }
@@ -139,7 +171,7 @@ export class DocumentsKanbanController extends KanbanController {
             return;
         }
         
-        for (const record of selectedRecords) {
+        for (const record of selection) {
             if (record.data.type === 'binary') {
                 window.open(`/web/content/documents.document/${record.resId}/datas?download=true`);
             }
@@ -150,9 +182,9 @@ export class DocumentsKanbanController extends KanbanController {
      * Handle bulk share
      */
     async onShareDocuments() {
-        const selectedRecords = this.model.root.selection;
+        const selection = [...this.model.root.selection];
         
-        if (selectedRecords.length === 0) {
+        if (selection.length === 0) {
             this.notification.add(
                 _t("Please select documents to share"),
                 { type: "warning" }
@@ -160,8 +192,8 @@ export class DocumentsKanbanController extends KanbanController {
             return;
         }
         
-        const documentIds = selectedRecords.map(r => r.resId);
-        const context = this.model.config.context;
+        const documentIds = selection.map(r => r.resId);
+        const context = this.props.context;
         
         this.action.doAction({
             type: "ir.actions.act_window",
@@ -176,5 +208,3 @@ export class DocumentsKanbanController extends KanbanController {
         });
     }
 }
-
-DocumentsKanbanController.template = "custom_docs.DocumentsKanbanController";
