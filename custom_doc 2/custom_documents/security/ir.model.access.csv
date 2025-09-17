@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_custom_document_user,custom.document.user,model_custom_document,base.group_user,1,1,1,1
+access_custom_document_folder_user,custom.document.folder.user,model_custom_document_folder,base.group_user,1,1,1,1
+access_custom_document_upload_wizard,custom.document.upload.wizard,model_custom_document_upload_wizard,base.group_user,1,1,1,1
