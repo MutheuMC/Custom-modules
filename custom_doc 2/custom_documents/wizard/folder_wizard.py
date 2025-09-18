@@ -29,10 +29,4 @@ class CustomDocumentFolderWizard(models.TransientModel):
             "color": self.color,
         })
         # Open the created folder
-        return {
-            "type": "ir.actions.act_window",
-            "res_model": "custom.document.folder",
-            "view_mode": "form",
-            "res_id": folder.id,
-            "target": "current",
-        }
+        return {'type': 'ir.actions.act_window_close'}

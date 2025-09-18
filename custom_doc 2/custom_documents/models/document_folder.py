@@ -51,12 +51,35 @@ class DocumentFolder(models.Model):
             raise ValidationError(_('You cannot create recursive folders.'))
 
     def action_open_documents(self):
+        """Open documents in this folder"""
+        self.ensure_one()
+        
+        # Get the action for documents
+        action = self.env['ir.actions.act_window']._for_xml_id('custom_documents.action_custom_document')
+        
+        # Update the action with folder-specific context and domain
+        action.update({
+            'name': _('Documents in %s') % self.name,
+            'domain': [('folder_id', '=', self.id)],
+            'context': {
+                **self.env.context,
+                'default_folder_id': self.id,
+                'search_default_folder_id': self.id,
+            }
+        })
+        
+        return action
+    
+    def action_open_folder_tree(self):
+        """Open subfolder tree view"""
         self.ensure_one()
         return {
-            'name': _('Documents'),
+            'name': _('Subfolders of %s') % self.name,
             'type': 'ir.actions.act_window',
-            'res_model': 'custom.document',
-            'view_mode': 'kanban,tree,form',
-            'domain': [('folder_id', '=', self.id)],
-            'context': {'default_folder_id': self.id},
+            'res_model': 'custom.document.folder',
+            'view_mode': 'kanban,list,form',
+            'domain': [('parent_id', '=', self.id)],
+            'context': {
+                'default_parent_id': self.id,
+            }
         }

@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Document Form View -->
+    <!-- =========================
+         Document Form View
+    ========================== -->
     <record id="view_custom_document_form" model="ir.ui.view">
         <field name="name">custom.document.form</field>
         <field name="model">custom.document</field>
@@ -15,8 +17,16 @@
                                 <span class="o_stat_text">Download</span>
                             </div>
                         </button>
-                        <button name="action_lock" type="object"
-                                class="oe_stat_button" icon="fa-lock">
+
+                        <!-- View button shows if: document_type=file AND (mimetype contains 'pdf' OR file_name contains '.pdf') -->
+                        <button name="action_view_file" type="object"
+                                    class="oe_stat_button" icon="fa-eye"
+                                    invisible="[('is_pdf', '=', False)]">
+                            <div class="o_stat_info"><span class="o_stat_text">View</span></div>
+                        </button>
+
+
+                        <button name="action_lock" type="object" class="oe_stat_button" icon="fa-lock">
                             <field name="is_locked" invisible="1"/>
                             <div class="o_stat_info">
                                 <span class="o_stat_text" invisible="is_locked">Lock</span>
@@ -24,12 +34,13 @@
                             </div>
                         </button>
                     </div>
+
                     <widget name="web_ribbon" title="Locked" invisible="not is_locked"/>
+
                     <div class="oe_title">
-                        <h1>
-                            <field name="name" placeholder="Document Name"/>
-                        </h1>
+                        <h1><field name="name" placeholder="Document Name"/></h1>
                     </div>
+
                     <group>
                         <group>
                             <field name="document_type" widget="radio"/>
@@ -43,20 +54,25 @@
                             <field name="tag_ids" widget="many2many_tags"/>
                         </group>
                     </group>
+
                     <group>
                         <field name="description" placeholder="Add a description..."/>
                     </group>
+
+                    <!-- Inline PDF preview with same robust visibility condition -->
+                    <group invisible="[('is_pdf', '=', False)]">
+                        <field name="file" filename="file_name" widget="pdf_viewer"/>
+                    </group>
                 </sheet>
-                <div class="oe_chatter">
-                    <field name="message_follower_ids"/>
-                    <field name="activity_ids"/>
-                    <field name="message_ids"/>
-                </div>
+
+             
             </form>
         </field>
     </record>
 
-    <!-- Document list View (uses custom controller to open Upload Wizard on New) -->
+    <!-- =========================
+         Document List View
+    ========================== -->
     <record id="view_custom_document_list" model="ir.ui.view">
         <field name="name">custom.document.list</field>
         <field name="model">custom.document</field>
@@ -72,7 +88,9 @@
         </field>
     </record>
 
-    <!-- Document Kanban View (uses custom controller to open Upload Wizard on New) -->
+    <!-- =========================
+         Document Kanban View
+    ========================== -->
     <record id="view_custom_document_kanban" model="ir.ui.view">
         <field name="name">custom.document.kanban</field>
         <field name="model">custom.document</field>
@@ -85,12 +103,14 @@
                 <field name="user_id"/>
                 <field name="color"/>
                 <field name="is_locked"/>
+
                 <templates>
                     <t t-name="kanban-menu">
                         <a role="menuitem" type="open" class="dropdown-item">Open</a>
                         <a role="menuitem" name="action_download" type="object" class="dropdown-item">Download</a>
                         <a role="menuitem" type="delete" class="dropdown-item">Delete</a>
                     </t>
+
                     <t t-name="kanban-box">
                         <div t-attf-class="oe_kanban_color_#{kanban_getcolor(record.color.raw_value)} oe_kanban_card oe_kanban_global_click">
                             <div class="o_kanban_record_top mb-2">
@@ -112,6 +132,7 @@
                                     </div>
                                 </div>
                             </div>
+
                             <div class="o_kanban_record_body">
                                 <div t-if="record.document_type.value == 'file'" class="text-muted small">
                                     <i class="fa fa-file-o"/> File
@@ -123,6 +144,7 @@
                                     <i class="fa fa-folder-o"/> <field name="folder_id"/>
                                 </div>
                             </div>
+
                             <div class="o_kanban_record_bottom mt-2">
                                 <div class="oe_kanban_bottom_left">
                                     <field name="user_id" widget="many2one_avatar_user"/>
@@ -140,7 +162,9 @@
         </field>
     </record>
 
-    <!-- Document Search View -->
+    <!-- =========================
+         Document Search View
+    ========================== -->
     <record id="view_custom_document_search" model="ir.ui.view">
         <field name="name">custom.document.search</field>
         <field name="model">custom.document</field>
@@ -150,12 +174,14 @@
                 <field name="folder_id"/>
                 <field name="user_id"/>
                 <field name="tag_ids"/>
+
                 <filter string="My Documents" name="my_documents" domain="[('user_id', '=', uid)]"/>
                 <separator/>
                 <filter string="Files" name="files" domain="[('document_type', '=', 'file')]"/>
                 <filter string="URLs" name="urls" domain="[('document_type', '=', 'url')]"/>
                 <separator/>
                 <filter string="Locked" name="locked" domain="[('is_locked', '=', True)]"/>
+
                 <group expand="0" string="Group By">
                     <filter string="Type" name="type" context="{'group_by': 'document_type'}"/>
                     <filter string="Folder" name="folder" context="{'group_by': 'folder_id'}"/>
@@ -166,12 +192,14 @@
         </field>
     </record>
 
-    <!-- Folder Form View -->
+    <!-- =========================
+         Folder Form View
+    ========================== -->
     <record id="view_custom_document_folder_form" model="ir.ui.view">
         <field name="name">custom.document.folder.form</field>
         <field name="model">custom.document.folder</field>
         <field name="arch" type="xml">
-            <form string="Folder"  js_class="custom_folder_form">
+            <form string="Folder" js_class="custom_folder_form">
                 <sheet>
                     <div class="oe_button_box" name="button_box">
                         <button name="action_open_documents" type="object" class="oe_stat_button" icon="fa-file-text-o">
@@ -179,9 +207,7 @@
                         </button>
                     </div>
                     <div class="oe_title">
-                        <h1>
-                            <field name="name" placeholder="Folder Name"/>
-                        </h1>
+                        <h1><field name="name" placeholder="Folder Name"/></h1>
                     </div>
                     <group>
                         <group>
@@ -198,12 +224,14 @@
         </field>
     </record>
 
-    <!-- Folder list View -->
+    <!-- =========================
+         Folder List View
+    ========================== -->
     <record id="view_custom_document_folder_list" model="ir.ui.view">
         <field name="name">custom.document.folder.list</field>
         <field name="model">custom.document.folder</field>
         <field name="arch" type="xml">
-            <list string="Folders"  js_class="custom_folder_list">
+            <list string="Folders" js_class="custom_folder_list">
                 <field name="complete_name"/>
                 <field name="user_id"/>
                 <field name="document_count"/>
@@ -211,38 +239,33 @@
         </field>
     </record>
 
-    <!-- Main Document Action -->
+    <!-- =========================
+         Actions
+    ========================== -->
     <record id="action_custom_document" model="ir.actions.act_window">
         <field name="name">Documents</field>
         <field name="res_model">custom.document</field>
-        <field name="view_mode">kanban,list,form</field>
+        <field name="view_mode">list,form</field>
         <field name="search_view_id" ref="view_custom_document_search"/>
         <field name="help" type="html">
-            <p class="o_view_nocontent_smiling_face">
-                Create your first document
-            </p>
-            <p>
-                Upload files or add URL links to organize your documents
-            </p>
+            <p class="o_view_nocontent_smiling_face">Create your first document</p>
+            <p>Upload files or add URL links to organize your documents</p>
         </field>
     </record>
 
-    <!-- Folder Action -->
     <record id="action_custom_document_folder" model="ir.actions.act_window">
         <field name="name">Folders</field>
         <field name="res_model">custom.document.folder</field>
         <field name="view_mode">list,form</field>
         <field name="help" type="html">
-            <p class="o_view_nocontent_smiling_face">
-                Create your first folder
-            </p>
-            <p>
-                Organize your documents in folders
-            </p>
+            <p class="o_view_nocontent_smiling_face">Create your first folder</p>
+            <p>Organize your documents in folders</p>
         </field>
     </record>
 
-    <!-- (Optional legacy) Server Actions -->
+    <!-- =========================
+         (Optional legacy) Server Actions
+    ========================== -->
     <record id="action_upload_document" model="ir.actions.server">
         <field name="name">Upload Document</field>
         <field name="model_id" ref="model_custom_document"/>

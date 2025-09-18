@@ -16,8 +16,11 @@
         # your other assets...
         'custom_documents/static/src/views/document_create_redirect.js',
         'custom_documents/static/src/views/folder_create_redirect.js',
+        'custom_documents/static/src/js/document_viewer.js',
+        'custom_documents/static/src/scss/custom_documents.scss',
             ],
         },
+    'controllers': ['controllers/document_controller.py'],
     'installable': True,
     'application': True,
     'license': 'LGPL-3',
