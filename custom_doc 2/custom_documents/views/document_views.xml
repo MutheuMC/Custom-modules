@@ -10,6 +10,8 @@
             <form string="Document">
                 <sheet>
                     <div class="oe_button_box" name="button_box">
+                        <button name="action_view_file" string="View (Test)" type="object"
+                  class="btn btn-primary" invisible="0"/>
                         <button name="action_download" type="object"
                                 class="oe_stat_button" icon="fa-download"
                                 invisible="document_type not in ['file', 'url']">
@@ -20,9 +22,11 @@
 
                         <!-- View button shows if: document_type=file AND (mimetype contains 'pdf' OR file_name contains '.pdf') -->
                         <button name="action_view_file" type="object"
-                                    class="oe_stat_button" icon="fa-eye"
-                                    invisible="[('is_pdf', '=', False)]">
-                            <div class="o_stat_info"><span class="o_stat_text">View</span></div>
+                                class="oe_stat_button" icon="fa-eye"
+                                invisible="[('is_pdf', '=', False)]">
+                            <div class="o_stat_info">
+                            <span class="o_stat_text">View</span>
+                            </div>
                         </button>
 
 
@@ -34,6 +38,7 @@
                             </div>
                         </button>
                     </div>
+                     <field name="is_pdf" invisible="1"/>
 
                     <widget name="web_ribbon" title="Locked" invisible="not is_locked"/>
 
@@ -77,16 +82,41 @@
         <field name="name">custom.document.list</field>
         <field name="model">custom.document</field>
         <field name="arch" type="xml">
-            <list string="Documents" js_class="custom_document_list">
-                <field name="name"/>
-                <field name="document_type"/>
-                <field name="folder_id"/>
-                <field name="user_id" widget="many2one_avatar_user"/>
-                <field name="create_date"/>
-                <field name="tag_ids" widget="many2many_tags" optional="show"/>
+            <!-- narrow class keeps the first 2 icon columns tight -->
+            <list string="Documents" js_class="custom_document_list" class="o_list_compact">
+            <!-- hidden helpers for domain evaluation -->
+            <field name="is_starred" column_invisible="1"/>
+            <field name="file_kind" column_invisible="1"/>
+
+        <!-- ⭐ Star / Unstar -->
+            <button name="action_toggle_star" type="object" string=" " title="Unstar"
+                    icon="fa-star" class="btn btn-link p-0"
+                    invisible="not is_starred"/>
+            <button name="action_toggle_star" type="object" string=" " title="Star"
+                    icon="fa-star-o" class="btn btn-link p-0"
+                    invisible="is_starred"/>
+
+            <!-- Type icon -->
+            <button name="action_view_file" type="object" string=" " title="Open PDF"
+                    icon="fa-file-pdf-o" class="btn btn-link p-0 text-danger"
+                    invisible="file_kind != 'pdf'"/>
+            <button name="action_download" type="object" string=" " title="Open file"
+                    icon="fa-file-o" class="btn btn-link p-0"
+                    invisible="file_kind != 'file'"/>
+            <button name="action_download" type="object" string=" " title="Open link"
+                    icon="fa-link" class="btn btn-link p-0"
+                    invisible="file_kind != 'url'"/>
+
+            <!-- Regular columns -->
+            <field name="name" string="Document Name"/>
+            <field name="folder_id" string="Folder"/>
+            <field name="user_id" widget="many2one_avatar_user" string="Owner"/>
+            <field name="write_date" string="Last Updated on" optional="show"/>
+            <field name="file_size" string="File Size" optional="show"/>
             </list>
         </field>
     </record>
+
 
     <!-- =========================
          Document Kanban View

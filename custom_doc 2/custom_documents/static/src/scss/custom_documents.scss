@@ -1,4 +1,11 @@
 .o_field_pdf_viewer,
 .o_pdf_viewer {
-  min-height: 600px;
+  min-height: 800px;
+}
+
+.o_list_view .btn-link.p-0 {
+  line-height: 1;      /* tighter vertical alignment */
+}
+.o_list_view .fa {
+  font-size: 14px;     /* small icons like your screenshot */
 }

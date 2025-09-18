@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <record id="view_custom_document_preview_wizard_form" model="ir.ui.view">
+    <field name="name">custom.document.preview.wizard.form</field>
+    <field name="model">custom.document.preview.wizard</field>
+    <field name="arch" type="xml">
+      <form string="Preview" create="0" edit="0" delete="0">
+        <!-- TOP TOOLBAR -->
+        <header>
+          <!-- Actions dropdown (use SPAN as the toggle so Odoo doesn't expect a 'name') -->
+          <div class="dropdown">
+            <span class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" role="button">
+              <i class="fa fa-cog me-1"/> Actions
+            </span>
+            <div class="dropdown-menu dropdown-menu-end">
+
+              <button type="object" name="action_duplicate_menu" class="dropdown-item">
+                <i class="fa fa-copy me-2"/> Duplicate
+              </button>
+
+              <button type="object" name="action_move_to_trash_menu" class="dropdown-item">
+                <i class="fa fa-trash-o me-2"/> Move to Trash
+              </button>
+
+              <div class="dropdown-divider"></div>
+
+              <button type="object" name="action_rename_menu" class="dropdown-item">
+                <i class="fa fa-pencil me-2"/> Rename
+              </button>
+
+              <button type="object" name="action_info_tags_menu" class="dropdown-item">
+                <i class="fa fa-info-circle me-2"/> Info &amp; tags
+              </button>
+
+              <button type="object" name="action_create_shortcut_menu" class="dropdown-item">
+                <i class="fa fa-link me-2"/> Create Shortcut
+              </button>
+
+              <button type="object" name="action_manage_versions_menu" class="dropdown-item">
+                <i class="fa fa-history me-2"/> Manage Versions
+              </button>
+
+              <button type="object" name="action_lock_toggle_menu" class="dropdown-item">
+                <i class="fa fa-lock me-2"/> Lock / Unlock
+              </button>
+
+              <button type="object" name="action_copy_links_menu" class="dropdown-item">
+                <i class="fa fa-clipboard me-2"/> Copy Links
+              </button>
+
+              <div class="dropdown-divider"></div>
+
+              <button type="object" name="action_split_pdf_menu" class="dropdown-item">
+                <i class="fa fa-scissors me-2"/> Split PDF
+              </button>
+
+              <button type="object" name="action_sign_menu" class="dropdown-item">
+                <i class="fa fa-pencil-square-o me-2"/> Sign
+              </button>
+            </div>
+          </div>
+
+          <!-- Other header buttons -->
+          <button name="action_download" type="object" string="Download" class="btn-primary"/>
+          <button name="action_copy_link" type="object" string="Share" class="btn-secondary"/>
+        </header>
+
+        <sheet>
+          <group>
+            <field name="data" filename="data_fname" mimetype="mimetype"
+                   widget="pdf_viewer" style="min-height:70vh"/>
+          </group>
+        </sheet>
+
+        <footer>
+          <button string="Close" class="btn-secondary" special="cancel"/>
+        </footer>
+      </form>
+    </field>
+  </record>
+</odoo>

@@ -6,9 +6,14 @@
     'depends': ['base', 'web', 'mail'],
     'data': [
         'security/ir.model.access.csv',
-        'wizard/document_upload_wizard_views.xml',
-        'wizard/folder_wizard_views.xml',
+        'views/document_upload_wizard_views.xml',
+        'views/folder_wizard_views.xml',
+        'views/preview_wizard_views.xml',
+        'views/actions_wizard_views.xml',      
+        'views/rename_wizard_views.xml',        
+        'views/properties_wizard_views.xml',  
         'views/document_views.xml',
+        'views/document_list_actions.xml',
         'views/menu.xml',
     ],
     'assets': {
@@ -16,8 +21,9 @@
         # your other assets...
         'custom_documents/static/src/views/document_create_redirect.js',
         'custom_documents/static/src/views/folder_create_redirect.js',
-        'custom_documents/static/src/js/document_viewer.js',
         'custom_documents/static/src/scss/custom_documents.scss',
+        # "custom_documents/static/src/js/selection_buttons.js",
+        # "custom_documents/static/src/xml/selection_buttons.xml",
             ],
         },
     'controllers': ['controllers/document_controller.py'],

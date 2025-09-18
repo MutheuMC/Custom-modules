@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <record id="view_custom_document_preview_actions_wizard_form" model="ir.ui.view">
+    <field name="name">custom.document.preview.actions.wizard.form</field>
+    <field name="model">custom.document.preview.actions.wizard</field>
+    <field name="arch" type="xml">
+      <form string="Actions" create="0" edit="0" delete="0">
+        <sheet>
+          <group>
+            <!-- Mimic a dropdown menu: simple vertical buttons -->
+            <button name="action_duplicate" type="object" string="Duplicate" class="btn-link"/>
+            <button name="action_move_to_trash" type="object"  icon="fa fa-trash" string="Move to Trash" class="btn-link"/>
+            <button name="action_rename" type="object" string="Rename" class="btn-link"/>
+            <button name="action_info_and_tags" type="object" string="Info &amp; tags" class="btn-link"/>
+            <button name="action_create_shortcut" type="object" string="Create Shortcut" class="btn-link"/>
+            <button name="action_manage_versions" type="object" string="Manage Versions" class="btn-link"/>
+            <button name="action_lock_toggle" type="object" string="Lock / Unlock" class="btn-link"/>
+            <button name="action_copy_links" type="object" string="Copy Links" class="btn-link"/>
+            <button name="action_split_pdf" type="object" string="Split PDF" class="btn-link"/>
+         
+          </group>
+        </sheet>
+        <footer>
+          <button string="Close" class="btn-secondary" special="cancel"/>
+        </footer>
+      </form>
+    </field>
+  </record>
+</odoo>
