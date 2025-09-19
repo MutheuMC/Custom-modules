@@ -22,6 +22,8 @@
         'custom_documents/static/src/views/document_create_redirect.js',
         'custom_documents/static/src/views/folder_create_redirect.js',
         'custom_documents/static/src/scss/custom_documents.scss',
+        # 'custom_documents/static/src/js/reload_after_wizard.js',
+        # "custom_documents/static/src/xml/reload_after_wizard.xml",
         # "custom_documents/static/src/js/selection_buttons.js",
         # "custom_documents/static/src/xml/selection_buttons.xml",
             ],

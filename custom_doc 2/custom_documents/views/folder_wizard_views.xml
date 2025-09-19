@@ -5,23 +5,17 @@
     <field name="name">custom.document.folder.wizard.form</field>
     <field name="model">custom.document.folder.wizard</field>
     <field name="arch" type="xml">
-      <form string="Create Folder">
-        <group>
-          <group>
-            <field name="name"/>
-            <field name="parent_id" options="{'no_create': True}"/>
-          </group>
-          <group>
-            <field name="user_id"/>
-            <field name="company_id" groups="base.group_multi_company"/>
-            <field name="color" widget="color_picker"/>
-          </group>
-        </group>
-        <footer>
-          <button name="action_create" type="object" string="Create" class="btn-primary"/>
-          <button string="Cancel" class="btn-secondary" special="cancel"/>
-        </footer>
-      </form>
+     <form string="Create Folder">
+      <group>
+        <field name="name" string="Folder Name" placeholder="e.g. Design Docs"/>
+        <field name="parent_id" string="Parent Folder" options="{'no_create': True}"/>
+      </group>
+      <footer>
+        <button name="action_create" type="object" string="Create" class="btn-primary"/>
+        <button string="Cancel" class="btn-secondary" special="cancel"/>
+      </footer>
+    </form>
+
     </field>
   </record>
 

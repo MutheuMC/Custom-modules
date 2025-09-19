@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+  <!-- Empty shell; just needed so OWL can mount the client action -->
+  <t t-name="custom_documents.ReloadCurrentAction">
+    <div class="o_reload_current_action"/>
+  </t>
+</templates>

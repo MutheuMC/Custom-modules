@@ -54,4 +54,6 @@ class DocumentUploadWizard(models.TransientModel):
             
         self.env['custom.document'].create(vals)
         
-        return {'type': 'ir.actions.act_window_close'}
+        return   self.env['ir.actions.act_window']._for_xml_id(
+            'custom_documents.action_custom_document'
+        )

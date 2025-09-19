@@ -1,18 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates xml:space="preserve">
-  <!-- Extend the selection panel; never use raw <button> without handlers defined -->
-  <t t-extend="web.SelectionPanel" owl="1">
-    <!-- Append inside the actions zone; keep core buttons intact -->
-    <t t-jquery="div.o_selection_panel_actions" t-operation="append">
-      <!-- Only render when we are on custom.document -->
-      <t t-if="props && (props.resModel === 'custom.document' || env.config?.action?.resModel === 'custom.document')">
-        <button type="button" class="btn btn-primary ms-2" t-on-click="onDownloadClick">
-          <t t-esc="env._t('Download')"/>
-        </button>
-        <button type="button" class="btn btn-secondary ms-2" t-on-click="onShareClick">
-          <t t-esc="env._t('Share')"/>
-        </button>
-      </t>
+    <t t-name="custom_documents.SelectionButtons" owl="1">
+        <div t-if="showButtons" class="btn-group ms-2" role="group">
+            <button type="button" 
+                    class="btn btn-primary"
+                    t-on-click="onDownload">
+                <i class="fa fa-download me-1"/>
+                Download
+            </button>
+            <button type="button" 
+                    class="btn btn-secondary"
+                    t-on-click="onShare">
+                <i class="fa fa-share-alt me-1"/>
+                Share
+            </button>
+        </div>
+        <div t-elif="isCustomDocument and !hasSelection" class="text-muted ms-2">
+            <small>Select documents to show actions</small>
+        </div>
     </t>
-  </t>
 </templates>

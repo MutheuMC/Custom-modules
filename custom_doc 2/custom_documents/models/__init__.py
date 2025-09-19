@@ -7,3 +7,4 @@ from . import preview_wizard
 from . import actions_wizard     
 from . import rename_wizard          
 from . import properties_wizard  
+from . import hr_employee

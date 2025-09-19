@@ -1,133 +1,130 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-  <!-- Download -->
+  <!-- ⬇︎ Download -->
   <record id="sa_doc_download" model="ir.actions.server">
-    <field name="name">Download</field>
+    <field name="name">⬇️ Download</field>
+    <field name="sequence">1</field>
     <field name="model_id" ref="model_custom_document"/>
     <field name="binding_model_id" ref="model_custom_document"/>
+    <field name="binding_type">action</field>
     <field name="binding_view_types">list</field>
     <field name="state">code</field>
     <field name="code">
-records = env['custom.document'].browse(env.context.get('active_ids', []))
-action = records.action_menu_download()
+action = env['custom.document'].browse(env.context.get('active_ids', [])).action_menu_download()
     </field>
   </record>
 
-  <!-- Share -->
+  <!-- 🔗︎ Share -->
   <record id="sa_doc_share" model="ir.actions.server">
-    <field name="name">Share</field>
+    <field name="name">🔗 Share</field>
+    <field name="sequence">2</field>
     <field name="model_id" ref="model_custom_document"/>
     <field name="binding_model_id" ref="model_custom_document"/>
+    <field name="binding_type">action</field>
     <field name="binding_view_types">list</field>
     <field name="state">code</field>
     <field name="code">
-records = env['custom.document'].browse(env.context.get('active_ids', []))
-action = records.action_menu_share()
+action = env['custom.document'].browse(env.context.get('active_ids', [])).action_menu_share()
     </field>
   </record>
 
-  <!-- Duplicate -->
-  <record id="sa_doc_duplicate" model="ir.actions.server">
-    <field name="name">Duplicate</field>
-    <field name="model_id" ref="model_custom_document"/>
-    <field name="binding_model_id" ref="model_custom_document"/>
-    <field name="binding_view_types">list</field>
-    <field name="state">code</field>
-    <field name="code">
-records = env['custom.document'].browse(env.context.get('active_ids', []))
-action = records.action_menu_duplicate()
-    </field>
-  </record>
 
-  <!-- Move to Trash -->
+  <!-- ⌫ Move to Trash -->
   <record id="sa_doc_trash" model="ir.actions.server">
-    <field name="name">Move to Trash</field>
+    <field name="name">⌫ Move to Trash</field>
+    <field name="sequence">20</field>
     <field name="model_id" ref="model_custom_document"/>
     <field name="binding_model_id" ref="model_custom_document"/>
+    <field name="binding_type">action</field>
     <field name="binding_view_types">list</field>
     <field name="state">code</field>
     <field name="code">
-records = env['custom.document'].browse(env.context.get('active_ids', []))
-action = records.action_menu_move_to_trash()
+action = env['custom.document'].browse(env.context.get('active_ids', [])).action_menu_move_to_trash()
     </field>
   </record>
 
-  <!-- Rename -->
+  <!-- ✎ Rename -->
   <record id="sa_doc_rename" model="ir.actions.server">
-    <field name="name">Rename</field>
+    <field name="name">✎ Rename</field>
+    <field name="sequence">30</field>
     <field name="model_id" ref="model_custom_document"/>
     <field name="binding_model_id" ref="model_custom_document"/>
+    <field name="binding_type">action</field>
     <field name="binding_view_types">list</field>
     <field name="state">code</field>
     <field name="code">
-records = env['custom.document'].browse(env.context.get('active_ids', []))
-action = records.action_menu_rename()
+action = env['custom.document'].browse(env.context.get('active_ids', [])).action_menu_rename()
     </field>
   </record>
 
-  <!-- Info & tags -->
+  <!-- ⓘ Info & tags -->
   <record id="sa_doc_properties" model="ir.actions.server">
-    <field name="name">Info &amp; tags</field>
+    <field name="name">ⓘ Info &amp; tags</field>
+    <field name="sequence">40</field>
     <field name="model_id" ref="model_custom_document"/>
     <field name="binding_model_id" ref="model_custom_document"/>
+    <field name="binding_type">action</field>
     <field name="binding_view_types">list</field>
     <field name="state">code</field>
     <field name="code">
-records = env['custom.document'].browse(env.context.get('active_ids', []))
-action = records.action_menu_info_tags()
+action = env['custom.document'].browse(env.context.get('active_ids', [])).action_menu_info_tags()
     </field>
   </record>
 
-  <!-- Create Shortcut -->
+  <!-- ↗︎ Create Shortcut -->
   <record id="sa_doc_shortcut" model="ir.actions.server">
-    <field name="name">Create Shortcut</field>
+    <field name="name">↗︎ Create Shortcut</field>
+    <field name="sequence">50</field>
     <field name="model_id" ref="model_custom_document"/>
     <field name="binding_model_id" ref="model_custom_document"/>
+    <field name="binding_type">action</field>
     <field name="binding_view_types">list</field>
     <field name="state">code</field>
     <field name="code">
-records = env['custom.document'].browse(env.context.get('active_ids', []))
-action = records.action_menu_create_shortcut()
+action = env['custom.document'].browse(env.context.get('active_ids', [])).action_menu_create_shortcut()
     </field>
   </record>
 
-  <!-- Manage Versions -->
+  <!-- ⟲ Manage Versions -->
   <record id="sa_doc_versions" model="ir.actions.server">
-    <field name="name">Manage Versions</field>
+    <field name="name">⟲ Manage Versions</field>
+    <field name="sequence">60</field>
     <field name="model_id" ref="model_custom_document"/>
     <field name="binding_model_id" ref="model_custom_document"/>
+    <field name="binding_type">action</field>
     <field name="binding_view_types">list</field>
     <field name="state">code</field>
     <field name="code">
-records = env['custom.document'].browse(env.context.get('active_ids', []))
-action = records.action_menu_manage_versions()
+action = env['custom.document'].browse(env.context.get('active_ids', [])).action_menu_manage_versions()
     </field>
   </record>
 
-  <!-- Lock / Unlock -->
+  <!-- 🔒︎ Lock / Unlock -->
   <record id="sa_doc_lock_toggle" model="ir.actions.server">
-    <field name="name">Lock / Unlock</field>
+    <field name="name">🔒︎ Lock / Unlock</field>
+    <field name="sequence">70</field>
     <field name="model_id" ref="model_custom_document"/>
     <field name="binding_model_id" ref="model_custom_document"/>
+    <field name="binding_type">action</field>
     <field name="binding_view_types">list</field>
     <field name="state">code</field>
     <field name="code">
-records = env['custom.document'].browse(env.context.get('active_ids', []))
-action = records.action_menu_lock_toggle()
+action = env['custom.document'].browse(env.context.get('active_ids', [])).action_menu_lock_toggle()
     </field>
   </record>
 
-  <!-- Copy Links -->
+  <!-- ⧉ Copy Links -->
   <record id="sa_doc_copy_links" model="ir.actions.server">
-    <field name="name">Copy Links</field>
+    <field name="name">⧉ Copy Links</field>
+    <field name="sequence">80</field>
     <field name="model_id" ref="model_custom_document"/>
     <field name="binding_model_id" ref="model_custom_document"/>
+    <field name="binding_type">action</field>
     <field name="binding_view_types">list</field>
     <field name="state">code</field>
     <field name="code">
-records = env['custom.document'].browse(env.context.get('active_ids', []))
-action = records.action_menu_copy_links()
+action = env['custom.document'].browse(env.context.get('active_ids', [])).action_menu_copy_links()
     </field>
   </record>
 

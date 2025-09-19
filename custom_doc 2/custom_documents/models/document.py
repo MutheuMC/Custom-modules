@@ -1,5 +1,6 @@
 import base64
 import mimetypes
+import re
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError, ValidationError
 
@@ -280,8 +281,39 @@ class CustomDocument(models.Model):
     def _ensure_single(self, label=_("this action")):
         if len(self) != 1:
             raise UserError(_("Please select exactly one document for %s.") % label)
+        
 
-    # ---------- Actions menu entries (for list view) ----------
+    def _make_copy_name(self, base_name: str) -> str:
+        stem = base_name or _("Untitled")
+        # find existing copies for this stem
+        like = f"{stem} (copy%"
+        rows = self.search_read([('name', 'ilike', like)], ['name'], limit=5000)
+        used = set()
+        for r in rows:
+            m = re.match(rf"^{re.escape(stem)}\s+\(copy(?:\s+(\d+))?\)$", r['name'], flags=re.I)
+            if m:
+                used.add(int(m.group(1) or 1))
+        if 1 not in used:
+            return f"{stem} (copy)"
+        n = 2
+        while n in used:
+            n += 1
+        return f"{stem} (copy {n})"
+        
+    def copy(self, default=None):
+        self.ensure_one()
+        default = dict(default or {})
+        default.setdefault('name', self._make_copy_name(self.name))
+        # optional: always unlock the copy
+        default.setdefault('is_locked', False)
+        default.setdefault('locked_by', False)
+        return super().copy(default)
+
+ 
+
+
+    # ---------- Actions menu entries (for list view) ---------
+    
     def action_menu_download(self):
         self._ensure_single(_("download"))
         return self.action_download()
@@ -291,38 +323,7 @@ class CustomDocument(models.Model):
         base = f"/web/content/custom.document/{self.id}/file/{self.file_name or 'file'}"
         raise UserError(_("Share link:\n%s") % base)
 
-    def action_menu_duplicate(self):
-        # duplicate all selected
-        new_ids = []
-        for d in self:
-            vals = {
-                'name': (d.name or '') + ' (copy)',
-                'document_type': d.document_type,
-                'file': d.with_context(bin_size=False).file,
-                'file_name': d.file_name,
-                'mimetype': d.mimetype,
-                'url': d.url,
-                'folder_id': d.folder_id.id,
-                'tag_ids': [(6, 0, d.tag_ids.ids)],
-            }
-            new_ids.append(self.sudo().create(vals).id)
-        if len(new_ids) == 1:
-            return {
-                'type': 'ir.actions.act_window',
-                'res_model': 'custom.document',
-                'view_mode': 'form',
-                'res_id': new_ids[0],
-                'target': 'current',
-            }
-        # reopen list filtered on the new copies
-        return {
-            'type': 'ir.actions.act_window',
-            'res_model': 'custom.document',
-            'view_mode': 'list,form',
-            'domain': [('id', 'in', new_ids)],
-            'target': 'current',
-        }
-
+    
     def action_menu_move_to_trash(self):
         self.sudo().write({'active': False})
         return {'type': 'ir.actions.client', 'tag': 'reload'}
@@ -399,6 +400,21 @@ class CustomDocument(models.Model):
                 'default_folder_id': self.folder_id.id,
             },
         }
+    
+
+    @api.model
+    def action_open_with_sidebar(self):
+        # get or create the Company root folder (you already have helpers for this)
+        root = self.env['custom.document.folder']._get_company_root(self.env.company)
+        action = self.env.ref('custom_documents.action_custom_document').read()[0]
+        action['context'] = {
+            **self.env.context,
+            'doc_company_root_id': root.id,
+            'searchpanel_default_folder_id': root.id,  # expands Company
+            'my_partner_id': self.env.user.partner_id.id,
+            'recent_from': fields.Datetime.subtract(fields.Datetime.now(), days=7),
+        }
+        return action
 
     # def action_menu_split_pdf(self):
     #     self._ensure_single(_("split PDF"))

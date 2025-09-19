@@ -1,200 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- =========================
-         Document Form View
-    ========================== -->
-    <record id="view_custom_document_form" model="ir.ui.view">
-        <field name="name">custom.document.form</field>
-        <field name="model">custom.document</field>
-        <field name="arch" type="xml">
-            <form string="Document">
-                <sheet>
-                    <div class="oe_button_box" name="button_box">
-                        <button name="action_view_file" string="View (Test)" type="object"
-                  class="btn btn-primary" invisible="0"/>
-                        <button name="action_download" type="object"
-                                class="oe_stat_button" icon="fa-download"
-                                invisible="document_type not in ['file', 'url']">
-                            <div class="o_stat_info">
-                                <span class="o_stat_text">Download</span>
-                            </div>
-                        </button>
-
-                        <!-- View button shows if: document_type=file AND (mimetype contains 'pdf' OR file_name contains '.pdf') -->
-                        <button name="action_view_file" type="object"
-                                class="oe_stat_button" icon="fa-eye"
-                                invisible="[('is_pdf', '=', False)]">
-                            <div class="o_stat_info">
-                            <span class="o_stat_text">View</span>
-                            </div>
-                        </button>
-
-
-                        <button name="action_lock" type="object" class="oe_stat_button" icon="fa-lock">
-                            <field name="is_locked" invisible="1"/>
-                            <div class="o_stat_info">
-                                <span class="o_stat_text" invisible="is_locked">Lock</span>
-                                <span class="o_stat_text" invisible="not is_locked">Unlock</span>
-                            </div>
-                        </button>
-                    </div>
-                     <field name="is_pdf" invisible="1"/>
-
-                    <widget name="web_ribbon" title="Locked" invisible="not is_locked"/>
-
-                    <div class="oe_title">
-                        <h1><field name="name" placeholder="Document Name"/></h1>
-                    </div>
-
-                    <group>
-                        <group>
-                            <field name="document_type" widget="radio"/>
-                            <field name="folder_id"/>
-                            <field name="user_id"/>
-                        </group>
-                        <group>
-                            <field name="file" filename="file_name" invisible="document_type != 'file'"/>
-                            <field name="file_name" invisible="1"/>
-                            <field name="url" widget="url" invisible="document_type != 'url'" placeholder="https://example.com"/>
-                            <field name="tag_ids" widget="many2many_tags"/>
-                        </group>
-                    </group>
-
-                    <group>
-                        <field name="description" placeholder="Add a description..."/>
-                    </group>
-
-                    <!-- Inline PDF preview with same robust visibility condition -->
-                    <group invisible="[('is_pdf', '=', False)]">
-                        <field name="file" filename="file_name" widget="pdf_viewer"/>
-                    </group>
-                </sheet>
-
-             
-            </form>
-        </field>
-    </record>
-
-    <!-- =========================
-         Document List View
-    ========================== -->
+    <!-- Document List View -->
     <record id="view_custom_document_list" model="ir.ui.view">
         <field name="name">custom.document.list</field>
         <field name="model">custom.document</field>
         <field name="arch" type="xml">
             <!-- narrow class keeps the first 2 icon columns tight -->
-            <list string="Documents" js_class="custom_document_list" class="o_list_compact">
-            <!-- hidden helpers for domain evaluation -->
-            <field name="is_starred" column_invisible="1"/>
-            <field name="file_kind" column_invisible="1"/>
+            <list string="Documents" js_class="custom_document_list" class="o_list_compact" delete="0">
+                <!-- hidden helpers for domain evaluation -->
+                <field name="is_starred" column_invisible="1"/>
+                <field name="file_kind" column_invisible="1"/>
 
-        <!-- ⭐ Star / Unstar -->
-            <button name="action_toggle_star" type="object" string=" " title="Unstar"
-                    icon="fa-star" class="btn btn-link p-0"
-                    invisible="not is_starred"/>
-            <button name="action_toggle_star" type="object" string=" " title="Star"
-                    icon="fa-star-o" class="btn btn-link p-0"
-                    invisible="is_starred"/>
+                <!-- ⭐ Star / Unstar -->
+                <button name="action_toggle_star" type="object" string=" " title="Unstar"
+                        icon="fa-star" class="btn btn-link p-0"
+                        invisible="not is_starred"/>
+                <button name="action_toggle_star" type="object" string=" " title="Star"
+                        icon="fa-star-o" class="btn btn-link p-0"
+                        invisible="is_starred"/>
 
-            <!-- Type icon -->
-            <button name="action_view_file" type="object" string=" " title="Open PDF"
-                    icon="fa-file-pdf-o" class="btn btn-link p-0 text-danger"
-                    invisible="file_kind != 'pdf'"/>
-            <button name="action_download" type="object" string=" " title="Open file"
-                    icon="fa-file-o" class="btn btn-link p-0"
-                    invisible="file_kind != 'file'"/>
-            <button name="action_download" type="object" string=" " title="Open link"
-                    icon="fa-link" class="btn btn-link p-0"
-                    invisible="file_kind != 'url'"/>
+                <!-- Type icon -->
+                <button name="action_view_file" type="object" string=" " title="Open PDF"
+                        icon="fa-file-pdf-o" class="btn btn-link p-0 text-danger"
+                        invisible="file_kind != 'pdf'"/>
+                <button name="action_download" type="object" string=" " title="Open file"
+                        icon="fa-file-o" class="btn btn-link p-0"
+                        invisible="file_kind != 'file'"/>
+                <button name="action_download" type="object" string=" " title="Open link"
+                        icon="fa-link" class="btn btn-link p-0"
+                        invisible="file_kind != 'url'"/>
 
-            <!-- Regular columns -->
-            <field name="name" string="Document Name"/>
-            <field name="folder_id" string="Folder"/>
-            <field name="user_id" widget="many2one_avatar_user" string="Owner"/>
-            <field name="write_date" string="Last Updated on" optional="show"/>
-            <field name="file_size" string="File Size" optional="show"/>
+                <!-- Regular columns -->
+                <field name="name" string="Document Name"/>
+                <field name="folder_id" string="Folder"/>
+                <field name="user_id" widget="many2one_avatar_user" string="Owner"/>
+                <field name="write_date" string="Last Updated on" optional="show"/>
+                <field name="file_size" string="File Size" optional="show"/>
             </list>
         </field>
     </record>
 
-
-    <!-- =========================
-         Document Kanban View
-    ========================== -->
-    <record id="view_custom_document_kanban" model="ir.ui.view">
-        <field name="name">custom.document.kanban</field>
-        <field name="model">custom.document</field>
-        <field name="arch" type="xml">
-            <kanban class="o_kanban_mobile" js_class="custom_document_kanban">
-                <field name="id"/>
-                <field name="name"/>
-                <field name="document_type"/>
-                <field name="folder_id"/>
-                <field name="user_id"/>
-                <field name="color"/>
-                <field name="is_locked"/>
-
-                <templates>
-                    <t t-name="kanban-menu">
-                        <a role="menuitem" type="open" class="dropdown-item">Open</a>
-                        <a role="menuitem" name="action_download" type="object" class="dropdown-item">Download</a>
-                        <a role="menuitem" type="delete" class="dropdown-item">Delete</a>
-                    </t>
-
-                    <t t-name="kanban-box">
-                        <div t-attf-class="oe_kanban_color_#{kanban_getcolor(record.color.raw_value)} oe_kanban_card oe_kanban_global_click">
-                            <div class="o_kanban_record_top mb-2">
-                                <div class="o_kanban_record_headings">
-                                    <strong class="o_kanban_record_title">
-                                        <field name="name"/>
-                                    </strong>
-                                </div>
-                                <div class="o_dropdown_kanban dropdown">
-                                    <a class="dropdown-toggle o-no-caret btn" data-bs-toggle="dropdown" href="#">
-                                        <i class="fa fa-ellipsis-v"/>
-                                    </a>
-                                    <div class="dropdown-menu" role="menu">
-                                        <t t-if="widget.editable">
-                                            <a type="edit" class="dropdown-item">Edit</a>
-                                        </t>
-                                        <a name="action_download" type="object" class="dropdown-item">Download</a>
-                                        <a type="delete" class="dropdown-item">Delete</a>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="o_kanban_record_body">
-                                <div t-if="record.document_type.value == 'file'" class="text-muted small">
-                                    <i class="fa fa-file-o"/> File
-                                </div>
-                                <div t-if="record.document_type.value == 'url'" class="text-muted small">
-                                    <i class="fa fa-link"/> URL
-                                </div>
-                                <div t-if="record.folder_id.value" class="text-muted small">
-                                    <i class="fa fa-folder-o"/> <field name="folder_id"/>
-                                </div>
-                            </div>
-
-                            <div class="o_kanban_record_bottom mt-2">
-                                <div class="oe_kanban_bottom_left">
-                                    <field name="user_id" widget="many2one_avatar_user"/>
-                                </div>
-                                <div class="oe_kanban_bottom_right">
-                                    <span t-if="record.is_locked.raw_value" class="badge rounded-pill text-bg-warning">
-                                        <i class="fa fa-lock"/> Locked
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                    </t>
-                </templates>
-            </kanban>
-        </field>
-    </record>
-
-    <!-- =========================
-         Document Search View
-    ========================== -->
+    <!-- Document Search View -->
     <record id="view_custom_document_search" model="ir.ui.view">
         <field name="name">custom.document.search</field>
         <field name="model">custom.document</field>
@@ -218,50 +64,56 @@
                     <filter string="Owner" name="owner" context="{'group_by': 'user_id'}"/>
                     <filter string="Creation Date" name="create_date" context="{'group_by': 'create_date:month'}"/>
                 </group>
+                
+                <!-- LEFT SIDEBAR -->
+                <searchpanel>
+                    <!-- “All” (optional; selecting nothing is “All” anyway) -->
+                    <filter name="all" string="All" domain="[]" icon="fa-sitemap"/>
+
+                    <!-- Company tree (hierarchical) -->
+                    <field name="folder_id"
+                        select="one"
+                        icon="fa-building"
+                        enable_counters="1"
+                        domain="[('id','child_of', ctx.get('doc_company_root_id'))]"/>
+
+                    <!-- Shortcuts -->
+                    <filter name="my_drive" string="My Drive"
+                            domain="[('user_id','=', uid)]" icon="fa-user"/>
+
+                    <filter name="shared_with_me" string="Shared with me"
+                            domain="[('message_follower_ids.partner_id','=', ctx.get('my_partner_id'))]"
+                            icon="fa-users"/>
+
+                    <filter name="recent" string="Recent"
+                            domain="[('write_date','>=', ctx.get('recent_from'))]"
+                            icon="fa-clock-o"/>
+
+                    <filter name="trash" string="Trash"
+                            domain="[('active','=', False)]" icon="fa-trash"/>
+                </searchpanel>
+
             </search>
         </field>
     </record>
 
-    <!-- =========================
-         Folder Form View
-    ========================== -->
-    <record id="view_custom_document_folder_form" model="ir.ui.view">
-        <field name="name">custom.document.folder.form</field>
-        <field name="model">custom.document.folder</field>
-        <field name="arch" type="xml">
-            <form string="Folder" js_class="custom_folder_form">
-                <sheet>
-                    <div class="oe_button_box" name="button_box">
-                        <button name="action_open_documents" type="object" class="oe_stat_button" icon="fa-file-text-o">
-                            <field name="document_count" widget="statinfo" string="Documents"/>
-                        </button>
-                    </div>
-                    <div class="oe_title">
-                        <h1><field name="name" placeholder="Folder Name"/></h1>
-                    </div>
-                    <group>
-                        <group>
-                            <field name="parent_id"/>
-                            <field name="user_id"/>
-                        </group>
-                        <group>
-                            <field name="company_id" groups="base.group_multi_company"/>
-                            <field name="color" widget="color_picker"/>
-                        </group>
-                    </group>
-                </sheet>
-            </form>
-        </field>
+    <record id="sa_open_documents_with_sidebar" model="ir.actions.server">
+        <field name="name">Documents</field>
+        <field name="model_id" ref="model_custom_document"/>
+        <field name="state">code</field>
+        <field name="code">action = env['custom.document'].action_open_with_sidebar()</field>
     </record>
 
-    <!-- =========================
-         Folder List View
-    ========================== -->
+    <!-- Modified Folder List View with Action Button -->
     <record id="view_custom_document_folder_list" model="ir.ui.view">
         <field name="name">custom.document.folder.list</field>
         <field name="model">custom.document.folder</field>
         <field name="arch" type="xml">
             <list string="Folders" js_class="custom_folder_list">
+                <!-- Action button to view documents in folder -->
+                <button name="action_view_folder_documents" type="object" string="" title="View Documents"
+                        icon="fa-folder-open" class="btn btn-link p-0"/>
+                
                 <field name="complete_name"/>
                 <field name="user_id"/>
                 <field name="document_count"/>
@@ -269,13 +121,29 @@
         </field>
     </record>
 
-    <!-- =========================
-         Actions
-    ========================== -->
+  
+
+    <!-- Action to view documents in a specific folder -->
+    <record id="action_folder_documents" model="ir.actions.act_window">
+        <field name="name">Folder Documents</field>
+        <field name="res_model">custom.document</field>
+        <field name="view_mode">list</field>
+        <field name="views" eval="[(ref('view_custom_document_list'), 'list')]"/>
+        <field name="search_view_id" ref="view_custom_document_search"/>
+        <field name="domain">[('folder_id', '=', active_id)]</field>
+        <field name="context">{'default_folder_id': active_id}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No documents in this folder yet</p>
+            <p>Upload files or add URL links to this folder</p>
+        </field>
+    </record>
+
+    <!-- Main Document Action -->
     <record id="action_custom_document" model="ir.actions.act_window">
         <field name="name">Documents</field>
         <field name="res_model">custom.document</field>
-        <field name="view_mode">list,form</field>
+        <field name="view_mode">list</field>
+        <field name="views" eval="[(ref('view_custom_document_list'), 'list')]"/>
         <field name="search_view_id" ref="view_custom_document_search"/>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">Create your first document</p>
@@ -283,60 +151,29 @@
         </field>
     </record>
 
+    <!-- Modified Folder Action - Option 1: Keep folder management -->
     <record id="action_custom_document_folder" model="ir.actions.act_window">
         <field name="name">Folders</field>
         <field name="res_model">custom.document.folder</field>
-        <field name="view_mode">list,form</field>
+        <field name="view_mode">list</field>
+        <field name="views" eval="[(ref('view_custom_document_folder_list'), 'list')]"/>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">Create your first folder</p>
-            <p>Organize your documents in folders</p>
+            <p>Organize your documents in folders. Click the folder icon to view documents inside.</p>
         </field>
     </record>
 
-    <!-- =========================
-         (Optional legacy) Server Actions
-    ========================== -->
-    <record id="action_upload_document" model="ir.actions.server">
-        <field name="name">Upload Document</field>
-        <field name="model_id" ref="model_custom_document"/>
-        <field name="binding_model_id" ref="model_custom_document"/>
-        <field name="binding_view_types">list,kanban</field>
-        <field name="state">code</field>
-        <field name="code">
-action = {
-    'type': 'ir.actions.act_window',
-    'name': 'Upload Document',
-    'res_model': 'custom.document',
-    'view_mode': 'form',
-    'view_type': 'form',
-    'target': 'new',
-    'context': {
-        'default_document_type': 'file',
-        'default_folder_id': context.get('active_id') if context.get('active_model') == 'custom.document.folder' else False,
-    }
-}
-        </field>
-    </record>
-
-    <record id="action_create_url_document" model="ir.actions.server">
-        <field name="name">Add URL Document</field>
-        <field name="model_id" ref="model_custom_document"/>
-        <field name="binding_model_id" ref="model_custom_document"/>
-        <field name="binding_view_types">list,kanban</field>
-        <field name="state">code</field>
-        <field name="code">
-action = {
-    'type': 'ir.actions.act_window',
-    'name': 'Add URL Document',
-    'res_model': 'custom.document',
-    'view_mode': 'form',
-    'view_type': 'form',
-    'target': 'new',
-    'context': {
-        'default_document_type': 'url',
-        'default_folder_id': context.get('active_id') if context.get('active_model') == 'custom.document.folder' else False,
-    }
-}
+    <!-- Alternative: Direct folder-to-documents action (Option 2) -->
+    <record id="action_browse_folders" model="ir.actions.act_window">
+        <field name="name">Browse by Folder</field>
+        <field name="res_model">custom.document</field>
+        <field name="view_mode">list</field>
+        <field name="views" eval="[(ref('view_custom_document_list'), 'list')]"/>
+        <field name="search_view_id" ref="view_custom_document_search"/>
+        <field name="context">{'search_default_folder': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No documents found</p>
+            <p>Use the folder filter to browse documents by folder</p>
         </field>
     </record>
 </odoo>

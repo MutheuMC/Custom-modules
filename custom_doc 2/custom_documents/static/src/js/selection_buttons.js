@@ -1,48 +1,105 @@
 /** @odoo-module **/
 
-import { patch } from "@web/core/utils/patch";
-import { SelectionPanel } from "@web/views/selection_panel/selection_panel";
+import { Component } from "@odoo/owl";
+import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
+import { _t } from "@web/core/l10n/translation";
 
-patch(SelectionPanel.prototype, "custom_documents.selection_buttons", {
+export class SelectionButtons extends Component {
+    static template = "custom_documents.SelectionButtons";
+    static props = ["*"];
+    
     setup() {
-        // keep original behavior
-        this._super && this._super(...arguments);
-        // services
         this.orm = useService("orm");
         this.action = useService("action");
         this.notification = useService("notification");
-    },
-
-    /**
-     * Small helper to call a model method on the current selection.
-     * Only works for the custom.document list; otherwise noop.
-     */
-    async _call(methodName) {
-        try {
-            const resModel = this.props?.resModel || this.env?.config?.action?.resModel;
-            if (resModel !== "custom.document") return; // do nothing on other models
-            const ids = Array.from(this.props?.selection || []);
-            if (ids.length !== 1) {
-                this.notification.add(this.env._t("Select exactly one document."), { type: "warning" });
-                return;
-            }
-            const res = await this.orm.call("custom.document", methodName, [ids]);
-            if (res) {
-                await this.action.doAction(res);
-            }
-        } catch (e) {
-            // never crash the webclient
-            console.error("custom_documents selection buttons error:", e);
-            this.notification.add(this.env._t("Could not run the action."), { type: "danger" });
+    }
+    
+    get hasSelection() {
+        return this.env.model && 
+               this.env.model.selection && 
+               this.env.model.selection.size > 0;
+    }
+    
+    get isCustomDocument() {
+        return this.env.model && 
+               this.env.model.resModel === 'custom.document';
+    }
+    
+    get showButtons() {
+        return this.isCustomDocument && this.hasSelection;
+    }
+    
+    async onDownload() {
+        if (!this.env.model || !this.env.model.selection) {
+            return;
         }
-    },
+        
+        const selectedIds = [...this.env.model.selection];
+        console.log("Download documents:", selectedIds);
+        
+        if (selectedIds.length !== 1) {
+            this.notification.add(_t("Please select exactly one document."), { 
+                type: "warning",
+                sticky: false,
+            });
+            return;
+        }
+        
+        try {
+            const result = await this.orm.call(
+                "custom.document", 
+                "action_menu_download", 
+                [selectedIds]
+            );
+            if (result) {
+                await this.action.doAction(result);
+            }
+        } catch (error) {
+            console.error("Download error:", error);
+            this.notification.add(_t("Could not download the document."), { 
+                type: "danger",
+                sticky: false,
+            });
+        }
+    }
+    
+    async onShare() {
+        if (!this.env.model || !this.env.model.selection) {
+            return;
+        }
+        
+        const selectedIds = [...this.env.model.selection];
+        console.log("Share documents:", selectedIds);
+        
+        if (selectedIds.length !== 1) {
+            this.notification.add(_t("Please select exactly one document."), { 
+                type: "warning",
+                sticky: false,
+            });
+            return;
+        }
+        
+        try {
+            const result = await this.orm.call(
+                "custom.document", 
+                "action_menu_share", 
+                [selectedIds]
+            );
+            if (result) {
+                await this.action.doAction(result);
+            }
+        } catch (error) {
+            console.error("Share error:", error);
+            this.notification.add(_t("Could not share the document."), { 
+                type: "danger",
+                sticky: false,
+            });
+        }
+    }
+}
 
-    async onDownloadClick() {
-        await this._call("action_menu_download");
-    },
+// Register the widget
+registry.category("view_widgets").add("selection_buttons", SelectionButtons);
 
-    async onShareClick() {
-        await this._call("action_menu_share");
-    },
-});
+console.log("Selection buttons widget registered");
