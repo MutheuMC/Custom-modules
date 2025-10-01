@@ -55,7 +55,7 @@ class DocumentFolder(models.Model):
             raise ValidationError(_('You cannot create recursive folders.'))
 
     # ------------------------------------------------------------
-    # Actions (you already had these — kept as-is)
+    # Actions
     # ------------------------------------------------------------
     def action_open_documents(self):
         """Open documents in this folder"""
@@ -103,17 +103,17 @@ class DocumentFolder(models.Model):
     # ------------------------------------------------------------
     # Helpers to build the company/employee tree
     # ------------------------------------------------------------
-    def _ensure_company_root(self, company):
+    @api.model
+    def _get_company_root(self, company):
         """Return the single Company root for a given company (create if missing)."""
-        self_sudo = self.sudo()
-        root = self_sudo.search([
+        root = self.sudo().search([
             ('company_id', '=', company.id),
             ('is_company_root', '=', True),
             ('parent_id', '=', False),
         ], limit=1)
         if not root:
             # keep name short as in the left tree: "Company"
-            root = self_sudo.create({
+            root = self.sudo().create({
                 'name': 'Company',
                 'company_id': company.id,
                 'user_id': self.env.user.id,
@@ -121,18 +121,23 @@ class DocumentFolder(models.Model):
             })
         return root
 
+    @api.model
+    def _ensure_company_root(self, company):
+        """Ensure the Company root folder exists (wrapper for backward compatibility)"""
+        return self._get_company_root(company)
+
+    @api.model
     def _ensure_employees_root(self, company):
         """Return the 'Employees – <Company>' folder (child of Company root)."""
-        self_sudo = self.sudo()
-        root = self._ensure_company_root(company)
+        root = self._get_company_root(company)
         wanted_name = f"Employees – {company.name}"
-        emp_root = self_sudo.search([
+        emp_root = self.sudo().search([
             ('parent_id', '=', root.id),
             ('company_id', '=', company.id),
             ('is_employees_root', '=', True),
         ], limit=1)
         if not emp_root:
-            emp_root = self_sudo.create({
+            emp_root = self.sudo().create({
                 'name': wanted_name,
                 'parent_id': root.id,
                 'company_id': company.id,
@@ -143,29 +148,30 @@ class DocumentFolder(models.Model):
             emp_root.name = wanted_name
         return emp_root
 
+    @api.model
     def _ensure_default_company_children(self, company):
         """OPTIONAL: Seed a few standard top-level folders under Company."""
-        root = self._ensure_company_root(company)
+        root = self._get_company_root(company)
         for name in COMPANY_DEFAULT_CHILDREN:
-            exists = self.search([
+            exists = self.sudo().search([
                 ('name', '=', name),
                 ('parent_id', '=', root.id),
                 ('company_id', '=', company.id),
             ], limit=1)
             if not exists:
-                self.create({
+                self.sudo().create({
                     'name': name,
                     'parent_id': root.id,
                     'company_id': company.id,
                     'user_id': self.env.user.id,
                 })
 
+    @api.model
     def _ensure_employee_folder(self, emp):
         """Create/update the folder for a single employee and return it."""
-        self_sudo = self.sudo()
         emp_root = self._ensure_employees_root(emp.company_id)
         # One folder per employee per company
-        folder = self_sudo.search([
+        folder = self.sudo().search([
             ('employee_id', '=', emp.id),
             ('company_id', '=', emp.company_id.id),
         ], limit=1)
@@ -177,7 +183,7 @@ class DocumentFolder(models.Model):
             if folder.name != wanted_name:
                 folder.name = wanted_name
         else:
-            folder = self_sudo.create({
+            folder = self.sudo().create({
                 'name': wanted_name,
                 'parent_id': emp_root.id,
                 'employee_id': emp.id,
@@ -186,7 +192,7 @@ class DocumentFolder(models.Model):
             })
             # optional child structure under each employee
             for child in EMPLOYEE_DEFAULT_CHILDREN:
-                self_sudo.create({
+                self.sudo().create({
                     'name': child,
                     'parent_id': folder.id,
                     'company_id': emp.company_id.id,
@@ -194,14 +200,13 @@ class DocumentFolder(models.Model):
                 })
         return folder
 
-
     # ------------------------------------------------------------
     # Small convenience: open the Company root quickly
     # ------------------------------------------------------------
     @api.model
     def action_open_company_root(self):
         """Return an action focused on the Company root tree."""
-        root = self._ensure_company_root(self.env.company)
+        root = self._get_company_root(self.env.company)
         return {
             'name': _('Company'),
             'type': 'ir.actions.act_window',
@@ -211,3 +216,18 @@ class DocumentFolder(models.Model):
             'context': {'default_parent_id': root.id},
             'target': 'current',
         }
+    
+    @api.model
+    def init_folder_structure(self):
+        """Initialize folder structure - called on module installation"""
+        company = self.env.company
+        # Create Company root folder
+        self._get_company_root(company)
+        # Create default company folders
+        self._ensure_default_company_children(company)
+        # Create employee folders if hr.employee is installed
+        if 'hr.employee' in self.env:
+            self._ensure_employees_root(company)
+            employees = self.env['hr.employee'].search([('company_id', '=', company.id)])
+            for emp in employees:
+                self._ensure_employee_folder(emp)

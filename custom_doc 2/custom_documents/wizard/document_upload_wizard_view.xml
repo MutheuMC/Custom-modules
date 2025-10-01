@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Upload Wizard Form -->
+    <record id="view_custom_document_upload_wizard_form" model="ir.ui.view">
+        <field name="name">custom.document.upload.wizard.form</field>
+        <field name="model">custom.document.upload.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Upload Document">
+                <group>
+                    <group>
+                        <field name="document_type" widget="radio"/>
+                        <field name="name" placeholder="Document Name (optional)"/>
+                        <field name="folder_id" options="{'no_create': True}"/>
+                    </group>
+                    <group>
+                        <field name="file" filename="file_name" 
+                               invisible="document_type != 'file'"
+                               required="document_type == 'file'"/>
+                        <field name="file_name" invisible="1"/>
+                        <field name="url" 
+                               invisible="document_type != 'url'"
+                               required="document_type == 'url'"
+                               placeholder="https://example.com"/>
+                        <field name="tag_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                    </group>
+                </group>
+                <group>
+                    <field name="description" placeholder="Add a description..."/>
+                </group>
+                <footer>
+                    <button name="action_upload" type="object" string="Upload" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Upload Wizard Action -->
+    <record id="action_custom_document_upload_wizard" model="ir.actions.act_window">
+        <field name="name">Upload Document</field>
+        <field name="res_model">custom.document.upload.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Document List View -->
+    <!-- ===========================
+         Document List View
+         =========================== -->
     <record id="view_custom_document_list" model="ir.ui.view">
         <field name="name">custom.document.list</field>
         <field name="model">custom.document</field>
         <field name="arch" type="xml">
-            <!-- narrow class keeps the first 2 icon columns tight -->
             <list string="Documents" js_class="custom_document_list" class="o_list_compact" delete="0">
                 <!-- hidden helpers for domain evaluation -->
                 <field name="is_starred" column_invisible="1"/>
@@ -31,16 +32,20 @@
                         invisible="file_kind != 'url'"/>
 
                 <!-- Regular columns -->
-                <field name="name" string="Document Name"/>
+                <field name="name" string="Name"/>
                 <field name="folder_id" string="Folder"/>
                 <field name="user_id" widget="many2one_avatar_user" string="Owner"/>
-                <field name="write_date" string="Last Updated on" optional="show"/>
-                <field name="file_size" string="File Size" optional="show"/>
+                <field name="company_id" string="Contact" groups="base.group_multi_company" optional="show"/>
+                <field name="write_date" string="Last Updated on"/>
+                <field name="file_size" string="File Size" optional="hide"/>
             </list>
         </field>
     </record>
 
-    <!-- Document Search View -->
+    <!-- ===============================================
+         Document Search View with Hierarchical Searchpanel
+         (CHANGED: ensure folder tree in left sidebar)
+         =============================================== -->
     <record id="view_custom_document_search" model="ir.ui.view">
         <field name="name">custom.document.search</field>
         <field name="model">custom.document</field>
@@ -51,69 +56,122 @@
                 <field name="user_id"/>
                 <field name="tag_ids"/>
 
+                <!-- Filters matching the top-level sections (kept as filters, no menu needed) -->
                 <filter string="My Documents" name="my_documents" domain="[('user_id', '=', uid)]"/>
+                <filter string="Shared with Me" name="shared_with_me"
+                        domain="[('message_follower_ids.partner_id.user_ids', 'in', [uid])]"/>
+                <filter string="Recent" name="recent"
+                        domain="[('write_date', '>=', (context_today() - relativedelta(days=7)).strftime('%Y-%m-%d'))]"/>
+                <filter string="Trash" name="trash" domain="[('active', '=', False)]"/>
+
                 <separator/>
                 <filter string="Files" name="files" domain="[('document_type', '=', 'file')]"/>
-                <filter string="URLs" name="urls" domain="[('document_type', '=', 'url')]"/>
-                <separator/>
-                <filter string="Locked" name="locked" domain="[('is_locked', '=', True)]"/>
+                <filter string="URLs"  name="urls"  domain="[('document_type', '=', 'url')]"/>
 
                 <group expand="0" string="Group By">
-                    <filter string="Type" name="type" context="{'group_by': 'document_type'}"/>
-                    <filter string="Folder" name="folder" context="{'group_by': 'folder_id'}"/>
-                    <filter string="Owner" name="owner" context="{'group_by': 'user_id'}"/>
-                    <filter string="Creation Date" name="create_date" context="{'group_by': 'create_date:month'}"/>
+                    <filter string="Type"          name="type"   context="{'group_by': 'document_type'}"/>
+                    <filter string="Folder"        name="folder" context="{'group_by': 'folder_id'}"/>
+                    <filter string="Owner"         name="owner"  context="{'group_by': 'user_id'}"/>
+                    <filter string="Creation Date" name="create" context="{'group_by': 'create_date:month'}"/>
                 </group>
-                
-                <!-- LEFT SIDEBAR -->
+
+                <!-- LEFT SIDEBAR with Hierarchical Folders (key change) -->
                 <searchpanel>
-                    <!-- “All” (optional; selecting nothing is “All” anyway) -->
-                    <filter name="all" string="All" domain="[]" icon="fa-sitemap"/>
-
-                    <!-- Company tree (hierarchical) -->
                     <field name="folder_id"
-                        select="one"
-                        icon="fa-building"
-                        enable_counters="1"
-                        domain="[('id','child_of', ctx.get('doc_company_root_id'))]"/>
-
-                    <!-- Shortcuts -->
-                    <filter name="my_drive" string="My Drive"
-                            domain="[('user_id','=', uid)]" icon="fa-user"/>
-
-                    <filter name="shared_with_me" string="Shared with me"
-                            domain="[('message_follower_ids.partner_id','=', ctx.get('my_partner_id'))]"
-                            icon="fa-users"/>
-
-                    <filter name="recent" string="Recent"
-                            domain="[('write_date','>=', ctx.get('recent_from'))]"
-                            icon="fa-clock-o"/>
-
-                    <filter name="trash" string="Trash"
-                            domain="[('active','=', False)]" icon="fa-trash"/>
+                           string="Folders"
+                           select="one"
+                           icon="fa-folder"
+                           enable_counters="1"
+                           hierarchize="1"/>
                 </searchpanel>
 
             </search>
         </field>
     </record>
 
-    <record id="sa_open_documents_with_sidebar" model="ir.actions.server">
+    <!-- ===========================
+         Main Document Action
+         =========================== -->
+    <record id="action_custom_document" model="ir.actions.act_window">
         <field name="name">Documents</field>
-        <field name="model_id" ref="model_custom_document"/>
-        <field name="state">code</field>
-        <field name="code">action = env['custom.document'].action_open_with_sidebar()</field>
+        <field name="res_model">custom.document</field>
+        <field name="view_mode">list</field>
+        <field name="views" eval="[(ref('view_custom_document_list'), 'list')]"/>
+        <field name="search_view_id" ref="view_custom_document_search"/>
+        <field name="context">{}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create your first document</p>
+            <p>Upload files or add URL links to organize your documents</p>
+        </field>
     </record>
 
-    <!-- Modified Folder List View with Action Button -->
+    <!-- ===========================
+         Optional shortcut actions
+         (unchanged; useful if you keep them)
+         =========================== -->
+    <record id="action_my_drive" model="ir.actions.act_window">
+        <field name="name">My Drive</field>
+        <field name="res_model">custom.document</field>
+        <field name="view_mode">list</field>
+        <field name="views" eval="[(ref('view_custom_document_list'), 'list')]"/>
+        <field name="search_view_id" ref="view_custom_document_search"/>
+        <field name="context">{'search_default_my_drive': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No documents in your drive yet</p>
+            <p>Upload files or add URL links to start organizing your personal documents</p>
+        </field>
+    </record>
+
+    <record id="action_shared_with_me" model="ir.actions.act_window">
+        <field name="name">Shared with Me</field>
+        <field name="res_model">custom.document</field>
+        <field name="view_mode">list</field>
+        <field name="views" eval="[(ref('view_custom_document_list'), 'list')]"/>
+        <field name="search_view_id" ref="view_custom_document_search"/>
+        <field name="context">{'search_default_shared_with_me': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No documents shared with you</p>
+            <p>Documents shared with you will appear here</p>
+        </field>
+    </record>
+
+    <record id="action_recent" model="ir.actions.act_window">
+        <field name="name">Recent</field>
+        <field name="res_model">custom.document</field>
+        <field name="view_mode">list</field>
+        <field name="views" eval="[(ref('view_custom_document_list'), 'list')]"/>
+        <field name="search_view_id" ref="view_custom_document_search"/>
+        <field name="context">{'search_default_recent': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No recent documents</p>
+            <p>Documents modified in the last 7 days will appear here</p>
+        </field>
+    </record>
+
+    <record id="action_trash" model="ir.actions.act_window">
+        <field name="name">Trash</field>
+        <field name="res_model">custom.document</field>
+        <field name="view_mode">list</field>
+        <field name="views" eval="[(ref('view_custom_document_list'), 'list')]"/>
+        <field name="search_view_id" ref="view_custom_document_search"/>
+        <field name="context">{'search_default_trash': 1, 'active_test': False}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Trash is empty</p>
+            <p>Deleted documents will appear here</p>
+        </field>
+    </record>
+
+    <!-- ===========================
+         Folder List (unchanged)
+         with quick open button
+         =========================== -->
     <record id="view_custom_document_folder_list" model="ir.ui.view">
         <field name="name">custom.document.folder.list</field>
         <field name="model">custom.document.folder</field>
         <field name="arch" type="xml">
             <list string="Folders" js_class="custom_folder_list">
-                <!-- Action button to view documents in folder -->
                 <button name="action_view_folder_documents" type="object" string="" title="View Documents"
                         icon="fa-folder-open" class="btn btn-link p-0"/>
-                
                 <field name="complete_name"/>
                 <field name="user_id"/>
                 <field name="document_count"/>
@@ -121,9 +179,6 @@
         </field>
     </record>
 
-  
-
-    <!-- Action to view documents in a specific folder -->
     <record id="action_folder_documents" model="ir.actions.act_window">
         <field name="name">Folder Documents</field>
         <field name="res_model">custom.document</field>
@@ -138,20 +193,6 @@
         </field>
     </record>
 
-    <!-- Main Document Action -->
-    <record id="action_custom_document" model="ir.actions.act_window">
-        <field name="name">Documents</field>
-        <field name="res_model">custom.document</field>
-        <field name="view_mode">list</field>
-        <field name="views" eval="[(ref('view_custom_document_list'), 'list')]"/>
-        <field name="search_view_id" ref="view_custom_document_search"/>
-        <field name="help" type="html">
-            <p class="o_view_nocontent_smiling_face">Create your first document</p>
-            <p>Upload files or add URL links to organize your documents</p>
-        </field>
-    </record>
-
-    <!-- Modified Folder Action - Option 1: Keep folder management -->
     <record id="action_custom_document_folder" model="ir.actions.act_window">
         <field name="name">Folders</field>
         <field name="res_model">custom.document.folder</field>
@@ -160,20 +201,6 @@
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">Create your first folder</p>
             <p>Organize your documents in folders. Click the folder icon to view documents inside.</p>
-        </field>
-    </record>
-
-    <!-- Alternative: Direct folder-to-documents action (Option 2) -->
-    <record id="action_browse_folders" model="ir.actions.act_window">
-        <field name="name">Browse by Folder</field>
-        <field name="res_model">custom.document</field>
-        <field name="view_mode">list</field>
-        <field name="views" eval="[(ref('view_custom_document_list'), 'list')]"/>
-        <field name="search_view_id" ref="view_custom_document_search"/>
-        <field name="context">{'search_default_folder': 1}</field>
-        <field name="help" type="html">
-            <p class="o_view_nocontent_smiling_face">No documents found</p>
-            <p>Use the folder filter to browse documents by folder</p>
         </field>
     </record>
 </odoo>

@@ -55,8 +55,6 @@ class CustomDocument(models.Model):
     # For viewing in same tab
     file_view_url = fields.Char('File View URL', compute='_compute_file_view_url')
 
-
-
     is_starred = fields.Boolean('Starred', default=False) 
 
     # ----------------------------
@@ -309,9 +307,6 @@ class CustomDocument(models.Model):
         default.setdefault('locked_by', False)
         return super().copy(default)
 
- 
-
-
     # ---------- Actions menu entries (for list view) ---------
     
     def action_menu_download(self):
@@ -401,27 +396,22 @@ class CustomDocument(models.Model):
             },
         }
     
-
     @api.model
-    def action_open_with_sidebar(self):
-        # get or create the Company root folder (you already have helpers for this)
-        root = self.env['custom.document.folder']._get_company_root(self.env.company)
-        action = self.env.ref('custom_documents.action_custom_document').read()[0]
-        action['context'] = {
-            **self.env.context,
-            'doc_company_root_id': root.id,
-            'searchpanel_default_folder_id': root.id,  # expands Company
-            'my_partner_id': self.env.user.partner_id.id,
-            'recent_from': fields.Datetime.subtract(fields.Datetime.now(), days=7),
-        }
-        return action
-
-    # def action_menu_split_pdf(self):
-    #     self._ensure_single(_("split PDF"))
-    #     raise UserError(_("Split PDF: not implemented yet."))
-
-    # def action_menu_sign(self):
-    #     self._ensure_single(_("sign"))
-    #     raise UserError(_("Sign: integrate with the Sign app if installed."))
-
-
+    def init(self):
+        """Initialize the folder structure on module installation"""
+        super().init()
+        # This will be called when the module is installed
+        company = self.env.company
+        FolderModel = self.env['custom.document.folder'].sudo()
+        
+        # Ensure the company root folder exists
+        FolderModel._get_company_root(company)
+        
+        # Optionally create default company folders
+        FolderModel._ensure_default_company_children(company)
+        
+        # If hr.employee is installed, ensure employee folders
+        if 'hr.employee' in self.env:
+            employees = self.env['hr.employee'].search([('company_id', '=', company.id)])
+            for emp in employees:
+                FolderModel._ensure_employee_folder(emp)

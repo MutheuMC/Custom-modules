@@ -6,33 +6,64 @@
               sequence="5"
               web_icon="custom_documents,static/description/icon.png"/>
     
-    <!-- Documents Menu -->
+    <!-- All Documents Menu -->
     <menuitem id="menu_custom_documents" 
               name="All Documents" 
               parent="menu_custom_document_root" 
               action="action_custom_document" 
               sequence="10"/>
     
+    <!-- My Drive -->
+    <menuitem id="menu_my_drive" 
+              name="My Drive" 
+              parent="menu_custom_document_root" 
+              action="action_my_drive" 
+              sequence="15"/>
+    
+    <!-- Shared with Me -->
+    <menuitem id="menu_shared_with_me" 
+              name="Shared with Me" 
+              parent="menu_custom_document_root" 
+              action="action_shared_with_me" 
+              sequence="20"/>
+    
+    <!-- Recent -->
+    <menuitem id="menu_recent" 
+              name="Recent" 
+              parent="menu_custom_document_root" 
+              action="action_recent" 
+              sequence="25"/>
+    
+    <!-- Trash -->
+    <menuitem id="menu_trash" 
+              name="Trash" 
+              parent="menu_custom_document_root" 
+              action="action_trash" 
+              sequence="30"/>
+    
+    <menuitem id="menu_separator_1" 
+              name="" 
+              parent="menu_custom_document_root" 
+              sequence="35"/>
+    
     <!-- Upload Document Menu -->
     <menuitem id="menu_custom_document_upload" 
               name="Upload Document" 
               parent="menu_custom_document_root" 
               action="action_custom_document_upload_wizard" 
-              sequence="15"/>
-
-
-
+              sequence="40"/>
     
     <!-- Folders Menu -->
     <menuitem id="menu_custom_document_folders" 
-              name="Folders" 
+              name="Manage Folders" 
               parent="menu_custom_document_root" 
               action="action_custom_document_folder" 
-              sequence="20"/>
+              sequence="45"/>
     
     <!-- Configuration Menu -->
     <menuitem id="menu_custom_document_config" 
               name="Configuration" 
               parent="menu_custom_document_root" 
-              sequence="100"/>
+              sequence="100"
+              groups="base.group_system"/>
 </odoo>
