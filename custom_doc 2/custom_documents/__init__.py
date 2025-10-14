@@ -2,12 +2,15 @@ from . import models
 
 def post_init_hook(env):
     """Initialize folder structure after module installation"""
-    # Initialize folder structure for all companies
-    companies = env['res.company'].search([])
     folder_model = env['custom.document.folder']
     
+    # Create virtual folders ONCE for the entire instance
+    if not folder_model.sudo().search([('is_virtual', '=', True)], limit=1):
+        folder_model._ensure_virtual_folders()
+    
+    # Now create company-specific structures
+    companies = env['res.company'].search([])
     for company in companies:
-        # Switch to company context
         folder_model = folder_model.with_company(company)
         
         # Create Company root folder

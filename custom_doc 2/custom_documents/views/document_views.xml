@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+
     <!-- ===========================
          Document List View
          =========================== -->
@@ -35,6 +36,7 @@
                 <field name="name" string="Name"/>
                 <field name="folder_id" string="Folder"/>
                 <field name="user_id" widget="many2one_avatar_user" string="Owner"/>
+                <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color'}" optional="show"/>
                 <field name="company_id" string="Contact" groups="base.group_multi_company" optional="show"/>
                 <field name="write_date" string="Last Updated on"/>
                 <field name="file_size" string="File Size" optional="hide"/>
@@ -42,9 +44,46 @@
         </field>
     </record>
 
+    <!-- ===========================
+         Document Form View (attrs -> invisible)
+         =========================== -->
+    <record id="view_custom_document_form" model="ir.ui.view">
+        <field name="name">custom.document.form</field>
+        <field name="model">custom.document</field>
+        <field name="arch" type="xml">
+            <form string="Document">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="document_type"/>
+                        <field name="folder_id"/>
+                        <!-- Tags with native quick-create -->
+                        <field name="tag_ids"
+                               widget="many2many_tags"
+                               placeholder="Add a tag"
+                               options="{'color_field': 'color', 'no_quick_create': false, 'no_create_edit': false}"/>
+                    </group>
+
+                    <!-- In Odoo 18 use invisible= instead of attrs= -->
+                    <group invisible="[('document_type','!=','file')]">
+                        <field name="file" filename="file_name"/>
+                        <field name="file_name"/>
+                    </group>
+
+                    <group invisible="[('document_type','!=','url')]">
+                        <field name="url"/>
+                    </group>
+
+                    <group>
+                        <field name="description"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
     <!-- ===============================================
          Document Search View with Hierarchical Searchpanel
-         (CHANGED: ensure folder tree in left sidebar)
          =============================================== -->
     <record id="view_custom_document_search" model="ir.ui.view">
         <field name="name">custom.document.search</field>
@@ -56,18 +95,6 @@
                 <field name="user_id"/>
                 <field name="tag_ids"/>
 
-                <!-- Filters matching the top-level sections (kept as filters, no menu needed) -->
-                <filter string="My Documents" name="my_documents" domain="[('user_id', '=', uid)]"/>
-                <filter string="Shared with Me" name="shared_with_me"
-                        domain="[('message_follower_ids.partner_id.user_ids', 'in', [uid])]"/>
-                <filter string="Recent" name="recent"
-                        domain="[('write_date', '>=', (context_today() - relativedelta(days=7)).strftime('%Y-%m-%d'))]"/>
-                <filter string="Trash" name="trash" domain="[('active', '=', False)]"/>
-
-                <separator/>
-                <filter string="Files" name="files" domain="[('document_type', '=', 'file')]"/>
-                <filter string="URLs"  name="urls"  domain="[('document_type', '=', 'url')]"/>
-
                 <group expand="0" string="Group By">
                     <filter string="Type"          name="type"   context="{'group_by': 'document_type'}"/>
                     <filter string="Folder"        name="folder" context="{'group_by': 'folder_id'}"/>
@@ -75,13 +102,14 @@
                     <filter string="Creation Date" name="create" context="{'group_by': 'create_date:month'}"/>
                 </group>
 
-                <!-- LEFT SIDEBAR with Hierarchical Folders (key change) -->
+                <!-- LEFT SIDEBAR with Hierarchical Folders -->
                 <searchpanel>
                     <field name="folder_id"
-                           string="Folders"
+                           string=""
                            select="one"
-                           icon="fa-folder"
+                           icon="fa-folder-o"
                            enable_counters="1"
+                           expand="1"
                            hierarchize="1"/>
                 </searchpanel>
 
@@ -95,8 +123,9 @@
     <record id="action_custom_document" model="ir.actions.act_window">
         <field name="name">Documents</field>
         <field name="res_model">custom.document</field>
-        <field name="view_mode">list</field>
-        <field name="views" eval="[(ref('view_custom_document_list'), 'list')]"/>
+        <field name="view_mode">list,form</field>
+        <field name="views" eval="[(ref('view_custom_document_list'), 'list'),
+                                   (ref('view_custom_document_form'), 'form')]"/>
         <field name="search_view_id" ref="view_custom_document_search"/>
         <field name="context">{}</field>
         <field name="help" type="html">
@@ -107,13 +136,13 @@
 
     <!-- ===========================
          Optional shortcut actions
-         (unchanged; useful if you keep them)
          =========================== -->
     <record id="action_my_drive" model="ir.actions.act_window">
         <field name="name">My Drive</field>
         <field name="res_model">custom.document</field>
-        <field name="view_mode">list</field>
-        <field name="views" eval="[(ref('view_custom_document_list'), 'list')]"/>
+        <field name="view_mode">list,form</field>
+        <field name="views" eval="[(ref('view_custom_document_list'), 'list'),
+                                   (ref('view_custom_document_form'), 'form')]"/>
         <field name="search_view_id" ref="view_custom_document_search"/>
         <field name="context">{'search_default_my_drive': 1}</field>
         <field name="help" type="html">
@@ -125,8 +154,9 @@
     <record id="action_shared_with_me" model="ir.actions.act_window">
         <field name="name">Shared with Me</field>
         <field name="res_model">custom.document</field>
-        <field name="view_mode">list</field>
-        <field name="views" eval="[(ref('view_custom_document_list'), 'list')]"/>
+        <field name="view_mode">list,form</field>
+        <field name="views" eval="[(ref('view_custom_document_list'), 'list'),
+                                   (ref('view_custom_document_form'), 'form')]"/>
         <field name="search_view_id" ref="view_custom_document_search"/>
         <field name="context">{'search_default_shared_with_me': 1}</field>
         <field name="help" type="html">
@@ -138,8 +168,9 @@
     <record id="action_recent" model="ir.actions.act_window">
         <field name="name">Recent</field>
         <field name="res_model">custom.document</field>
-        <field name="view_mode">list</field>
-        <field name="views" eval="[(ref('view_custom_document_list'), 'list')]"/>
+        <field name="view_mode">list,form</field>
+        <field name="views" eval="[(ref('view_custom_document_list'), 'list'),
+                                   (ref('view_custom_document_form'), 'form')]"/>
         <field name="search_view_id" ref="view_custom_document_search"/>
         <field name="context">{'search_default_recent': 1}</field>
         <field name="help" type="html">
@@ -151,8 +182,9 @@
     <record id="action_trash" model="ir.actions.act_window">
         <field name="name">Trash</field>
         <field name="res_model">custom.document</field>
-        <field name="view_mode">list</field>
-        <field name="views" eval="[(ref('view_custom_document_list'), 'list')]"/>
+        <field name="view_mode">list,form</field>
+        <field name="views" eval="[(ref('view_custom_document_list'), 'list'),
+                                   (ref('view_custom_document_form'), 'form')]"/>
         <field name="search_view_id" ref="view_custom_document_search"/>
         <field name="context">{'search_default_trash': 1, 'active_test': False}</field>
         <field name="help" type="html">
@@ -182,8 +214,9 @@
     <record id="action_folder_documents" model="ir.actions.act_window">
         <field name="name">Folder Documents</field>
         <field name="res_model">custom.document</field>
-        <field name="view_mode">list</field>
-        <field name="views" eval="[(ref('view_custom_document_list'), 'list')]"/>
+        <field name="view_mode">list,form</field>
+        <field name="views" eval="[(ref('view_custom_document_list'), 'list'),
+                                   (ref('view_custom_document_form'), 'form')]"/>
         <field name="search_view_id" ref="view_custom_document_search"/>
         <field name="domain">[('folder_id', '=', active_id)]</field>
         <field name="context">{'default_folder_id': active_id}</field>
@@ -203,4 +236,5 @@
             <p>Organize your documents in folders. Click the folder icon to view documents inside.</p>
         </field>
     </record>
+
 </odoo>

@@ -2,7 +2,7 @@
     'name': 'Custom Documents',
     'version': '18.0.1.0.0',
     'category': 'Document Management',
-    'summary': 'Custom Document Management System',
+    'summary': 'Custom Document Management System Systems',
     'depends': ['base', 'web', 'mail', 'hr'],
     'post_init_hook': 'post_init_hook',
     'data': [

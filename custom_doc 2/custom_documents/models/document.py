@@ -1,7 +1,10 @@
+# -*- coding: utf-8 -*-
 import base64
 import mimetypes
 import re
-from odoo import models, fields, api, _
+from datetime import timedelta
+
+from odoo import api, fields, models, _
 from odoo.exceptions import UserError, ValidationError
 
 
@@ -11,6 +14,9 @@ class CustomDocument(models.Model):
     _inherit = ['mail.thread', 'mail.activity.mixin']
     _order = 'create_date desc'
 
+    # -------------------------------------------------------------------------
+    # Fields
+    # -------------------------------------------------------------------------
     name = fields.Char('Document Name', required=True, tracking=True)
 
     document_type = fields.Selection(
@@ -24,59 +30,94 @@ class CustomDocument(models.Model):
     file_size = fields.Integer('File Size', compute='_compute_file_size')
     mimetype = fields.Char('MIME Type')
 
-    # Server-side convenience flag (not stored)
+    # Convenience (server-side)
     is_pdf = fields.Boolean(compute="_compute_is_pdf", store=False)
     file_kind = fields.Selection(
         [('pdf', 'PDF'), ('file', 'File'), ('url', 'URL')],
         compute='_compute_file_kind', store=True
     )
 
-    # URL fields
+    # URL
     url = fields.Char('URL')
 
-    # Organization fields
-    folder_id = fields.Many2one('custom.document.folder', 'Folder', ondelete='cascade', index=True)
+    # Organization
+    folder_id = fields.Many2one(
+        'custom.document.folder', 'Folder',
+        ondelete='cascade', index=True,
+        domain="[('is_virtual', '=', False)]"
+    )
 
-    # Meta fields
+    # Kept for compatibility (used only if you reference it elsewhere)
+    computed_folder_id = fields.Many2one(
+        'custom.document.folder', string='Display Folder',
+        compute='_compute_display_folder', search='_search_display_folder',
+        store=False
+    )
+
+    # Meta
     description = fields.Text('Description')
     tag_ids = fields.Many2many('custom.document.tag', string='Tags')
-    user_id = fields.Many2one('res.users', 'Owner', default=lambda self: self.env.user, tracking=True)
-    company_id = fields.Many2one('res.company', 'Company', default=lambda self: self.env.company)
+    user_id = fields.Many2one('res.users', 'Owner',
+                              default=lambda self: self.env.user, tracking=True)
+    company_id = fields.Many2one('res.company', 'Company',
+                                 default=lambda self: self.env.company)
 
-    # Additional fields
+    # Other
     active = fields.Boolean('Active', default=True)
     color = fields.Integer('Color')
-    priority = fields.Selection([('0', 'Normal'), ('1', 'High')], string='Priority', default='0')
+    priority = fields.Selection(
+        [('0', 'Normal'), ('1', 'High')],
+        string='Priority', default='0'
+    )
 
     # Locking
     is_locked = fields.Boolean('Locked', default=False)
     locked_by = fields.Many2one('res.users', 'Locked By')
 
-    # For viewing in same tab
+    # File view (same tab)
     file_view_url = fields.Char('File View URL', compute='_compute_file_view_url')
 
-    is_starred = fields.Boolean('Starred', default=False) 
+    # UX flags
+    is_starred = fields.Boolean('Starred', default=False)
 
-    # ----------------------------
-    # Computes & constraints
-    # ----------------------------
+    # Virtual folders (computed membership)
+    virtual_folder_ids = fields.Many2many(
+        'custom.document.folder', compute='_compute_virtual_folder_ids',
+        string='Virtual Folders', store=False
+    )
+
+    # Search-only helpers for SearchPanel filters
+    is_recent = fields.Boolean(string='Recent', store=False, search='_search_is_recent')
+    is_shared_with_me = fields.Boolean(string='Shared with Me', store=False, search='_search_shared_with_me')
+
+    # -------------------------------------------------------------------------
+    # Computes & Constraints
+    # -------------------------------------------------------------------------
     @api.depends('file')
     def _compute_file_size(self):
+        """Compute real byte size even if binary is loaded with bin_size=True."""
         for rec in self:
-            if rec.file:
+            size = 0
+            data = rec.file
+            # If it's a human-readable size (e.g., '10.5KB'), fetch full binary
+            needs_fetch = (not data or not isinstance(data, str)
+                           or (' ' in data) or (isinstance(data, str) and data.endswith('B')))
+            if needs_fetch:
+                data = rec.with_context(bin_size=False).file
+            if data and isinstance(data, str):
                 try:
-                    rec.file_size = len(base64.b64decode(rec.file))
+                    size = len(base64.b64decode(data))
                 except Exception:
-                    rec.file_size = 0
-            else:
-                rec.file_size = 0
+                    size = 0
+            rec.file_size = size
 
     @api.depends('document_type', 'file')
     def _compute_file_view_url(self):
         base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url')
         for rec in self:
             if rec.document_type == 'file' and rec.file:
-                rec.file_view_url = f"{base_url}/web/content/custom.document/{rec.id}/file/{rec.file_name or 'document'}"
+                fname = rec.file_name or 'document'
+                rec.file_view_url = f"{base_url}/web/content/custom.document/{rec.id}/file/{fname}"
             else:
                 rec.file_view_url = False
 
@@ -90,7 +131,7 @@ class CustomDocument(models.Model):
 
     @api.depends('document_type', 'mimetype', 'file_name', 'file')
     def _compute_is_pdf(self):
-        """Robust PDF detection that also works when Binary is read with bin_size=True."""
+        """Robust PDF sniffing (works even if bin_size=True)."""
         for rec in self:
             is_pdf = False
             if rec.document_type == 'file':
@@ -99,24 +140,21 @@ class CustomDocument(models.Model):
                 if 'pdf' in mt or name.endswith('.pdf'):
                     is_pdf = True
                 else:
-                    # Binary may be a size string if read with bin_size=True.
                     data = rec.file
-                    needs_fetch = not data or not isinstance(data, str) or (' ' in data) or data.endswith('B')
+                    needs_fetch = (not data or not isinstance(data, str)
+                                   or (' ' in data) or data.endswith('B'))
                     if needs_fetch:
                         data = rec.with_context(bin_size=False).file
                     if data and isinstance(data, str):
                         try:
-                            head = base64.b64decode(data)[:5]
-                            is_pdf = (head == b'%PDF-')
+                            is_pdf = (base64.b64decode(data)[:5] == b'%PDF-')
                         except Exception:
                             is_pdf = False
             rec.is_pdf = is_pdf
 
-
     @api.depends('document_type', 'mimetype', 'file_name', 'file')
     def _compute_file_kind(self):
         for rec in self:
-            # default by type
             kind = 'url' if rec.document_type == 'url' else 'file'
             if rec.document_type == 'file':
                 mt = (rec.mimetype or '').lower()
@@ -124,10 +162,9 @@ class CustomDocument(models.Model):
                 if 'pdf' in mt or name.endswith('.pdf'):
                     kind = 'pdf'
                 else:
-                    # last-resort sniff; handles when mimetype/filename are missing
                     data = rec.file
                     needs_fetch = (not data or not isinstance(data, str)
-                                or (' ' in data) or data.endswith('B'))
+                                   or (' ' in data) or data.endswith('B'))
                     if needs_fetch:
                         data = rec.with_context(bin_size=False).file
                     if data and isinstance(data, str):
@@ -138,9 +175,35 @@ class CustomDocument(models.Model):
                             pass
             rec.file_kind = kind
 
-    # ----------------------------
-    # Create / write
-    # ----------------------------
+    def _compute_display_folder(self):
+        """Compatibility shim: mirror folder_id."""
+        for doc in self:
+            doc.computed_folder_id = doc.folder_id
+
+    def _search_display_folder(self, operator, value):
+        """Enable searching by a 'virtual' folder value (if ever used)."""
+        if not value:
+            return [('folder_id', operator, value)]
+
+        if isinstance(value, list):
+            value = value[-1] if value else False
+
+        if not value:
+            return [('folder_id', operator, value)]
+
+        folder = self.env['custom.document.folder'].sudo().browse(value)
+        if not folder.exists():
+            return [('id', '=', False)]
+
+        if folder.is_virtual:
+            # Delegate to folder's virtual domain
+            return folder._get_virtual_folder_domain(folder.virtual_type)
+        # Real folder: include subfolders
+        return [('folder_id', 'child_of', value)]
+
+    # -------------------------------------------------------------------------
+    # CRUD
+    # -------------------------------------------------------------------------
     @api.model_create_multi
     def create(self, vals_list):
         for vals in vals_list:
@@ -149,10 +212,11 @@ class CustomDocument(models.Model):
             elif vals.get('file_name') and not vals.get('name'):
                 vals['name'] = vals['file_name']
 
-            # Detect MIME type for files
+            # Guess mimetype for uploaded files
             if vals.get('file') and not vals.get('mimetype'):
-                if vals.get('file_name'):
-                    mt, _enc = mimetypes.guess_type(vals['file_name'])
+                fname = vals.get('file_name')
+                if fname:
+                    mt, _enc = mimetypes.guess_type(fname)
                     if mt:
                         vals['mimetype'] = mt
         return super().create(vals_list)
@@ -166,9 +230,9 @@ class CustomDocument(models.Model):
                     vals['mimetype'] = mt
         return super().write(vals)
 
-    # ----------------------------
+    # -------------------------------------------------------------------------
     # Actions
-    # ----------------------------
+    # -------------------------------------------------------------------------
     def action_download(self):
         self.ensure_one()
         if self.document_type == 'file':
@@ -180,18 +244,17 @@ class CustomDocument(models.Model):
         if self.document_type == 'url':
             return {'type': 'ir.actions.act_url', 'url': self.url, 'target': 'new'}
 
-    
     def action_debug_flags(self):
-            self.ensure_one()
-            msg = (
-                "Debug values\n"
-                f"- document_type: {self.document_type}\n"
-                f"- file_name: {self.file_name}\n"
-                f"- mimetype: {self.mimetype}\n"
-                f"- is_pdf (server): {self.is_pdf}\n"
-                f"- has file data: {bool(self.file)}"
-            )
-            raise UserError(msg)
+        self.ensure_one()
+        msg = (
+            "Debug values\n"
+            f"- document_type: {self.document_type}\n"
+            f"- file_name: {self.file_name}\n"
+            f"- mimetype: {self.mimetype}\n"
+            f"- is_pdf (server): {self.is_pdf}\n"
+            f"- has file data: {bool(self.file)}"
+        )
+        raise UserError(msg)
 
     def action_lock(self):
         self.ensure_one()
@@ -202,18 +265,15 @@ class CustomDocument(models.Model):
             'locked_by': self.env.user.id if not self.is_locked else False,
         })
 
-
     def action_toggle_star(self):
         for rec in self:
             rec.is_starred = not rec.is_starred
         return False
 
     def _get_or_create_file_attachment(self):
-        """Return the ir.attachment that stores this record's `file` field.
-        If not found (rare), create a normal attachment for the viewer."""
+        """Return the ir.attachment backing this record's `file` field."""
         self.ensure_one()
         Att = self.env['ir.attachment']
-        # When Binary has attachment=True, Odoo stores it as an attachment with res_field
         att = Att.search([
             ('res_model', '=', self._name),
             ('res_id', '=', self.id),
@@ -221,25 +281,21 @@ class CustomDocument(models.Model):
         ], limit=1)
         if att:
             return att
-        # Fallback (if not stored with res_field for any reason)
         return Att.create({
             'name': self.file_name or (self.name + '.pdf'),
             'res_model': self._name,
             'res_id': self.id,
             'mimetype': self.mimetype or 'application/pdf',
-            'datas': self.file,  # base64
+            'datas': self.file,
         })
 
-    # ----------------------------
-    # Actions
-    # ----------------------------
     def action_view_file(self):
-        """Open PDF in a modal (same tab) using a transient wizard instance."""
+        """Open PDF in a modal via a transient wizard, else download."""
         self.ensure_one()
         if self.document_type != 'file' or not self.file:
             return False
 
-        # Decide if it's a PDF; otherwise fallback to download
+        # Detect PDF quickly
         is_pdf_like = False
         if (self.mimetype or '').lower().find('pdf') != -1:
             is_pdf_like = True
@@ -255,35 +311,29 @@ class CustomDocument(models.Model):
         if not is_pdf_like:
             return self.action_download()
 
-        # CREATE the wizard record first so pdf_viewer has a res_id to stream from
         wiz = self.env['custom.document.preview.wizard'].sudo().create({
-            'document_id': self.id,   # NEW
-
+            'document_id': self.id,
             'data': self.with_context(bin_size=False).file,
             'data_fname': self.file_name or (self.name + '.pdf'),
             'mimetype': self.mimetype or 'application/pdf',
         })
-
         return {
             'type': 'ir.actions.act_window',
             'name': _('Preview'),
             'res_model': 'custom.document.preview.wizard',
             'res_id': wiz.id,
             'view_mode': 'form',
-            'target': 'new',              # modal overlay, same tab
+            'target': 'new',
             'context': {'dialog_size': 'large'},
         }
-    
 
-
+    # ---------- List-view action helpers ----------
     def _ensure_single(self, label=_("this action")):
         if len(self) != 1:
             raise UserError(_("Please select exactly one document for %s.") % label)
-        
 
     def _make_copy_name(self, base_name: str) -> str:
         stem = base_name or _("Untitled")
-        # find existing copies for this stem
         like = f"{stem} (copy%"
         rows = self.search_read([('name', 'ilike', like)], ['name'], limit=5000)
         used = set()
@@ -297,18 +347,15 @@ class CustomDocument(models.Model):
         while n in used:
             n += 1
         return f"{stem} (copy {n})"
-        
+
     def copy(self, default=None):
         self.ensure_one()
         default = dict(default or {})
         default.setdefault('name', self._make_copy_name(self.name))
-        # optional: always unlock the copy
         default.setdefault('is_locked', False)
         default.setdefault('locked_by', False)
         return super().copy(default)
 
-    # ---------- Actions menu entries (for list view) ---------
-    
     def action_menu_download(self):
         self._ensure_single(_("download"))
         return self.action_download()
@@ -318,7 +365,6 @@ class CustomDocument(models.Model):
         base = f"/web/content/custom.document/{self.id}/file/{self.file_name or 'file'}"
         raise UserError(_("Share link:\n%s") % base)
 
-    
     def action_menu_move_to_trash(self):
         self.sudo().write({'active': False})
         return {'type': 'ir.actions.client', 'tag': 'reload'}
@@ -360,7 +406,6 @@ class CustomDocument(models.Model):
         }
 
     def action_menu_copy_links(self):
-        # show all links for selected docs
         lines = []
         for d in self:
             base = f"/web/content/custom.document/{d.id}/file/{d.file_name or 'file'}"
@@ -395,23 +440,75 @@ class CustomDocument(models.Model):
                 'default_folder_id': self.folder_id.id,
             },
         }
-    
+
+    # -------------------------------------------------------------------------
+    # Module init: ensure seed folders (kept as-is)
+    # -------------------------------------------------------------------------
     @api.model
     def init(self):
-        """Initialize the folder structure on module installation"""
+        """Initialize the folder structure on module installation."""
         super().init()
-        # This will be called when the module is installed
         company = self.env.company
-        FolderModel = self.env['custom.document.folder'].sudo()
-        
-        # Ensure the company root folder exists
-        FolderModel._get_company_root(company)
-        
-        # Optionally create default company folders
-        FolderModel._ensure_default_company_children(company)
-        
-        # If hr.employee is installed, ensure employee folders
+        Folder = self.env['custom.document.folder'].sudo()
+        Folder._get_company_root(company)
+        Folder._ensure_default_company_children(company)
         if 'hr.employee' in self.env:
             employees = self.env['hr.employee'].search([('company_id', '=', company.id)])
             for emp in employees:
-                FolderModel._ensure_employee_folder(emp)
+                Folder._ensure_employee_folder(emp)
+
+    # -------------------------------------------------------------------------
+    # Virtual folder membership + Search helpers
+    # -------------------------------------------------------------------------
+    @api.depends('user_id', 'write_date', 'active', 'message_partner_ids')
+    def _compute_virtual_folder_ids(self):
+        """Compute which virtual folders this document belongs to."""
+        VirtualFolder = self.env['custom.document.folder'].sudo()
+
+        all_folder = VirtualFolder.search([('virtual_type', '=', 'all')], limit=1)
+        my_drive_folder = VirtualFolder.search([('virtual_type', '=', 'my_drive')], limit=1)
+        shared_folder = VirtualFolder.search([('virtual_type', '=', 'shared')], limit=1)
+        recent_folder = VirtualFolder.search([('virtual_type', '=', 'recent')], limit=1)
+        trash_folder = VirtualFolder.search([('virtual_type', '=', 'trash')], limit=1)
+
+        uid = self.env.uid
+        partner_id = self.env.user.partner_id.id
+        seven_days_ago = fields.Datetime.now() - timedelta(days=7)
+
+        for doc in self:
+            vf = []
+            if doc.active and all_folder:
+                vf.append(all_folder.id)
+            if doc.user_id.id == uid and doc.active and my_drive_folder:
+                vf.append(my_drive_folder.id)
+            # follower but not owner
+            if (partner_id in doc.message_partner_ids.ids) and (doc.user_id.id != uid) and doc.active and shared_folder:
+                vf.append(shared_folder.id)
+            if (doc.write_date and doc.write_date >= seven_days_ago) and doc.active and recent_folder:
+                vf.append(recent_folder.id)
+            if not doc.active and trash_folder:
+                vf.append(trash_folder.id)
+            doc.virtual_folder_ids = [(6, 0, vf)]
+
+    def _search_is_recent(self, operator, value):
+        """True if write_date is within the last 7 days (active only)."""
+        if operator not in ('=', '=='):
+            return []
+        seven_days_ago = fields.Datetime.now() - timedelta(days=7)
+        if value:
+            return [('write_date', '>=', seven_days_ago), ('active', '=', True)]
+        return ['|', ('write_date', '=', False), ('write_date', '<', seven_days_ago)]
+
+    def _search_shared_with_me(self, operator, value):
+        """True if current user is a follower (partner) but not the owner (active)."""
+        if operator not in ('=', '=='):
+            return []
+        uid = self.env.uid
+        partner_id = self.env.user.partner_id.id
+        if value:
+            return [
+                ('message_partner_ids', 'in', [partner_id]),
+                ('user_id', '!=', uid),
+                ('active', '=', True),
+            ]
+        return ['|', ('message_partner_ids', 'not in', [partner_id]), ('user_id', '=', uid)]
