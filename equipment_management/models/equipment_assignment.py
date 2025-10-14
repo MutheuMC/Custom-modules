@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+# equipment_management/models/equipment_assignment.py
+
 from odoo import models, fields, api, _
 from odoo.exceptions import ValidationError
 

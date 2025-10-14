@@ -153,34 +153,49 @@ class EquipmentItem(models.Model):
         return bool(ms and self.location_id and self.location_id.id == ms.id)
 
     # ---------- Create / Write ----------
-    @api.model
-    def create(self, vals):
-        if not vals.get('barcode'):
-            vals['barcode'] = self.env['ir.sequence'].next_by_code('equipment.item')
-        # On create, default clean holder if missing
-        vals.setdefault('holder_type', 'none')
-        for f in ('employee_id', 'department_id', 'custodian_partner_id', 'assigned_date'):
-            vals.setdefault(f, False)
-        # default to Main Store if not provided
-        if not vals.get('location_id'):
-            ms = self._default_main_store_id()
-            if ms:
-                vals['location_id'] = ms
-        return super().create(vals)
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            if not vals.get('barcode'):
+                vals['barcode'] = self.env['ir.sequence'].next_by_code('equipment.item')
+            # On create, default clean holder if missing
+            vals.setdefault('holder_type', 'none')
+            for f in ('employee_id', 'department_id', 'custodian_partner_id', 'assigned_date'):
+                vals.setdefault(f, False)
+            # default to Main Store if not provided
+            if not vals.get('location_id'):
+                ms = self._default_main_store_id()
+                if ms:
+                    vals['location_id'] = ms
+        return super().create(vals_list)
 
     def write(self, vals):
-        # Auto-cohere state on assignment changes (unless explicitly set to borrowed/maintenance/retired/lost/reserved)
+        # First do the actual write
         result = super().write(vals)
+        
+        # Auto-cohere state on assignment changes (unless explicitly set to borrowed/maintenance/retired/lost/reserved)
         blocking = {'borrowed', 'maintenance', 'retired', 'lost', 'reserved'}
-        for rec in self:
-            if rec.state not in blocking:
-                if rec.holder_type == 'none' and rec.state != 'available':
-                    super(EquipmentItem, rec).write({'state': 'available'})
-                elif rec.holder_type != 'none' and rec.state != 'assigned':
-                    super(EquipmentItem, rec).write({'state': 'assigned'})
+        
+        # Check if we're changing holder_type or if state needs to be synced
+        if 'holder_type' in vals or 'employee_id' in vals or 'department_id' in vals or 'custodian_partner_id' in vals:
+            for rec in self:
+                # Only auto-update state if it's not in a blocking state
+                if rec.state not in blocking:
+                    # If no holder, should be available
+                    if rec.holder_type == 'none':
+                        if rec.state != 'available':
+                            super(EquipmentItem, rec).write({'state': 'available'})
+                    # If has holder, should be assigned
+                    else:
+                        if rec.state != 'assigned':
+                            super(EquipmentItem, rec).write({'state': 'assigned'})
+        
         # If moving to available, clear loan custodian user
-        if vals.get('state') == 'available' and not vals.get('custodian_id'):
-            super().write({'custodian_id': False})
+        if vals.get('state') == 'available' and 'custodian_id' not in vals:
+            for rec in self:
+                if rec.custodian_id:
+                    super(EquipmentItem, rec).write({'custodian_id': False})
+        
         return result
 
     # ---------- Onchange ----------
@@ -291,6 +306,11 @@ class EquipmentItem(models.Model):
             item.attachment_count = self.env['ir.attachment'].search_count([
                 ('res_model', '=', 'equipment.item'), ('res_id', '=', item.id)
             ])
+    
+    def _compute_assignment_count(self):
+        """Count assignment history records"""
+        for item in self:
+            item.assignment_count = len(item.assignment_ids)
 
     # ---------- Actions ----------
     def action_borrow(self):

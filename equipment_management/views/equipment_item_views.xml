@@ -1,7 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <!-- Equipment Item list View -->
+    <!-- Assignment History Action -->
+    <record id="action_view_assignment_history" model="ir.actions.act_window">
+        <field name="name">Assignment History</field>
+        <field name="res_model">equipment.assignment</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('equipment_id', '=', active_id)]</field>
+        <field name="context">{'default_equipment_id': active_id}</field>
+    </record>
+
+    <!-- Equipment Item List View -->
     <record id="view_equipment_item_list" model="ir.ui.view">
         <field name="name">equipment.item.list</field>
         <field name="model">equipment.item</field>
@@ -35,53 +44,95 @@
         <field name="arch" type="xml">
             <form string="Equipment Item">
                 <header>
-
-                  <button name="action_open_assign_wizard" string="Assign" type="object"
+                    <!-- ASSIGN BUTTON - Show only when NOT assigned -->
+                    <button name="action_open_assign_wizard" 
+                            string="Assign" 
+                            type="object"
                             class="oe_highlight"
                             groups="equipment_management.group_equipment_manager"
-                            invisible="not (state in ['available','assigned','reserved'])"/>
+                            invisible="holder_type != 'none' or state not in ['available','reserved']"/>
 
-                    <button name="action_open_unassign_wizard" string="Unassign" type="object"
+                    <!-- UNASSIGN BUTTON - Show only when assigned -->
+                    <button name="action_open_unassign_wizard" 
+                            string="Unassign" 
+                            type="object"
                             groups="equipment_management.group_equipment_manager"
-                            invisible="state != 'assigned'"/>
+                            invisible="holder_type == 'none'"/>
 
-                    <button name="action_move_to_store" string="Move to Store" type="object"
+                    <!-- MOVE TO STORE - Show when assigned or available (but not borrowed) -->
+                    <button name="action_move_to_store" 
+                            string="Move to Store" 
+                            type="object"
                             groups="equipment_management.group_equipment_manager"
-                            invisible="not (state in ['available','assigned','reserved','maintenance'])"/>
+                            invisible="state in ['borrowed','retired','lost'] or holder_type == 'none'"/>
                     
-                    <button name="action_borrow" string="Borrow" type="object" class="oe_highlight"
-                            invisible="state not in ('available','reserved')"
+                    <!-- BORROW - Show only when available and NOT assigned -->
+                    <button name="action_borrow" 
+                            string="Borrow" 
+                            type="object" 
+                            class="oe_highlight"
+                            invisible="holder_type != 'none' or state not in ['available','reserved']"
                             groups="equipment_management.group_equipment_user"/>
 
-                    <button name="action_return" string="Return" type="object" class="oe_highlight"
+                    <!-- RETURN - Show only when borrowed -->
+                    <button name="action_return" 
+                            string="Return" 
+                            type="object" 
+                            class="oe_highlight"
                             invisible="state != 'borrowed'"
                             groups="equipment_management.group_equipment_user"/>
 
-                    <button name="action_schedule_maintenance" string="Schedule Maintenance"
-                            type="object" groups="equipment_management.group_equipment_manager"/>
-
-                    <button name="action_print_barcode_label" string="Print Label"
-                            type="object" groups="equipment_management.group_equipment_user"/>
-
-                    <button name="mark_as_lost" string="Mark as Lost" type="object"
-                            confirm="Are you sure you want to mark this equipment as lost?"
-                            invisible="state not in ('borrowed','available')"
+                    <!-- SCHEDULE MAINTENANCE -->
+                    <button name="action_schedule_maintenance" 
+                            string="Schedule Maintenance"
+                            type="object" 
                             groups="equipment_management.group_equipment_manager"/>
 
-                    <button name="mark_as_found" string="Mark as Found" type="object"
+                    <!-- PRINT LABEL -->
+                    <button name="action_print_barcode_label" 
+                            string="Print Label"
+                            type="object" 
+                            groups="equipment_management.group_equipment_user"/>
+
+                    <!-- MARK AS LOST -->
+                    <button name="mark_as_lost" 
+                            string="Mark as Lost" 
+                            type="object"
+                            confirm="Are you sure you want to mark this equipment as lost?"
+                            invisible="state not in ['borrowed','available','assigned']"
+                            groups="equipment_management.group_equipment_manager"/>
+
+                    <!-- MARK AS FOUND -->
+                    <button name="mark_as_found" 
+                            string="Mark as Found" 
+                            type="object"
                             invisible="state != 'lost'"
                             groups="equipment_management.group_equipment_manager"/>
 
-                    <button name="retire_equipment" string="Retire" type="object"
+                    <!-- RETIRE -->
+                    <button name="retire_equipment" 
+                            string="Retire" 
+                            type="object"
                             confirm="Are you sure you want to retire this equipment?"
                             groups="equipment_management.group_equipment_manager"/>
 
+                    <!-- STATUSBAR -->
                     <field name="state" widget="statusbar"
                         statusbar_visible="available,assigned,borrowed,maintenance,retired"/>
                 </header>
 
                 <sheet>
+                    <!-- Add holder_type as invisible field so it's available for invisible conditions -->
+                    <field name="holder_type" invisible="1"/>
+                    
                     <div class="oe_button_box" name="button_box">
+                        <button name="%(equipment_management.action_view_assignment_history)d" 
+                                type="action" 
+                                class="oe_stat_button" 
+                                icon="fa-users"
+                                invisible="assignment_count == 0">
+                            <field name="assignment_count" widget="statinfo" string="Assignments"/>
+                        </button>
                         <button name="action_view_loans" type="object" 
                                 class="oe_stat_button" icon="fa-history">
                             <field name="loan_count" widget="statinfo" string="Loans"/>
@@ -109,7 +160,6 @@
                     <group>
                         <group>
                             <field name="category_id" options="{'no_create': True}"/>
-                            <!-- <field name="barcode" widget="barcode_handler"/> -->
                             <field name="serial_number"/>
                             <field name="asset_tag"/>
                             <field name="model_number"/>
@@ -151,26 +201,34 @@
                             <field name="specifications" placeholder="Enter detailed technical specifications..."/>
                         </page>
 
-                        <page string = "Assignment information" name="assign">
-                        <group string="Assignment">
+                        <page string="Assignment Information" name="assign">
+                            <group string="Current Assignment">
                                 <group>
-                                    <field name="holder_type"/>
-                                    <field name="employee_id"
-                                        invisible="holder_type != 'employee'"
-                                        required="holder_type == 'employee'"/>
-                                    <field name="department_id"
+                                    <field name="holder_type" readonly="1"/>
+                                    <field name="employee_id" readonly="1"
+                                        invisible="holder_type != 'employee'"/>
+                                    <field name="department_id" readonly="1"
                                         string="Department/Unit"
-                                        invisible="holder_type != 'department'"
-                                        required="holder_type == 'department'"/>
-                                    <field name="custodian_partner_id"
+                                        invisible="holder_type != 'department'"/>
+                                    <field name="custodian_partner_id" readonly="1"
                                         string="External Custodian"
-                                        invisible="holder_type != 'other'"
-                                        required="holder_type == 'other'"/>
-                                    <field name="assigned_date"
-                                        invisible="holder_type == 'none'"
-                                        required="holder_type != 'none'"/>
+                                        invisible="holder_type != 'other'"/>
+                                    <field name="assigned_date" readonly="1"
+                                        invisible="holder_type == 'none'"/>
                                 </group>
-                                </group>
+                            </group>
+                            
+                            <!-- Assignment History -->
+                            <separator string="Assignment History"/>
+                            <field name="assignment_ids" readonly="1">
+                                <tree>
+                                    <field name="display_name"/>
+                                    <field name="assigned_date"/>
+                                    <field name="unassigned_date"/>
+                                    <field name="assigned_by_id"/>
+                                    <field name="location_id"/>
+                                </tree>
+                            </field>
                         </page>
                         
                         <page string="Purchase Information" name="purchase">
@@ -233,6 +291,7 @@
             </form>
         </field>
     </record>
+
     <!-- Equipment Item Kanban View -->
     <record id="view_equipment_item_kanban" model="ir.ui.view">
         <field name="name">equipment.item.kanban</field>

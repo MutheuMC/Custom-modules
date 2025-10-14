@@ -66,6 +66,7 @@ class EquipmentCategory(models.Model):
     equipment_count = fields.Integer(
         string='Equipment Count',
         compute='_compute_equipment_count',
+        recursive=True,
         store=True
     )
     active = fields.Boolean(

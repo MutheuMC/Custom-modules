@@ -97,11 +97,12 @@ class EquipmentMaintenance(models.Model):
         default=lambda self: self.env.company
     )
 
-    @api.model
-    def create(self, vals):
-        if vals.get('name', _('New')) == _('New'):
-            vals['name'] = self.env['ir.sequence'].next_by_code('equipment.maintenance') or _('New')
-        return super(EquipmentMaintenance, self).create(vals)
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            if vals.get('name', _('New')) == _('New'):
+                vals['name'] = self.env['ir.sequence'].next_by_code('equipment.maintenance') or _('New')
+        return super(EquipmentMaintenance, self).create(vals_list)
 
     def action_start(self):
         """Start maintenance work"""
