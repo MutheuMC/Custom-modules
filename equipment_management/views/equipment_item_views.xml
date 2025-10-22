@@ -38,13 +38,13 @@
                 <header>
 
                   <button name="action_open_assign_wizard" string="Assign" type="object"
-                            class="oe_highlight"
-                            groups="equipment_management.group_equipment_manager"
-                            invisible="state not in  ('available','assigned','reserved')"/>
+                        class="btn-secondary"
+                        invisible="holder_type != 'none' or state in ('borrowed','maintenance','retired','lost')"
+                        groups="equipment_management.group_equipment_manager"/>
 
-                    <button name="action_open_unassign_wizard" string="Unassign" type="object"
-                            groups="equipment_management.group_equipment_manager"
-                            invisible="state != 'assigned'"/>
+                <button name="action_open_unassign_wizard" string="Unassign" type="object"
+                        invisible="holder_type == 'none' or state == 'borrowed'"
+                        groups="equipment_management.group_equipment_manager"/>
 
                     <button name="action_move_to_store" string="Move to Store" type="object"
                             groups="equipment_management.group_equipment_manager"
@@ -350,7 +350,7 @@
         <field name="res_model">equipment.item</field>
         <field name="view_mode">kanban,list,form</field>
         <field name="context">{
-            'search_default_available': 1,
+            'search_default_available': 0,
         }</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">

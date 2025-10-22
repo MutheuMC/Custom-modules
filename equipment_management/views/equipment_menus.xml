@@ -16,6 +16,7 @@
     <menuitem id="menu_equipment_equipment"
               name="Equipment"
               parent="menu_equipment_root"
+              action="action_equipment_item"
               sequence="10"
               groups="equipment_management.group_equipment_user"/>
 
@@ -31,13 +32,7 @@
               sequence="90"
               groups="equipment_management.group_equipment_manager"/>
 
-    <!-- Equipment -> Items -->
-    <menuitem id="menu_equipment_items"
-              name="Items"
-              parent="menu_equipment_equipment"
-              sequence="10"
-              action="action_equipment_item"
-              groups="equipment_management.group_equipment_user"/>
+
 
     <!-- Loans -> All / My / Overdue -->
     <menuitem id="menu_equipment_loan_all"

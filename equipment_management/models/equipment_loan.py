@@ -345,7 +345,7 @@ class EquipmentLoan(models.Model):
             loan.equipment_id.write({
                 'state': 'borrowed',
                 'custodian_id': loan.borrower_id.id,
-                'location_id': False,  # borrowed → out
+                'location_id': loan.from_location_id.id,  # keep a valid location
             })
             loan.write({
                 'state': 'issued',
@@ -353,6 +353,7 @@ class EquipmentLoan(models.Model):
                 'borrow_date': fields.Datetime.now(),
             })
             loan._send_issue_notification()
+
 
     def action_return(self):
         """Return equipment"""

@@ -4,7 +4,7 @@ from odoo.exceptions import UserError, ValidationError
 
 
 # -------------------------------------------------------------------
-# RETURN WIZARD  (updated to play nicely with assignment flow)
+# RETURN WIZARD  (updated per checklist)
 # -------------------------------------------------------------------
 class EquipmentLoanReturnWizard(models.TransientModel):
     _name = 'equipment.loan.return.wizard'
@@ -60,17 +60,18 @@ class EquipmentLoanReturnWizard(models.TransientModel):
         if not self.loan_id or self.loan_id.state not in ['issued', 'overdue']:
             raise UserError(_('Only issued or overdue loans can be returned.'))
 
-        # Update loan record
-        self.loan_id.write({
+        # Prepare loan update with guards for optional fields
+        loan_updates = {
             'state': 'returned',
             'return_date': self.return_date,
-            # record where it actually came back to (if you have this field on the loan)
-            'actual_return_location_id': self.return_location_id.id,
             'condition_return': self.condition_return,
             'damage_notes': self.damage_notes if self.has_damage else False,
             'damage_cost': self.damage_cost if self.has_damage else 0,
             'returned_to_id': self.returned_to_id.id,
-        })
+        }
+        if 'actual_return_location_id' in self.loan_id._fields:
+            loan_updates['actual_return_location_id'] = self.return_location_id.id
+        self.loan_id.write(loan_updates)
 
         eq = self.equipment_id.sudo()
 
@@ -85,25 +86,33 @@ class EquipmentLoanReturnWizard(models.TransientModel):
         # Build values; if assigned, keep current non-store location
         values = {
             'state': new_state,
-            'custodian_id': False,  # clear loan custodian
             'condition': self.condition_return,
             'condition_notes': self.damage_notes if self.has_damage else eq.condition_notes,
         }
-
         if new_state in ('available', 'maintenance'):
             values['location_id'] = self.return_location_id.id
 
+        # Do not write unknown fields (e.g., custodian_id) unless they exist
+        if 'custodian_id' in eq._fields:
+            values['custodian_id'] = False
+
         eq.write(values)
 
-        # Auto-create maintenance if requested
+        # Auto-create maintenance if requested (compatible with equipment_id or equipment_ids)
         if self.create_maintenance:
-            self.env['equipment.maintenance'].create({
-                'equipment_id': eq.id,
+            Maint = self.env['equipment.maintenance']
+            vals = {
                 'maintenance_type': 'corrective',
                 'description': self.damage_notes or _('Maintenance required after return'),
                 'scheduled_date': fields.Date.today(),
-                'state': 'scheduled',
-            })
+            }
+            if 'equipment_id' in Maint._fields:
+                vals['equipment_id'] = eq.id
+            elif 'equipment_ids' in Maint._fields:
+                vals['equipment_ids'] = [(4, eq.id)]
+            if 'state' in Maint._fields and 'scheduled' in dict(Maint._fields['state'].selection):
+                vals['state'] = 'scheduled'
+            Maint.create(vals)
 
         # Notify + chatter
         self.loan_id._send_return_notification()
@@ -122,7 +131,7 @@ class EquipmentLoanReturnWizard(models.TransientModel):
 
 
 # -------------------------------------------------------------------
-# REJECT WIZARD (unchanged logic)
+# REJECT WIZARD (logic kept)
 # -------------------------------------------------------------------
 class EquipmentLoanRejectWizard(models.TransientModel):
     _name = 'equipment.loan.reject.wizard'
@@ -172,7 +181,8 @@ class EquipmentBorrowWizard(models.TransientModel):
                                   default=lambda self: self.env.user)
     borrow_date = fields.Datetime(string='Borrow Date', required=True, default=fields.Datetime.now)
     due_date = fields.Datetime(string='Due Date', required=True)
-    purpose = fields.Text(string='Purpose', required=True, placeholder='Why do you need this equipment?')
+    # placeholder belongs in XML, not here
+    purpose = fields.Text(string='Purpose', required=True)
 
     @api.onchange('equipment_id')
     def _onchange_equipment_id(self):
@@ -220,7 +230,7 @@ class EquipmentBorrowWizard(models.TransientModel):
 
 
 # -------------------------------------------------------------------
-# ASSIGN / UNASSIGN WIZARDS (new)
+# ASSIGN / UNASSIGN WIZARDS
 # -------------------------------------------------------------------
 class EquipmentAssignWizard(models.TransientModel):
     _name = 'equipment.assign.wizard'
@@ -258,7 +268,6 @@ class EquipmentAssignWizard(models.TransientModel):
             return any_loc.id
         return equipment.location_id.id
 
-    
     def action_confirm_assign(self):
         self.ensure_one()
         eq = self.equipment_id.sudo()
@@ -341,6 +350,7 @@ class EquipmentUnassignWizard(models.TransientModel):
     _description = 'Unassign Equipment from Holder'
 
     equipment_id = fields.Many2one('equipment.item', string='Equipment', required=True, readonly=True)
+    unassigned_date = fields.Date(string='Unassigned Date', required=True, default=fields.Date.today)
     notes = fields.Text(string='Notes')
 
     def action_confirm_unassign(self):
@@ -354,6 +364,23 @@ class EquipmentUnassignWizard(models.TransientModel):
         if not ms:
             raise UserError(_('Main Store location is missing. Please create it.'))
 
+        # Close the open assignment record (guardrail: ensures no duplicate open assignments)
+        open_asg = self.env['equipment.assignment'].search([
+            ('equipment_id', '=', eq.id),
+            ('unassigned_date', '=', False),
+        ], limit=1)
+
+        if not open_asg:
+            raise UserError(_('No open assignment found for this equipment.'))
+
+        # Update the assignment history with the unassignment details
+        open_asg.write({
+            'unassigned_date': self.unassigned_date,
+            'unassigned_by_id': self.env.user.id,
+            'notes': (open_asg.notes or '') + ('\n' + self.notes if self.notes else ''),
+        })
+
+        # Clear assignment fields on the equipment item
         vals = {
             'holder_type': 'none',
             'employee_id': False,
@@ -366,7 +393,11 @@ class EquipmentUnassignWizard(models.TransientModel):
             vals['state'] = 'available'
 
         eq.write(vals)
+
+        # Post message to chatter
+        msg = _('Equipment unassigned on %s and moved to Main Store.') % self.unassigned_date
         if self.notes:
-            eq.message_post(body=_('Unassigned: %s') % self.notes, subject=_('Equipment Unassigned'))
+            msg += '\n' + _('Notes: %s') % self.notes
+        eq.message_post(body=msg, subject=_('Equipment Unassigned'))
 
         return {'type': 'ir.actions.act_window_close'}

@@ -22,7 +22,7 @@
                     </group>
                 </group>
 
-                <!-- was attrs="{'invisible':[('has_damage','=',False)]}" -->
+                <!-- Odoo 18: inline boolean expression -->
                 <group string="Damage Assessment" invisible="not has_damage">
                     <field name="damage_notes" nolabel="1"
                            placeholder="Describe the damage in detail..."/>
@@ -31,8 +31,7 @@
                 </group>
 
                 <group>
-                    <field name="create_maintenance"
-                           string="Schedule maintenance after return"/>
+                    <field name="create_maintenance" string="Schedule maintenance after return"/>
                 </group>
 
                 <separator string="Additional Notes"/>
@@ -74,70 +73,72 @@
         </field>
     </record>
 
-
-
-      <!-- Assign Wizard -->
-    <!-- Assign Wizard (v18 inline modifiers) -->
+    <!-- ========================= -->
+    <!--  ASSIGN WIZARD FORM VIEW  -->
+    <!-- ========================= -->
     <record id="view_equipment_assign_wizard_form" model="ir.ui.view">
-    <field name="name">equipment.assign.wizard.form</field>
-    <field name="model">equipment.assign.wizard</field>
-    <field name="arch" type="xml">
-        <form string="Assign Equipment">
-        <group>
-            <group>
-            <field name="equipment_id" readonly="1"/>
-            <field name="holder_type"/>
+        <field name="name">equipment.assign.wizard.form</field>
+        <field name="model">equipment.assign.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Assign Equipment">
+                <group>
+                    <group>
+                        <field name="equipment_id" readonly="1"/>
+                        <field name="holder_type"/>
 
-            <field name="employee_id"
-                    invisible="holder_type != 'employee'"
-                    required="holder_type == 'employee'"/>
+                        <!-- Odoo 18 inline conditions -->
+                        <field name="employee_id"
+                               invisible="holder_type != 'employee'"
+                               required="holder_type == 'employee'"/>
 
-            <field name="department_id" string="Department/Unit"
-                    invisible="holder_type != 'department'"
-                    required="holder_type == 'department'"/>
+                        <field name="department_id" string="Department/Unit"
+                               invisible="holder_type != 'department'"
+                               required="holder_type == 'department'"/>
 
-            <field name="custodian_partner_id" string="External Custodian"
-                    invisible="holder_type != 'other'"
-                    required="holder_type == 'other'"/>
+                        <field name="custodian_partner_id" string="External Custodian"
+                               invisible="holder_type != 'other'"
+                               required="holder_type == 'other'"/>
 
-            <!-- In this wizard holder_type is never 'none', but keeping the logic explicit is OK -->
-            <field name="assigned_date"
-                    required="1"/>
-            </group>
-        </group>
+                        <field name="assigned_date" required="1"/>
+                    </group>
+                </group>
 
-        <group>
-            <field name="notes" nolabel="1" placeholder="Optional notes about this assignment…"/>
-        </group>
+                <group>
+                    <field name="notes" nolabel="1" placeholder="Optional notes about this assignment…"/>
+                </group>
 
-        <footer>
-            <button string="Assign" name="action_confirm_assign" type="object" class="btn-primary"/>
-            <button string="Cancel" class="btn-secondary" special="cancel"/>
-        </footer>
-        </form>
-    </field>
+                <footer>
+                    <button string="Assign" name="action_confirm_assign" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
     </record>
 
-    <!-- Unassign Wizard (for completeness, also v18 style) -->
+    <!-- =========================== -->
+    <!--  UNASSIGN WIZARD FORM VIEW  -->
+    <!-- (single, canonical version) -->
+    <!-- =========================== -->
     <record id="view_equipment_unassign_wizard_form" model="ir.ui.view">
-    <field name="name">equipment.unassign.wizard.form</field>
-    <field name="model">equipment.unassign.wizard</field>
-    <field name="arch" type="xml">
-        <form string="Unassign Equipment">
-        <group>
-            <field name="equipment_id" readonly="1"/>
-        </group>
-        <group>
-            <field name="notes" nolabel="1" placeholder="Optional notes (e.g., returned to Main Store)…"/>
-        </group>
-        <footer>
-            <button string="Unassign" name="action_confirm_unassign" type="object" class="btn-primary"/>
-            <button string="Cancel" class="btn-secondary" special="cancel"/>
-        </footer>
-        </form>
-    </field>
+        <field name="name">equipment.unassign.wizard.form</field>
+        <field name="model">equipment.unassign.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Unassign Equipment">
+                <group>
+                    <field name="equipment_id" readonly="1"/>
+                    <field name="unassigned_date"/>
+                </group>
+                <group>
+                    <field name="notes" nolabel="1"
+                           placeholder="Optional notes (e.g., reason for unassignment, condition notes, etc.)…"/>
+                </group>
+                <footer>
+                    <button string="Unassign" name="action_confirm_unassign" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
     </record>
-
 
     <!-- ========================= -->
     <!--  BORROW WIZARD FORM VIEW  -->
