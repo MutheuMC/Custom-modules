@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <!-- ================================================
+       ERROR PAGE FOR INVALID/EXPIRED SHARE LINKS
+       ================================================ -->
+  <template id="share_error_template" name="Share Error Page">
+    <t t-call="web.layout">
+      <t t-set="head">
+        <style>
+          .share-error-container {
+            min-height: 60vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+          .share-error-box {
+            max-width: 500px;
+            text-align: center;
+            padding: 3rem;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+          }
+          .share-error-icon {
+            font-size: 4rem;
+            color: #dc3545;
+            margin-bottom: 1.5rem;
+          }
+          .share-error-title {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: #212529;
+            margin-bottom: 1rem;
+          }
+          .share-error-message {
+            font-size: 1rem;
+            color: #6c757d;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+          }
+        </style>
+      </t>
+      
+      <div class="share-error-container">
+        <div class="share-error-box">
+          <div class="share-error-icon">
+            <i class="fa fa-lock"></i>
+          </div>
+          
+          <h1 class="share-error-title">
+            <t t-esc="error_title or 'Access Denied'"/>
+          </h1>
+          
+          <p class="share-error-message">
+            <t t-esc="error_message or 'This link is invalid or has expired.'"/>
+          </p>
+          
+          <div>
+            <a href="/web" class="btn btn-primary">
+              <i class="fa fa-home me-1"></i>
+              Go to Home
+            </a>
+          </div>
+        </div>
+      </div>
+    </t>
+  </template>
+
+  <!-- ================================================
+       PREVIEW PAGE FOR SHARED DOCUMENTS (Optional)
+       ================================================ -->
+  <template id="share_preview_template" name="Share Preview Page">
+    <t t-call="web.layout">
+      <t t-set="head">
+        <style>
+          .share-preview-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+          }
+          .share-preview-header {
+            background: #fff;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 1rem;
+          }
+          .share-preview-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+          }
+          .share-preview-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+          }
+          .share-preview-content {
+            background: #fff;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            min-height: 600px;
+          }
+          .share-preview-iframe {
+            width: 100%;
+            height: 800px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+          }
+          .share-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.875rem;
+            font-weight: 500;
+          }
+          .share-badge-viewer {
+            background: #e7f3ff;
+            color: #0066cc;
+          }
+          .share-badge-editor {
+            background: #e8f5e9;
+            color: #2e7d32;
+          }
+        </style>
+      </t>
+      
+      <div class="share-preview-container">
+        <!-- Header -->
+        <div class="share-preview-header">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <h1 class="share-preview-title">
+                <i class="fa fa-file-text-o me-2"></i>
+                <t t-esc="doc.name"/>
+              </h1>
+              
+              <div class="text-muted">
+                <span t-if="is_editor" class="share-badge share-badge-editor">
+                  <i class="fa fa-edit me-1"></i>
+                  Can Edit
+                </span>
+                <span t-else="" class="share-badge share-badge-viewer">
+                  <i class="fa fa-eye me-1"></i>
+                  View Only
+                </span>
+                
+                <span class="ms-3">
+                  <i class="fa fa-user me-1"></i>
+                  Shared by <t t-esc="doc.user_id.name"/>
+                </span>
+              </div>
+            </div>
+            
+            <div class="share-preview-actions">
+              <a t-att-href="download_url" class="btn btn-primary">
+                <i class="fa fa-download me-1"></i>
+                Download
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Content -->
+        <div class="share-preview-content">
+          <t t-if="doc.mimetype == 'application/pdf'">
+            <!-- PDF Viewer -->
+            <iframe t-att-src="'/documents/s/' + token" 
+                    class="share-preview-iframe"
+                    type="application/pdf">
+            </iframe>
+          </t>
+          
+          <t t-elif="doc.mimetype and doc.mimetype.startswith('image/')">
+            <!-- Image Viewer -->
+            <div class="text-center">
+              <img t-att-src="'/documents/s/' + token" 
+                   t-att-alt="doc.name"
+                   class="img-fluid"
+                   style="max-width: 100%; height: auto;"/>
+            </div>
+          </t>
+          
+          <t t-else="">
+            <!-- Other Files -->
+            <div class="text-center py-5">
+              <i class="fa fa-file-o fa-5x text-muted mb-3"></i>
+              <p class="lead">Preview not available for this file type</p>
+              <a t-att-href="download_url" class="btn btn-lg btn-primary">
+                <i class="fa fa-download me-2"></i>
+                Download File
+              </a>
+            </div>
+          </t>
+        </div>
+      </div>
+    </t>
+  </template>
+</odoo>

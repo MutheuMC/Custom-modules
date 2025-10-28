@@ -3,10 +3,10 @@ import base64
 import mimetypes
 import re
 from datetime import timedelta
+from secrets import token_urlsafe
 
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError, ValidationError
-from secrets import token_urlsafe
 
 
 class CustomDocument(models.Model):
@@ -81,19 +81,45 @@ class CustomDocument(models.Model):
     # UX flags
     is_starred = fields.Boolean('Starred', default=False)
 
-
-
+    # -------------------------------------------------------------------------
+    # SHARE FIELDS - UPDATED FOR GOOGLE DOCS-STYLE SHARING
+    # -------------------------------------------------------------------------
     share_access = fields.Selection([
-        ('private',      'Restricted'),
-        ('internal_view','Internal users (view)'),
-        ('internal_edit','Internal users (edit)'),
-        ('link_view',    'Anyone with link (view)'),
-        ('link_edit',    'Anyone with link (edit)'),
+        ('private', 'Restricted'),
+        ('internal_view', 'Your organization – Viewer'),
+        ('internal_edit', 'Your organization – Editor'),
+        ('link_view', 'Anyone with link – Viewer'),
+        ('link_edit', 'Anyone with link – Editor'),
     ], string='General Access', default='private', tracking=True)
 
-    share_line_ids  = fields.One2many('custom.document.share.line', 'document_id', string='People with access')
-    share_token_view = fields.Char('View token', copy=False)
-    share_token_edit = fields.Char('Edit token', copy=False)
+    share_line_ids = fields.One2many(
+        'custom.document.share.line',
+        'document_id',
+        string='People with Access',
+        copy=False,
+    )
+    share_token_view = fields.Char(
+        'View token', 
+        copy=False, 
+        default=lambda self: token_urlsafe(32)
+    )
+    share_token_edit = fields.Char(
+        'Edit token', 
+        copy=False, 
+        default=lambda self: token_urlsafe(32)
+    )
+    
+    # Computed fields for share status
+    is_shared = fields.Boolean(
+        string='Is Shared',
+        compute='_compute_is_shared',
+        store=True
+    )
+    shared_with_count = fields.Integer(
+        string='Shared With',
+        compute='_compute_shared_with_count',
+        store=True
+    )
 
     # Virtual folders (computed membership)
     virtual_folder_ids = fields.Many2many(
@@ -217,6 +243,19 @@ class CustomDocument(models.Model):
         return [('folder_id', 'child_of', value)]
 
     # -------------------------------------------------------------------------
+    # SHARE COMPUTED FIELDS
+    # -------------------------------------------------------------------------
+    @api.depends('share_line_ids', 'share_access')
+    def _compute_is_shared(self):
+        for doc in self:
+            doc.is_shared = bool(doc.share_line_ids) or doc.share_access != 'private'
+
+    @api.depends('share_line_ids')
+    def _compute_shared_with_count(self):
+        for doc in self:
+            doc.shared_with_count = len(doc.share_line_ids)
+
+    # -------------------------------------------------------------------------
     # CRUD
     # -------------------------------------------------------------------------
     @api.model_create_multi
@@ -237,6 +276,13 @@ class CustomDocument(models.Model):
         return super().create(vals_list)
 
     def write(self, vals):
+        """Override write to check permissions"""
+        for rec in self:
+            # Allow harmless flags from viewers (stars, following)
+            harmless = {'is_starred', 'message_follower_ids'}
+            if set(vals) - harmless and not rec._is_editor():
+                raise UserError(_('You do not have permission to edit this document.'))
+        
         if vals.get('file') and not vals.get('mimetype'):
             file_name = vals.get('file_name') or self.file_name
             if file_name:
@@ -244,6 +290,194 @@ class CustomDocument(models.Model):
                 if mt:
                     vals['mimetype'] = mt
         return super().write(vals)
+
+    # -------------------------------------------------------------------------
+    # SHARE METHODS
+    # -------------------------------------------------------------------------
+    def _generate_token(self):
+        """Generate a secure random token"""
+        return token_urlsafe(32)
+
+    def _ensure_token(self, kind='view'):
+        """Ensure token exists and return it"""
+        self.ensure_one()
+        field = 'share_token_view' if kind == 'view' else 'share_token_edit'
+        token = self[field]
+        if not token:
+            token = self._generate_token()
+            self.write({field: token})
+        return token
+
+    def get_share_link(self, mode='view'):
+        """Return a token-based URL for public access (no website module needed)."""
+        self.ensure_one()
+        base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url') or ''
+        if mode == 'edit':
+            # only provide edit token when link_edit is enabled
+            if self.share_access != 'link_edit':
+                return False
+            token = self._ensure_token('edit')
+        else:
+            # view mode
+            if self.share_access not in ('link_view', 'link_edit'):
+                return False
+            token = self._ensure_token('view')
+        return f"{base_url}/documents/s/{token}"
+
+
+    def regenerate_share_token(self):
+        """Regenerate share tokens (invalidates old links)"""
+        self.ensure_one()
+        self.write({
+            'share_token_view': self._generate_token(),
+            'share_token_edit': self._generate_token(),
+        })
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': _('Tokens Regenerated'),
+                'message': _('All previous share links have been invalidated.'),
+                'type': 'warning',
+                'sticky': False,
+            }
+        }
+
+    def action_open_share_wizard(self):
+        """Open share wizard"""
+        self.ensure_one()
+        return {
+            'name': _('Share "%s"', self.name),
+            'type': 'ir.actions.act_window',
+            'res_model': 'custom.document.share.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {
+                'default_document_id': self.id,
+            }
+        }
+
+    def _is_editor(self):
+        """Check if current user can edit this document"""
+        self.ensure_one()
+        u = self.env.user
+        
+        # Owner can always edit
+        if self.user_id.id == u.id:
+            return True
+        
+        # Internal edit access
+        if self.share_access == 'internal_edit':
+            return True
+        
+        # Check share lines
+        return bool(
+            self.share_line_ids.filtered(
+                lambda l: l.user_id.id == u.id and l.role == 'editor'
+            )
+        )
+
+    def _can_view(self):
+        """Check if current user can view this document"""
+        self.ensure_one()
+        u = self.env.user
+        
+        # Owner can always view
+        if self.user_id.id == u.id:
+            return True
+        
+        # Internal users
+        if self.share_access in ('internal_view', 'internal_edit'):
+            return True
+        
+        # Check share lines (any role can view)
+        return bool(
+            self.share_line_ids.filtered(lambda l: l.user_id.id == u.id)
+        )
+
+    # def check_access(self, partner_id=None, token=None, access_type='read'):
+    #     """Check if user/partner has access to document"""
+    #     self.ensure_one()
+        
+    #     # System/admin always has access
+    #     if self.env.su:
+    #         return True
+        
+    #     # Check if current user is owner
+    #     if self.create_uid == self.env.user:
+    #         return True
+        
+    #     # Check token-based access
+    #     if token:
+    #         if token == self.share_token_view and self.share_access in ('link_view', 'link_edit'):
+    #             if access_type == 'read':
+    #                 return True
+    #         if token == self.share_token_edit and self.share_access == 'link_edit':
+    #             if access_type in ('read', 'write'):
+    #                 return True
+        
+    #     # Check partner-specific access
+    #     if partner_id or self.env.user.partner_id:
+    #         partner = partner_id or self.env.user.partner_id.id
+    #         share_line = self.share_line_ids.filtered(
+    #             lambda l: l.partner_id.id == partner
+    #         )
+            
+    #         if share_line:
+    #             if access_type == 'read':
+    #                 return True
+    #             if access_type == 'write' and share_line.role == 'editor':
+    #                 return True
+    #             if access_type == 'comment' and share_line.role in ('commenter', 'editor'):
+    #                 return True
+        
+    #     return False
+    
+
+    # --- REPLACE your current check_access with these two methods ---
+
+    def has_share_access(self, partner_id=None, token=None, access_type='read'):
+        """Custom share logic (token/partner-based). Safe if called on empty set."""
+        if not self:
+            return False
+        self.ensure_one()
+
+        # System/admin always has access
+        if self.env.su:
+            return True
+
+        # Owner can always view/edit (use your original rule – keep as you had)
+        if self.create_uid == self.env.user:
+            return True
+
+        # Token-based access
+        if token:
+            if token == self.share_token_view and self.share_access in ('link_view', 'link_edit'):
+                if access_type == 'read':
+                    return True
+            if token == self.share_token_edit and self.share_access == 'link_edit':
+                if access_type in ('read', 'write'):
+                    return True
+
+        # Partner-specific access
+        partner = partner_id or (self.env.user.partner_id.id if self.env.user.partner_id else False)
+        if partner:
+            line = self.share_line_ids.filtered(lambda l: l.partner_id.id == partner)
+            if line:
+                if access_type == 'read':
+                    return True
+                if access_type == 'comment' and line.role in ('commenter', 'editor'):
+                    return True
+                if access_type == 'write' and line.role == 'editor':
+                    return True
+
+        return False
+
+
+    def check_access(self, *args, **kwargs):
+        return super().check_access(*args, **kwargs)
+
+
 
     # -------------------------------------------------------------------------
     # Actions
@@ -377,8 +611,7 @@ class CustomDocument(models.Model):
 
     def action_menu_share(self):
         self._ensure_single(_("share"))
-        base = f"/web/content/custom.document/{self.id}/file/{self.file_name or 'file'}"
-        raise UserError(_("Share link:\n%s") % base)
+        return self.action_open_share_wizard()
 
     def action_menu_move_to_trash(self):
         self.sudo().write({'active': False})
@@ -457,7 +690,7 @@ class CustomDocument(models.Model):
         }
 
     # -------------------------------------------------------------------------
-    # Module init: ensure seed folders (kept as-is)
+    # Module init: ensure seed folders
     # -------------------------------------------------------------------------
     @api.model
     def init(self):
@@ -527,58 +760,3 @@ class CustomDocument(models.Model):
                 ('active', '=', True),
             ]
         return ['|', ('message_partner_ids', 'not in', [partner_id]), ('user_id', '=', uid)]
-    
-
-
-
-        # -- share helpers --
-    def _ensure_token(self, kind='view'):
-        self.ensure_one()
-        field = 'share_token_view' if kind == 'view' else 'share_token_edit'
-        token = self[field]
-        if not token:
-            token = token_urlsafe(32)
-            self.write({field: token})
-        return token
-
-    def get_share_link(self, kind='view'):
-        self.ensure_one()
-        token = self._ensure_token(kind)
-        base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url')
-        return f"{base_url}/documents/s/{token}"
-
-    def action_open_share_wizard(self):
-        self.ensure_one()
-        return {
-            'type': 'ir.actions.act_window',
-            'name': _('Share: %s') % self.name,
-            'res_model': 'custom.document.share.wizard',
-            'view_mode': 'form',
-            'target': 'new',
-            'context': {'default_document_id': self.id},
-        }
-
-    # called by the list toolbar already
-    def action_menu_share(self):
-        self._ensure_single(_("share"))
-        return self.action_open_share_wizard()
-    
-
-    def _is_editor(self):
-        self.ensure_one()
-        u = self.env.user
-        if self.user_id.id == u.id:
-            return True
-        if self.share_access == 'internal_edit':
-            return True
-        return bool(self.share_line_ids.filtered(lambda l: l.user_id.id == u.id and l.role == 'editor'))
-
-    def write(self, vals):
-        for rec in self:
-            # allow innocuous flags from viewers (stars, following)
-            harmless = {'is_starred', 'message_follower_ids'}
-            if set(vals) - harmless and not rec._is_editor():
-                raise UserError(_('You do not have permission to edit this document.'))
-        return super().write(vals)
-
-

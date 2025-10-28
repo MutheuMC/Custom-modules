@@ -1,6 +1,6 @@
 {
     'name': 'Documents  Management File System',
-    'version': '18.0.12.12.19',
+    'version': '18.0.15.13.19',
     'category': 'Document Management',
     'summary': 'Custom Document Management System Systems',
     'depends': ['base', 'web', 'mail', 'hr'],
@@ -16,6 +16,7 @@
         'views/document_views.xml',
         'views/document_list_actions.xml',
         'views/menu.xml',
+        # 'views/share_templates.xml'
         'views/share_views.xml'
     ],
     'assets': {

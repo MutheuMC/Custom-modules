@@ -1,69 +1,152 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-  <!-- People line list (inline in wizard) -->
+
+  <!-- =========================================================
+       SHARE LINE LIST (Odoo 18 uses <list>, not <tree>)
+       ========================================================= -->
   <record id="view_custom_document_share_line_list" model="ir.ui.view">
     <field name="name">custom.document.share.line.list</field>
     <field name="model">custom.document.share.line</field>
     <field name="arch" type="xml">
-      <list editable="bottom">
-        <field name="partner_id"/>
-        <field name="role"/>
+      <list editable="bottom" delete="1" create="0">
+        <field name="partner_id" readonly="1"/>
+        <field name="email" readonly="1" optional="show"/>
+        <field name="role"
+               widget="badge"
+               decoration-info="role == 'viewer'"
+               decoration-warning="role == 'commenter'"
+               decoration-success="role == 'editor'"/>
+        <field name="create_date" string="Shared On" readonly="1" optional="hide"/>
       </list>
     </field>
   </record>
 
-  <!-- Share wizard -->
+  <!-- =========================================================
+       SHARE LINE FORM (for safety / opening a single line)
+       ========================================================= -->
+  <record id="view_custom_document_share_line_form" model="ir.ui.view">
+    <field name="name">custom.document.share.line.form</field>
+    <field name="model">custom.document.share.line</field>
+    <field name="arch" type="xml">
+      <form string="Share Access" create="0">
+        <sheet>
+          <group>
+            <field name="partner_id" readonly="1"/>
+            <field name="email" readonly="1"/>
+            <field name="role"/>
+            <field name="create_date" readonly="1"/>
+          </group>
+        </sheet>
+      </form>
+    </field>
+  </record>
+
+  <!-- =========================================================
+       SHARE WIZARD (Google Docs–style)
+       ========================================================= -->
   <record id="view_custom_document_share_wizard_form" model="ir.ui.view">
     <field name="name">custom.document.share.wizard.form</field>
     <field name="model">custom.document.share.wizard</field>
     <field name="arch" type="xml">
       <form string="Share" create="0" edit="0" delete="0">
         <sheet>
-            <div class="oe_title">
-                <h2><field name="document_name" nolabel="1"/></h2>
-            </div>
+
+          <!-- Document Title -->
+          <div class="oe_title mb-3">
+            <h2>
+              <field name="document_name" readonly="1" nolabel="1" class="o_text_overflow"/>
+            </h2>
+          </div>
 
           <group>
-            <group string="Add people">
-              <field name="partner_ids" widget="many2many_tags" options="{'no_create_edit': False}"/>
-              <field name="role"/>
-              <button name="action_add_people" type="object" class="btn-primary" string="Add"/>
+            <!-- ============ ADD PEOPLE SECTION ============ -->
+            <group string="Add People" class="mb-3">
+              <label for="partner_ids" string="People"/>
+              <div class="o_row">
+                <field name="partner_ids"
+                       widget="many2many_tags"
+                       placeholder="Enter name or email..."
+                       options="{'no_create_edit': True, 'no_quick_create': True}"
+                       class="oe_inline"
+                       nolabel="1"/>
+              </div>
+
+              <field name="role"
+                     widget="radio"
+                     options="{'horizontal': True}"/>
+
+              <button name="action_add_people"
+                      type="object"
+                      string="Add People"
+                      class="btn-primary"
+                      invisible="not partner_ids"/>
             </group>
 
-            <group string="General access">
-              <field name="share_access"/>
-              <button name="action_copy_view_link" type="object" string="Copy view link" class="btn-secondary"/>
-              <button name="action_copy_edit_link" type="object" string="Copy edit link" class="btn-secondary"
-                      invisible="share_access not in ['link_edit']"/>
-              <div class="text-muted">
-                Internal users can always authenticate; 'Anyone with link' works without login.
+            <!-- ============ GENERAL ACCESS SECTION ============ -->
+            <group string="General Access">
+              <field name="share_access"
+                     widget="radio"
+                     options="{'horizontal': False}"/>
+
+              <div class="mt-2">
+                <div class="d-flex gap-2 mb-2">
+                  <button name="action_copy_view_link"
+                          type="object"
+                          string="Copy View Link"
+                          icon="fa-link"
+                          class="btn btn-secondary btn-sm"/>
+
+                  <button name="action_copy_edit_link"
+                          type="object"
+                          string="Copy Edit Link"
+                          icon="fa-edit"
+                          class="btn btn-secondary btn-sm"
+                          invisible="share_access != 'link_edit'"/>
+                </div>
+
+                <div class="text-muted small">
+                  <i class="fa fa-info-circle"/>
+                  Link sharing allows access without login. Internal users can always authenticate.
+                </div>
               </div>
             </group>
           </group>
 
-          <group string="People with access">
-            <field name="people_ids" context="{'default_document_id': document_id}" 
-                   options="{'no_create_edit': False}" 
-                   nolabel="1"
-                   mode="list">
-              <list editable="bottom">
-                <field name="partner_id"/>
-                <field name="role"/>
-              </list>
-            </field>
-          </group>
+          <!-- ============ PEOPLE WITH ACCESS LIST ============ -->
+          <separator string="People with Access"/>
+          <field name="people_ids"
+                 nolabel="1"
+                 context="{'default_document_id': document_id}"
+                 views="[(list, ref('custom_documents.view_custom_document_share_line_list'))]"/>
+
+          <!-- ============ ROLE DESCRIPTIONS ============ -->
+          <div class="text-muted mt-2 small">
+            <strong>Role Permissions:</strong>
+            <ul class="mb-0">
+              <li><strong>Viewer:</strong> Can view the document</li>
+              <li><strong>Commenter:</strong> Can view and comment</li>
+              <li><strong>Editor:</strong> Can view, comment, and edit</li>
+            </ul>
+          </div>
+
         </sheet>
+
         <footer>
           <button string="Done" class="btn-primary" special="cancel"/>
+          <button string="Cancel" class="btn-secondary" special="cancel"/>
         </footer>
       </form>
     </field>
   </record>
 
+  <!-- =========================================================
+       SHARE WIZARD ACTION (opens in modal)
+       ========================================================= -->
   <record id="action_custom_document_share_wizard" model="ir.actions.act_window">
-    <field name="name">Share</field>
+    <field name="name">Share Document</field>
     <field name="res_model">custom.document.share.wizard</field>
     <field name="view_mode">form</field>
     <field name="target">new</field>
   </record>
+
 </odoo>
