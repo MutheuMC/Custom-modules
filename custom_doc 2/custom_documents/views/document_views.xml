@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
+
+
+
     <!-- ===========================
          Document List View
          =========================== -->
@@ -8,8 +11,11 @@
         <field name="name">custom.document.list</field>
         <field name="model">custom.document</field>
         <field name="arch" type="xml">
-            <list string="Documents" js_class="custom_document_list" class="o_list_compact" delete="0">
-                <!-- hidden helpers for domain evaluation -->
+            <list string="Documents" 
+                        js_class="custom_document_list" 
+                        class="o_list_compact custom_document_list" 
+                        delete="0" 
+                        create="0">                
                 <field name="is_starred" column_invisible="1"/>
                 <field name="file_kind" column_invisible="1"/>
 
@@ -105,12 +111,13 @@
                 <!-- LEFT SIDEBAR with Hierarchical Folders -->
                 <searchpanel>
                     <field name="folder_id"
-                           string=""
-                           select="one"
-                           icon="fa-folder-o"
-                           enable_counters="1"
-                           expand="1"
-                           hierarchize="1"/>
+                        string=""
+                        select="one"
+                        icon="fa-folder-o"
+                        enable_counters="1"
+                        expand="1"
+                        hierarchize="1"
+                        context="{'searchpanel_default_folder_id': self}"/>
                 </searchpanel>
 
             </search>

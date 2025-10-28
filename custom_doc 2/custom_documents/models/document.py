@@ -6,6 +6,7 @@ from datetime import timedelta
 
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError, ValidationError
+from secrets import token_urlsafe
 
 
 class CustomDocument(models.Model):
@@ -79,6 +80,20 @@ class CustomDocument(models.Model):
 
     # UX flags
     is_starred = fields.Boolean('Starred', default=False)
+
+
+
+    share_access = fields.Selection([
+        ('private',      'Restricted'),
+        ('internal_view','Internal users (view)'),
+        ('internal_edit','Internal users (edit)'),
+        ('link_view',    'Anyone with link (view)'),
+        ('link_edit',    'Anyone with link (edit)'),
+    ], string='General Access', default='private', tracking=True)
+
+    share_line_ids  = fields.One2many('custom.document.share.line', 'document_id', string='People with access')
+    share_token_view = fields.Char('View token', copy=False)
+    share_token_edit = fields.Char('Edit token', copy=False)
 
     # Virtual folders (computed membership)
     virtual_folder_ids = fields.Many2many(
@@ -512,3 +527,58 @@ class CustomDocument(models.Model):
                 ('active', '=', True),
             ]
         return ['|', ('message_partner_ids', 'not in', [partner_id]), ('user_id', '=', uid)]
+    
+
+
+
+        # -- share helpers --
+    def _ensure_token(self, kind='view'):
+        self.ensure_one()
+        field = 'share_token_view' if kind == 'view' else 'share_token_edit'
+        token = self[field]
+        if not token:
+            token = token_urlsafe(32)
+            self.write({field: token})
+        return token
+
+    def get_share_link(self, kind='view'):
+        self.ensure_one()
+        token = self._ensure_token(kind)
+        base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url')
+        return f"{base_url}/documents/s/{token}"
+
+    def action_open_share_wizard(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Share: %s') % self.name,
+            'res_model': 'custom.document.share.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {'default_document_id': self.id},
+        }
+
+    # called by the list toolbar already
+    def action_menu_share(self):
+        self._ensure_single(_("share"))
+        return self.action_open_share_wizard()
+    
+
+    def _is_editor(self):
+        self.ensure_one()
+        u = self.env.user
+        if self.user_id.id == u.id:
+            return True
+        if self.share_access == 'internal_edit':
+            return True
+        return bool(self.share_line_ids.filtered(lambda l: l.user_id.id == u.id and l.role == 'editor'))
+
+    def write(self, vals):
+        for rec in self:
+            # allow innocuous flags from viewers (stars, following)
+            harmless = {'is_starred', 'message_follower_ids'}
+            if set(vals) - harmless and not rec._is_editor():
+                raise UserError(_('You do not have permission to edit this document.'))
+        return super().write(vals)
+
+

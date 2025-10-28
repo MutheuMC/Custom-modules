@@ -1,6 +1,6 @@
 {
-    'name': 'Custom Documents',
-    'version': '18.0.1.0.0',
+    'name': 'Documents  Management File System',
+    'version': '18.0.12.12.19',
     'category': 'Document Management',
     'summary': 'Custom Document Management System Systems',
     'depends': ['base', 'web', 'mail', 'hr'],
@@ -16,12 +16,15 @@
         'views/document_views.xml',
         'views/document_list_actions.xml',
         'views/menu.xml',
+        'views/share_views.xml'
     ],
     'assets': {
         'web.assets_backend': [
             'custom_documents/static/src/views/document_create_redirect.js',
             'custom_documents/static/src/views/folder_create_redirect.js',
             'custom_documents/static/src/scss/custom_documents.scss',
+            'custom_documents/static/src/xml/custom_document_list_buttons.xml',
+            'custom_documents/static/src/scss/custom_docs.scss',
         ],
     },
     'controllers': ['controllers/document_controller.py'],

@@ -1,4 +1,7 @@
-from odoo import models, fields, api # type: ignore
+from odoo import models, fields, api
+import logging
+
+_logger = logging.getLogger(__name__)
 
 class DocumentUploadWizard(models.TransientModel):
     _name = 'custom.document.upload.wizard'
@@ -21,6 +24,37 @@ class DocumentUploadWizard(models.TransientModel):
     folder_id = fields.Many2one('custom.document.folder', 'Folder')
     tag_ids = fields.Many2many('custom.document.tag', string='Tags')
     description = fields.Text('Description')
+
+    @api.model
+    def default_get(self, fields_list):
+        """Override to set default folder from context"""
+        res = super().default_get(fields_list)
+        
+        _logger.info("=== UPLOAD WIZARD CONTEXT ===")
+        _logger.info(f"Full context: {self.env.context}")
+        
+        # Get folder from context
+        folder_id = self.env.context.get('default_folder_id')
+        _logger.info(f"default_folder_id: {folder_id}")
+        
+        # Try searchpanel context
+        if not folder_id:
+            folder_id = self.env.context.get('searchpanel_default_folder_id')
+            _logger.info(f"searchpanel_default_folder_id: {folder_id}")
+        
+        # Try active_id (when called from folder form)
+        if not folder_id:
+            if self.env.context.get('active_model') == 'custom.document.folder':
+                folder_id = self.env.context.get('active_id')
+                _logger.info(f"active_id from folder: {folder_id}")
+        
+        if folder_id:
+            res['folder_id'] = folder_id
+            _logger.info(f"Setting folder_id to: {folder_id}")
+        else:
+            _logger.info("No folder_id found in context")
+            
+        return res
 
     @api.onchange('file_name')
     def _onchange_file_name(self):
@@ -54,4 +88,6 @@ class DocumentUploadWizard(models.TransientModel):
             
         self.env['custom.document'].create(vals)
         
-        return {'type': 'ir.actions.act_window_close'}
+        return self.env['ir.actions.act_window']._for_xml_id(
+            'custom_documents.action_custom_document'
+        )

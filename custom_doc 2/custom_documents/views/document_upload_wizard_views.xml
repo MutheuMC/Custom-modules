@@ -1,6 +1,89 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Upload Wizard Form -->
+    <!-- ============================================
+         FILE UPLOAD WIZARD
+         ============================================ -->
+    <record id="view_custom_document_upload_file_form" model="ir.ui.view">
+        <field name="name">custom.document.upload.file.form</field>
+        <field name="model">custom.document.upload.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Upload File">
+                <group>
+                    <group>
+                        <field name="name" placeholder="Document Name (optional)"/>
+                        <field name="folder_id" options="{'no_create': True}"/>
+                        <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
+                    </group>
+                    <group>
+                        <field name="file" filename="file_name" required="1"/>
+                        <field name="file_name" invisible="1"/>
+                        <field name="document_type" invisible="1"/>
+                    </group>
+                </group>
+                <group>
+                    <field name="description" placeholder="Add a description..."/>
+                </group>
+                <footer>
+                    <button name="action_upload" type="object" string="Upload" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- File Upload Action -->
+    <record id="action_custom_document_upload_file" model="ir.actions.act_window">
+        <field name="name">Upload File</field>
+        <field name="res_model">custom.document.upload.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_custom_document_upload_file_form"/>
+        <field name="target">new</field>
+        <field name="context">{'default_document_type': 'file'}</field>
+    </record>
+
+    <!-- ============================================
+         URL WIZARD
+         ============================================ -->
+    <record id="view_custom_document_upload_url_form" model="ir.ui.view">
+        <field name="name">custom.document.upload.url.form</field>
+        <field name="model">custom.document.upload.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Add URL">
+                <group>
+                    <group>
+                        <field name="name" placeholder="Document Name (optional)"/>
+                        <field name="folder_id" options="{'no_create': True}"/>
+                        <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
+                    </group>
+                    <group>
+                        <field name="url" required="1" placeholder="https://example.com"/>
+                        <field name="document_type" invisible="1"/>
+                    </group>
+                </group>
+                <group>
+                    <field name="description" placeholder="Add a description..."/>
+                </group>
+                <footer>
+                    <button name="action_upload" type="object" string="Add" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- URL Upload Action -->
+    <record id="action_custom_document_upload_url" model="ir.actions.act_window">
+        <field name="name">Add URL</field>
+        <field name="res_model">custom.document.upload.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_custom_document_upload_url_form"/>
+        <field name="target">new</field>
+        <field name="context">{'default_document_type': 'url'}</field>
+    </record>
+
+    <!-- ============================================
+         COMBINED WIZARD (Keep for backward compatibility)
+         ============================================ -->
     <record id="view_custom_document_upload_wizard_form" model="ir.ui.view">
         <field name="name">custom.document.upload.wizard.form</field>
         <field name="model">custom.document.upload.wizard</field>
@@ -21,7 +104,7 @@
                                invisible="document_type != 'url'"
                                required="document_type == 'url'"
                                placeholder="https://example.com"/>
-                        <field name="tag_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                        <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
                     </group>
                 </group>
                 <group>
@@ -35,7 +118,7 @@
         </field>
     </record>
 
-    <!-- Upload Wizard Action -->
+    <!-- Combined Upload Wizard Action -->
     <record id="action_custom_document_upload_wizard" model="ir.actions.act_window">
         <field name="name">Upload Document</field>
         <field name="res_model">custom.document.upload.wizard</field>

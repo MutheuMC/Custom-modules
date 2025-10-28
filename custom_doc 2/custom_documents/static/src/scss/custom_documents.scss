@@ -9,3 +9,10 @@
 .o_list_view .fa {
   font-size: 14px;     /* small icons like your screenshot */
 }
+
+
+.o_list_view .o_data_row a:not(.o_list_record_selector),
+.o_kanban_view .o_kanban_record a {
+  pointer-events: none;
+  text-decoration: none;
+}

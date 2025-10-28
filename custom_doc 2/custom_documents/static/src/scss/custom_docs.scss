@@ -1,0 +1,9 @@
+/* Hide the default Create button for custom document list */
+.o_list_view.custom_document_list .o_list_button_add {
+  display: none !important;
+}
+
+/* Alternative: hide at control panel level */
+.o_action:has(.o_list_view.custom_document_list) .o_cp_action_menus .o_list_button_add {
+  display: none !important;
+}

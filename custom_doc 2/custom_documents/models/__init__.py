@@ -8,3 +8,5 @@ from . import actions_wizard
 from . import rename_wizard          
 from . import properties_wizard  
 from . import hr_employee
+from . import share_line
+from . import share_wizard
