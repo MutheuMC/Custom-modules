@@ -112,22 +112,33 @@
             </group>
           </group>
 
-          <!-- ============ PEOPLE WITH ACCESS LIST ============ -->
           <separator string="People with Access"/>
+
+          <field name="owner_partner_id" invisible="1"/>
+          <field name="owner_email" invisible="1"/>
+          
+          <div class="o_custom_doc_share_owner mb-2" 
+               invisible="[('owner_partner_id', '=', False)]">
+            <div class="d-flex align-items-center">
+              <div class="flex-shrink-0">
+                <field name="owner_partner_id" widget="partner_avatar" nolabel="1"/>
+              </div>
+              <div class="flex-grow-1 ms-2">
+                <field name="owner_partner_id" class="fw-bold" nolabel="1" readonly="1" options="{'no_open': True}"/>
+                <div class="text-muted small">
+                  <field name="owner_email" nolabel="1" readonly="1"/>
+                </div>
+              </div>
+              <div class="flex-shrink-0 text-muted ps-2">
+                <strong>Owner</strong>
+              </div>
+            </div>
+          </div>
           <field name="people_ids"
                  nolabel="1"
                  context="{'default_document_id': document_id}"
                  views="[(list, ref('custom_documents.view_custom_document_share_line_list'))]"/>
-
-          <!-- ============ ROLE DESCRIPTIONS ============ -->
-          <div class="text-muted mt-2 small">
-            <strong>Role Permissions:</strong>
-            <ul class="mb-0">
-              <li><strong>Viewer:</strong> Can view the document</li>
-              <li><strong>Commenter:</strong> Can view and comment</li>
-              <li><strong>Editor:</strong> Can view, comment, and edit</li>
-            </ul>
-          </div>
+         
 
         </sheet>
 

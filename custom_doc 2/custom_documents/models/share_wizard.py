@@ -19,6 +19,25 @@ class CustomDocumentShareWizard(models.TransientModel):
         readonly=True
     )
 
+    # START: Fields for Owner Display
+    owner_user_id = fields.Many2one(
+        'res.users',
+        related='document_id.create_uid',
+        string='Owner',
+        readonly=True
+    )
+    owner_partner_id = fields.Many2one(
+        'res.partner',
+        related='owner_user_id.partner_id',
+        string='Owner Partner',
+        readonly=True
+    )
+    owner_email = fields.Char(
+        related='owner_partner_id.email',
+        string='Owner Email',
+        readonly=True
+    )
+
     # Add People Section
     partner_ids = fields.Many2many(
         'res.partner',
@@ -185,24 +204,24 @@ class CustomDocumentShareWizard(models.TransientModel):
             }
         }
 
-    @api.onchange('share_access')
-    def _onchange_share_access(self):
-        """Show warning when changing access level"""
-        if not self.share_access:
-            return
+    # @api.onchange('share_access')
+    # def _onchange_share_access(self):
+    #     """Show warning when changing access level"""
+    #     if not self.share_access:
+    #         return
         
-        messages = {
-            'private': _('Only people you explicitly share with can access.'),
-            'internal_view': _('All internal users can view this document.'),
-            'internal_edit': _('All internal users can edit this document.'),
-            'link_view': _('⚠️ Anyone with the link can view (no login required).'),
-            'link_edit': _('⚠️ Anyone with the link can edit (no login required).'),
-        }
+    #     messages = {
+    #         'private': _('Only people you explicitly share with can access.'),
+    #         'internal_view': _('All internal users can view this document.'),
+    #         'internal_edit': _('All internal users can edit this document.'),
+    #         'link_view': _('⚠️ Anyone with the link can view (no login required).'),
+    #         'link_edit': _('⚠️ Anyone with the link can edit (no login required).'),
+    #     }
         
-        if self.share_access in messages:
-            return {
-                'warning': {
-                    'title': _('Access Level Changed'),
-                    'message': messages[self.share_access],
-                }
-            }
+    #     if self.share_access in messages:
+    #         return {
+    #             'warning': {
+    #                 'title': _('Access Level Changed'),
+    #                 'message': messages[self.share_access],
+    #             }
+    #         }

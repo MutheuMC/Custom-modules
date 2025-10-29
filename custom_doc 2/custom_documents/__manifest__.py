@@ -1,6 +1,6 @@
 {
     'name': 'Documents  Management File System',
-    'version': '18.0.15.13.19',
+    'version': '18.0.18.2.6',
     'category': 'Document Management',
     'summary': 'Custom Document Management System Systems',
     'depends': ['base', 'web', 'mail', 'hr'],
@@ -26,6 +26,7 @@
             'custom_documents/static/src/scss/custom_documents.scss',
             'custom_documents/static/src/xml/custom_document_list_buttons.xml',
             'custom_documents/static/src/scss/custom_docs.scss',
+              'custom_documents/static/src/js/share_copy.js', 
         ],
     },
     'controllers': ['controllers/document_controller.py'],

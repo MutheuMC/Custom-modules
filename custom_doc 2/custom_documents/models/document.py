@@ -309,20 +309,21 @@ class CustomDocument(models.Model):
         return token
 
     def get_share_link(self, mode='view'):
-        """Return a token-based URL for public access (no website module needed)."""
+        """Return a token-based URL for public access."""
         self.ensure_one()
-        base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url') or ''
         if mode == 'edit':
-            # only provide edit token when link_edit is enabled
             if self.share_access != 'link_edit':
                 return False
             token = self._ensure_token('edit')
         else:
-            # view mode
             if self.share_access not in ('link_view', 'link_edit'):
                 return False
             token = self._ensure_token('view')
-        return f"{base_url}/documents/s/{token}"
+
+        base = (self.env['ir.config_parameter'].sudo().get_param('web.base.url') or '').rstrip('/')
+        path = f"/documents/s/{token}"
+        return f"{base}{path}" if base else path   # relative URL works locally and behind proxies
+
 
 
     def regenerate_share_token(self):

@@ -20,12 +20,21 @@ class CustomDocumentFolderWizard(models.TransientModel):
         self.env["custom.document.folder"].create({
             "name": (self.name or "").strip(),
             "parent_id": self.parent_id.id or False,
-            "user_id": self.env.user.id,        # store owner
-            "company_id": self.env.company.id,  # store company
-            # "color": 0,  # only if your model requires it
+            "user_id": self.env.user.id,
+            "company_id": self.env.company.id,
         })
-        # close the dialog and refresh the underlying view
-        return self.env["ir.actions.act_window"]._for_xml_id(   "custom_documents.action_custom_document_folder"
-)
+        # show a toast, then refresh the underlying "Documents" view
+        return {
+            "type": "ir.actions.client",
+            "tag": "display_notification",
+            "params": {
+                "title": _("Folder created"),
+                "message": self.name,
+                "type": "success",
+                "sticky": False,
+                "next": {"type": "ir.actions.client", "tag": "reload"},
+            },
+        }
+
     
 
