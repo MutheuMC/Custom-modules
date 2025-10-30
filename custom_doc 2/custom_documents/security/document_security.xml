@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="custom_document_access_rule" model="ir.rule">
+            <field name="name">Custom Document: User Access</field>
+            <field name="model_id" ref="model_custom_document"/>
+            <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="True"/>
+            <field name="domain_force">
+                ['|',
+                    ('user_id', '=', user.id),
+                '|',
+                    ('share_line_ids.user_id', '=', user.id),
+                    ('share_access', 'in', ['internal_view', 'internal_edit'])
+                ]
+            </field>
+        </record>
+    </data>
+</odoo>

@@ -334,9 +334,11 @@ class DocumentFolder(models.Model):
             # All documents owned by current user (active only)
             return [('user_id', '=', uid), ('active', '=', True)]
         elif virtual_type == 'shared':
-            # Documents shared with me (follower but not owner)
+            # Documents shared with me (via lines or internal) but not owned by me
             return [
-                ('message_follower_ids.partner_id', '=', partner_id),
+                '|',
+                    ('share_line_ids.user_id', '=', uid),
+                    ('share_access', 'in', ['internal_view', 'internal_edit']),
                 ('user_id', '!=', uid),
                 ('active', '=', True)
             ]

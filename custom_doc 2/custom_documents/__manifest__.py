@@ -1,12 +1,13 @@
 {
     'name': 'Documents  Management File System',
-    'version': '18.0.19.4.6',
+    'version': '18.0.20.4.6',
     'category': 'Document Management',
     'summary': 'Custom Document Management System Systems',
     'depends': ['base', 'web', 'mail', 'hr'],
     'post_init_hook': 'post_init_hook',
     'data': [
         'security/ir.model.access.csv',
+        'security/document_security.xml',
         'views/document_upload_wizard_views.xml',
         'views/folder_wizard_views.xml',
         'views/preview_wizard_views.xml',

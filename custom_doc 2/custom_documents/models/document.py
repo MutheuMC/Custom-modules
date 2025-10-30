@@ -709,7 +709,7 @@ class CustomDocument(models.Model):
     # -------------------------------------------------------------------------
     # Virtual folder membership + Search helpers
     # -------------------------------------------------------------------------
-    @api.depends('user_id', 'write_date', 'active', 'message_partner_ids')
+    @api.depends('user_id', 'write_date', 'active', 'message_partner_ids', 'share_line_ids', 'share_access')
     def _compute_virtual_folder_ids(self):
         """Compute which virtual folders this document belongs to."""
         VirtualFolder = self.env['custom.document.folder'].sudo()
@@ -730,8 +730,11 @@ class CustomDocument(models.Model):
             if doc.user_id.id == uid and doc.active and my_drive_folder:
                 vf.append(my_drive_folder.id)
             
-            # Shared with Me: follower but not owner (active only)
-            if (partner_id in doc.message_partner_ids.ids) and (doc.user_id.id != uid) and doc.active and shared_folder:
+            # Shared with Me: (via lines or internal) but not owner (active only)
+            is_shared_internally = doc.share_access in ('internal_view', 'internal_edit')
+            is_shared_directly = uid in doc.share_line_ids.user_id.ids
+            
+            if (is_shared_internally or is_shared_directly) and (doc.user_id.id != uid) and doc.active and shared_folder:
                 vf.append(shared_folder.id)
             
             # Recent: modified in last 7 days (active only)
@@ -754,15 +757,22 @@ class CustomDocument(models.Model):
         return ['|', ('write_date', '=', False), ('write_date', '<', seven_days_ago)]
 
     def _search_shared_with_me(self, operator, value):
-        """True if current user is a follower (partner) but not the owner (active)."""
+        """True if current user is shared (directly or internal) but not the owner (active)."""
         if operator not in ('=', '=='):
             return []
         uid = self.env.uid
-        partner_id = self.env.user.partner_id.id
+        
+        # This is the domain for "Shared with me"
+        shared_domain = [
+            '|',
+                ('share_line_ids.user_id', '=', uid),
+                ('share_access', 'in', ['internal_view', 'internal_edit']),
+            ('user_id', '!=', uid),
+            ('active', '=', True)
+        ]
+        
         if value:
-            return [
-                ('message_partner_ids', 'in', [partner_id]),
-                ('user_id', '!=', uid),
-                ('active', '=', True),
-            ]
-        return ['|', ('message_partner_ids', 'not in', [partner_id]), ('user_id', '=', uid)]
+            return shared_domain
+        else:
+            # Return the negation of the domain
+            return ['!'] + shared_domain
