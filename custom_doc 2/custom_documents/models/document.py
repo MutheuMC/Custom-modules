@@ -574,7 +574,7 @@ class CustomDocument(models.Model):
             'res_id': wiz.id,
             'view_mode': 'form',
             'target': 'new',
-            'context': {'dialog_size': 'large'},
+            'context': {'dialog_size': 'xl'},
         }
 
     # ---------- List-view action helpers ----------
@@ -714,7 +714,6 @@ class CustomDocument(models.Model):
         """Compute which virtual folders this document belongs to."""
         VirtualFolder = self.env['custom.document.folder'].sudo()
 
-        all_folder = VirtualFolder.search([('virtual_type', '=', 'all')], limit=1)
         my_drive_folder = VirtualFolder.search([('virtual_type', '=', 'my_drive')], limit=1)
         shared_folder = VirtualFolder.search([('virtual_type', '=', 'shared')], limit=1)
         recent_folder = VirtualFolder.search([('virtual_type', '=', 'recent')], limit=1)
@@ -726,17 +725,23 @@ class CustomDocument(models.Model):
 
         for doc in self:
             vf = []
-            if doc.active and all_folder:
-                vf.append(all_folder.id)
+            
+            # My Drive: all documents I own (active only)
             if doc.user_id.id == uid and doc.active and my_drive_folder:
                 vf.append(my_drive_folder.id)
-            # follower but not owner
+            
+            # Shared with Me: follower but not owner (active only)
             if (partner_id in doc.message_partner_ids.ids) and (doc.user_id.id != uid) and doc.active and shared_folder:
                 vf.append(shared_folder.id)
+            
+            # Recent: modified in last 7 days (active only)
             if (doc.write_date and doc.write_date >= seven_days_ago) and doc.active and recent_folder:
                 vf.append(recent_folder.id)
+            
+            # Trash: inactive documents
             if not doc.active and trash_folder:
                 vf.append(trash_folder.id)
+            
             doc.virtual_folder_ids = [(6, 0, vf)]
 
     def _search_is_recent(self, operator, value):

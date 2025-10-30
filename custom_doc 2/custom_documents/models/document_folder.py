@@ -327,20 +327,26 @@ class DocumentFolder(models.Model):
     def _get_virtual_folder_domain(self, virtual_type):
         """Get domain for virtual folder types"""
         uid = self.env.uid
+        partner_id = self.env.user.partner_id.id
         seven_days_ago = fields.Datetime.now() - timedelta(days=7)
         
-        if virtual_type == 'all':
-            return [('active', '=', True)]
-        elif virtual_type == 'my_drive':
+        if virtual_type == 'my_drive':
+            # All documents owned by current user (active only)
             return [('user_id', '=', uid), ('active', '=', True)]
         elif virtual_type == 'shared':
+            # Documents shared with me (follower but not owner)
             return [
-                ('message_follower_ids.partner_id.user_ids', 'in', [uid]),
+                ('message_follower_ids.partner_id', '=', partner_id),
                 ('user_id', '!=', uid),
                 ('active', '=', True)
             ]
         elif virtual_type == 'recent':
+            # Documents modified in last 7 days (active only)
             return [('write_date', '>=', seven_days_ago), ('active', '=', True)]
         elif virtual_type == 'trash':
+            # Inactive documents
             return [('active', '=', False)]
+        elif virtual_type == 'all':
+            # All active documents
+            return [('active', '=', True)]
         return []

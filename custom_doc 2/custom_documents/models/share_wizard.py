@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from odoo import models, fields, api, _
-from odoo.exceptions import UserError
+from odoo.exceptions import AccessError, UserError
 
 class CustomDocumentShareWizard(models.TransientModel):
     _name = 'custom.document.share.wizard'
@@ -19,24 +19,45 @@ class CustomDocumentShareWizard(models.TransientModel):
         readonly=True
     )
 
-    # START: Fields for Owner Display
+    # Owner Display Fields - FIXED
     owner_user_id = fields.Many2one(
         'res.users',
-        related='document_id.create_uid',
-        string='Owner',
-        readonly=True
+        string='Owner User',
+        compute='_compute_owner_fields',
+        store=False
     )
     owner_partner_id = fields.Many2one(
         'res.partner',
-        related='owner_user_id.partner_id',
         string='Owner Partner',
-        readonly=True
+        compute='_compute_owner_fields',
+        store=False
     )
     owner_email = fields.Char(
-        related='owner_partner_id.email',
         string='Owner Email',
-        readonly=True
+        compute='_compute_owner_fields',
+        store=False
     )
+    owner_name = fields.Char(
+        string='Owner Name',
+        compute='_compute_owner_fields',
+        store=False
+    )
+
+    @api.depends('document_id', 'document_id.user_id')
+    def _compute_owner_fields(self):
+        """Compute owner fields from document"""
+        for wizard in self:
+            if wizard.document_id and wizard.document_id.user_id:
+                owner = wizard.document_id.user_id
+                wizard.owner_user_id = owner
+                wizard.owner_partner_id = owner.partner_id
+                wizard.owner_email = owner.partner_id.email or owner.login
+                wizard.owner_name = owner.name
+            else:
+                wizard.owner_user_id = False
+                wizard.owner_partner_id = False
+                wizard.owner_email = False
+                wizard.owner_name = False
 
     # Add People Section
     partner_ids = fields.Many2many(
@@ -44,6 +65,7 @@ class CustomDocumentShareWizard(models.TransientModel):
         string='Add People',
         help='Select people to share with'
     )
+   
     
     role = fields.Selection([
         ('viewer', 'Viewer'),
@@ -76,16 +98,77 @@ class CustomDocumentShareWizard(models.TransientModel):
         compute='_compute_links'
     )
 
-    @api.depends('document_id')
+    all_people_with_access = fields.One2many(
+        'custom.document.share.line',
+        string="All People",
+        compute='_compute_all_people_with_access'
+    )
+
+
+     # --- Helpers ---
+    def _check_can_edit_role(self):
+        """Only document owner or admins can change roles; never allow changing owner here."""
+        for rec in self:
+            current_user = self.env.user
+            # If your document has an owner_user_id, gate changes behind that:
+            if hasattr(rec.document_id, 'owner_user_id'):
+                is_owner = (current_user == rec.document_id.owner_user_id)
+            else:
+                is_owner = current_user.has_group('base.group_system')  # fallback
+
+            is_admin = current_user.has_group('custom_documents.group_document_admin') \
+                       or current_user.has_group('base.group_system')
+
+            if not (is_owner or is_admin):
+                raise AccessError(_("Only the document owner or admins can change access levels."))
+
+    def _apply_role_permissions(self):
+        """Hook: map role -> your app permissions.
+        If your code checks role at runtime, you can leave this empty.
+        If you pre-compute ACLs, implement them here.
+        """
+        # Example stub: (replace with your own logic)
+        # viewer: read only, commenter: read + comment, editor: read/write
+        return True
+
+    def write(self, vals):
+        # Capture old roles for logging
+        changing_role = 'role' in vals
+        if changing_role:
+            self._check_can_edit_role()
+            old_roles = {rec.id: rec.role for rec in self}
+
+        res = super().write(vals)
+
+        if changing_role:
+            for rec in self:
+                rec._apply_role_permissions()
+                # Optional: notify on the document (if it is mail.thread)
+                if hasattr(rec.document_id, 'message_post'):
+                    rec.document_id.message_post(
+                        body=_("Access level for <b>%s</b> changed from <i>%s</i> to <i>%s</i>.") % (
+                            rec.partner_id.display_name, old_roles.get(rec.id), rec.role
+                        ),
+                        subtype_xmlid='mail.mt_note',
+                    )
+        return res
+
+    @api.depends('document_id', 'document_id.share_line_ids')
+    def _compute_all_people_with_access(self):
+        """Get all share lines for display"""
+        for wizard in self:
+            wizard.all_people_with_access = wizard.document_id.share_line_ids
+
+    @api.depends('document_id', 'document_id.share_access')
     def _compute_links(self):
         """Generate shareable links"""
         for wizard in self:
             if wizard.document_id:
-                wizard.view_link = wizard.document_id.get_share_link('view')
-                wizard.edit_link = wizard.document_id.get_share_link('edit')
+                wizard.view_link = wizard.document_id.get_share_link('view') or ''
+                wizard.edit_link = wizard.document_id.get_share_link('edit') or ''
             else:
-                wizard.view_link = False
-                wizard.edit_link = False
+                wizard.view_link = ''
+                wizard.edit_link = ''
 
     def action_add_people(self):
         """Add selected people with chosen role"""
@@ -146,33 +229,37 @@ class CustomDocumentShareWizard(models.TransientModel):
                 'message': '\n'.join(messages) if messages else _('No changes made.'),
                 'type': 'success' if added else 'info',
                 'sticky': False,
-                'next': {'type': 'ir.actions.do_nothing'},
+                'next': {'type': 'ir.actions.client', 'tag': 'reload'},
             }
         }
 
     def action_copy_view_link(self):
-        """Copy view link - shows notification with link"""
+        """Copy view link using JavaScript client action"""
         self.ensure_one()
         
-        message = _(
-            'View Link:\n%(link)s\n\n'
-            'Anyone with this link can view the document.',
-            link=self.view_link
-        )
+        if not self.view_link:
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': _('Link Not Available'),
+                    'message': _('Please enable link sharing first (set General Access to "Anyone with link").'),
+                    'type': 'warning',
+                    'sticky': False,
+                }
+            }
         
         return {
             'type': 'ir.actions.client',
-            'tag': 'display_notification',
+            'tag': 'custom_documents.copy_to_clipboard',
             'params': {
-                'title': _('📋 View Link'),
-                'message': message,
-                'type': 'info',
-                'sticky': True,
+                'text': self.view_link,
+                'notificationTitle': _('✓ View link copied to clipboard'),
             }
         }
 
     def action_copy_edit_link(self):
-        """Copy edit link - shows notification with link"""
+        """Copy edit link using JavaScript client action"""
         self.ensure_one()
         
         if self.share_access != 'link_edit':
@@ -181,47 +268,29 @@ class CustomDocumentShareWizard(models.TransientModel):
                 'tag': 'display_notification',
                 'params': {
                     'title': _('Not Available'),
-                    'message': _('Edit links require "Anyone with link (edit)" access.'),
+                    'message': _('Edit links require "Anyone with link – Editor" access.'),
                     'type': 'warning',
                     'sticky': False,
                 }
             }
         
-        message = _(
-            'Edit Link:\n%(link)s\n\n'
-            'Anyone with this link can edit the document.',
-            link=self.edit_link
-        )
+        if not self.edit_link:
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': _('Link Not Available'),
+                    'message': _('Unable to generate edit link.'),
+                    'type': 'warning',
+                    'sticky': False,
+                }
+            }
         
         return {
             'type': 'ir.actions.client',
-            'tag': 'display_notification',
+            'tag': 'custom_documents.copy_to_clipboard',
             'params': {
-                'title': _('📋 Edit Link'),
-                'message': message,
-                'type': 'info',
-                'sticky': True,
+                'text': self.edit_link,
+                'notificationTitle': _('✓ Edit link copied to clipboard'),
             }
         }
-
-    # @api.onchange('share_access')
-    # def _onchange_share_access(self):
-    #     """Show warning when changing access level"""
-    #     if not self.share_access:
-    #         return
-        
-    #     messages = {
-    #         'private': _('Only people you explicitly share with can access.'),
-    #         'internal_view': _('All internal users can view this document.'),
-    #         'internal_edit': _('All internal users can edit this document.'),
-    #         'link_view': _('⚠️ Anyone with the link can view (no login required).'),
-    #         'link_edit': _('⚠️ Anyone with the link can edit (no login required).'),
-    #     }
-        
-    #     if self.share_access in messages:
-    #         return {
-    #             'warning': {
-    #                 'title': _('Access Level Changed'),
-    #                 'message': messages[self.share_access],
-    #             }
-    #         }

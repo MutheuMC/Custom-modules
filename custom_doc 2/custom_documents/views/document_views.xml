@@ -91,7 +91,7 @@
     <!-- ===============================================
          Document Search View with Hierarchical Searchpanel
          =============================================== -->
-    <record id="view_custom_document_search" model="ir.ui.view">
+       <record id="view_custom_document_search" model="ir.ui.view">
         <field name="name">custom.document.search</field>
         <field name="model">custom.document</field>
         <field name="arch" type="xml">
@@ -100,6 +100,17 @@
                 <field name="folder_id"/>
                 <field name="user_id"/>
                 <field name="tag_ids"/>
+
+                <!-- Filters for virtual folders -->
+                <filter string="My Drive" name="my_drive" 
+                        domain="[('user_id', '=', uid), ('active', '=', True)]"/>
+                <filter string="Shared with me" name="shared_with_me" 
+                        domain="[('message_follower_ids.partner_id.user_ids', 'in', [uid]), ('user_id', '!=', uid), ('active', '=', True)]"/>
+                <filter string="Recent" name="recent" 
+                        domain="[('write_date', '&gt;=', (context_today() - datetime.timedelta(days=7)).strftime('%Y-%m-%d')), ('active', '=', True)]"/>
+                <filter string="Trash" name="trash" 
+                        domain="[('active', '=', False)]"
+                        context="{'active_test': False}"/>
 
                 <group expand="0" string="Group By">
                     <filter string="Type"          name="type"   context="{'group_by': 'document_type'}"/>

@@ -2,6 +2,51 @@
 <odoo>
 
   <!-- =========================================================
+       SHARE LINE CARD VIEW (Custom display like owner)
+       ========================================================= -->
+  <record id="view_custom_document_share_line_card" model="ir.ui.view">
+    <field name="name">custom.document.share.line.card</field>
+    <field name="model">custom.document.share.line</field>
+    <field name="arch" type="xml">
+      <list editable="bottom" delete="1" create="0" class="o_share_line_cards">
+        
+        <!-- Avatar Column -->
+        <field name="partner_id" 
+               widget="image"
+               nolabel="1"
+               readonly="1"
+               class="o_avatar_cell"
+               options="{'size': [40, 40], 'preview_image': 'avatar_128'}"/>
+        
+        <!-- Name & Email Column -->
+        <field name="partner_id" 
+               string="Person"
+               readonly="1" 
+               options="{'no_open': True}"/>
+        
+        <field name="email" 
+               string="Email"
+               readonly="1" 
+               optional="show"/>
+        
+        <!-- Role Column -->
+        <field name="role"
+               string="Access Level"
+               widget="badge"
+               decoration-info="role == 'viewer'"
+               decoration-warning="role == 'commenter'"
+               decoration-success="role == 'editor'"/>
+        
+        <!-- Date Column -->
+        <field name="create_date" 
+               string="Shared On" 
+               readonly="1" 
+               optional="hide"/>
+      </list>
+    </field>
+  </record>
+
+  <!-- =========================================================
        SHARE LINE LIST (Odoo 18 uses <list>, not <tree>)
        ========================================================= -->
   <record id="view_custom_document_share_line_list" model="ir.ui.view">
@@ -42,7 +87,7 @@
   </record>
 
   <!-- =========================================================
-       SHARE WIZARD (Google Docs–style)
+       SHARE WIZARD (Google Docs–style) - FIXED
        ========================================================= -->
   <record id="view_custom_document_share_wizard_form" model="ir.ui.view">
     <field name="name">custom.document.share.wizard.form</field>
@@ -50,14 +95,6 @@
     <field name="arch" type="xml">
       <form string="Share" create="0" edit="0" delete="0">
         <sheet>
-
-          <!-- Document Title -->
-          <div class="oe_title mb-3">
-            <h2>
-              <field name="document_name" readonly="1" nolabel="1" class="o_text_overflow"/>
-            </h2>
-          </div>
-
           <group>
             <!-- ============ ADD PEOPLE SECTION ============ -->
             <group string="Add People" class="mb-3">
@@ -81,9 +118,74 @@
                       class="btn-primary"
                       invisible="not partner_ids"/>
             </group>
+              <!-- Hidden fields -->
+          <field name="owner_user_id" invisible="1"/>
+          <field name="owner_partner_id" invisible="1"/>
+          <field name="owner_email" invisible="1"/>
+          <field name="owner_name" invisible="1"/>
 
-            <!-- ============ GENERAL ACCESS SECTION ============ -->
-            <group string="General Access">
+       <!-- ============ PEOPLE WITH ACCESS SECTION (styled like screenshot) ============ -->
+          <group string="People with access">
+            <div class="o_share_people_table">
+
+              <!-- Owner row -->
+              <div class="o_share_owner_row" invisible="not owner_partner_id">
+                <div class="o_owner_left">
+                  <field name="owner_partner_id"
+                        widget="image"
+                        nolabel="1"
+                        readonly="1"
+                        class="o_avatar o_avatar_circle"
+                        options="{'size': [24, 24], 'preview_image': 'avatar_128'}"/>
+                  <div class="o_owner_text">
+                    <span class="o_owner_name">
+                      <field name="owner_name" nolabel="1" readonly="1"/>
+                    </span>
+                
+                  </div>
+                </div>
+                <div class="o_owner_right">
+                  <span class="badge bg-primary">Owner</span>
+                </div>
+              </div>
+
+              <!-- People list -->
+                  <field name="people_ids" nolabel="1" context="{'default_document_id': document_id}">
+                    <list class="o_share_people_inline_list" editable="bottom" create="0" delete="1">
+                      <!-- Avatar only (hide the text part via CSS) -->
+                      <field name="partner_id"
+                            nolabel="1"
+                            widget="many2one_avatar"
+                            class="col_avatar"
+                            options="{'no_open': True}"
+                            readonly="1"/>
+
+
+
+                      <!-- Access level (badge widget renders its own <span>) -->
+                      <field name="role"
+                            string="Access level"
+                            widget="selection"
+                            decoration-primary="role == 'owner'"
+                            decoration-info="role == 'viewer'"
+                            decoration-warning="role == 'commenter'"
+                            decoration-success="role == 'editor'"/>
+                      <!-- Delete icon column is auto-provided by delete="1" -->
+                    </list>
+                  </field>
+
+
+           
+
+            </div>
+          </group>
+
+          </group>
+
+
+          <group>
+
+             <group string="General Access">
               <field name="share_access"
                      widget="radio"
                      options="{'horizontal': False}"/>
@@ -110,41 +212,20 @@
                 </div>
               </div>
             </group>
+          
           </group>
 
-          <separator string="People with Access"/>
 
-          <field name="owner_partner_id" invisible="1"/>
-          <field name="owner_email" invisible="1"/>
-          
-          <div class="o_custom_doc_share_owner mb-2" 
-               invisible="[('owner_partner_id', '=', False)]">
-            <div class="d-flex align-items-center">
-              <div class="flex-shrink-0">
-                <field name="owner_partner_id" widget="partner_avatar" nolabel="1"/>
-              </div>
-              <div class="flex-grow-1 ms-2">
-                <field name="owner_partner_id" class="fw-bold" nolabel="1" readonly="1" options="{'no_open': True}"/>
-                <div class="text-muted small">
-                  <field name="owner_email" nolabel="1" readonly="1"/>
-                </div>
-              </div>
-              <div class="flex-shrink-0 text-muted ps-2">
-                <strong>Owner</strong>
-              </div>
-            </div>
-          </div>
-          <field name="people_ids"
-                 nolabel="1"
-                 context="{'default_document_id': document_id}"
-                 views="[(list, ref('custom_documents.view_custom_document_share_line_list'))]"/>
-         
+       
+
+           
+
+   
 
         </sheet>
 
         <footer>
           <button string="Done" class="btn-primary" special="cancel"/>
-          <button string="Cancel" class="btn-secondary" special="cancel"/>
         </footer>
       </form>
     </field>

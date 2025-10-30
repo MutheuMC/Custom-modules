@@ -1,6 +1,14 @@
+
+
+
 .o_field_pdf_viewer,
 .o_pdf_viewer {
   min-height: 800px;
+}
+
+.o_field_widget.o_field_pdfviewer, .o_field_widget.o_field_pdf_viewer .o_pdfview_iframe{
+
+  height:800px !important;
 }
 
 .o_list_view .btn-link.p-0 {
@@ -15,4 +23,88 @@
 .o_kanban_view .o_kanban_record a {
   pointer-events: none;
   text-decoration: none;
+}
+
+
+
+.o_list_view .btn-link.p-0 {
+  line-height: 1;      /* tighter vertical alignment */
+}
+.o_list_view .fa {
+  font-size: 14px;     /* small icons like your screenshot */
+}
+
+.o_list_view .o_data_row a:not(.o_list_record_selector),
+.o_kanban_view .o_kanban_record a {
+  pointer-events: none;
+  text-decoration: none;
+}
+
+/* Document hover actions styling */
+.custom_document_list {
+  
+  tbody tr.o_data_row {
+    position: relative;
+    
+    // Hover actions container
+    .o_document_hover_actions {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: none;
+      gap: 4px;
+      background: #fff;
+      padding: 4px 8px;
+      border-radius: 6px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      z-index: 10;
+      
+      .o_document_hover_btn {
+        padding: 4px 8px;
+        margin: 0;
+        color: #6c757d;
+        transition: color 0.2s, background-color 0.2s;
+        border-radius: 4px;
+        
+        &:hover {
+          color: #0d6efd;
+          background-color: #e7f3ff;
+        }
+        
+        i {
+          font-size: 16px;
+        }
+      }
+    }
+    
+    // Show actions on row hover
+    &:hover {
+      .o_document_hover_actions {
+        display: flex;
+      }
+    }
+    
+    // Adjust last cell to accommodate buttons
+    td:last-child {
+      position: relative;
+      min-width: 150px;
+    }
+  }
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .custom_document_list {
+    .o_document_hover_actions {
+      display: flex !important; // Always visible on mobile
+      position: static;
+      transform: none;
+      margin-top: 8px;
+      box-shadow: none;
+      border-top: 1px solid #e9ecef;
+      padding-top: 8px;
+      justify-content: flex-end;
+    }
+  }
 }
