@@ -22,12 +22,6 @@ class CustomDocumentShareLine(models.Model):
         required=True,
         index=True
     )
-     # partner_avatar = fields.Image(
-    #     string='Avatar', related='partner_id.image_128', readonly=True, store=False
-    # )
-    # partner_name = fields.Char(
-    #     string='Name', related='partner_id.display_name', readonly=True, store=False
-    # )
     
     email = fields.Char(
         string='Email',

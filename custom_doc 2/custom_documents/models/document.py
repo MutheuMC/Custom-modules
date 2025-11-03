@@ -255,6 +255,59 @@ class CustomDocument(models.Model):
         for doc in self:
             doc.shared_with_count = len(doc.share_line_ids)
 
+
+
+
+        # Add this method to your CustomDocument class in document.py
+    # This enhances the existing access control
+
+    def _check_user_access(self):
+        """Check if current user has access to this document"""
+        self.ensure_one()
+        user = self.env.user
+        
+        # Admin always has access
+        if user.has_group('base.group_system'):
+            return True
+        
+        # Owner has access
+        if self.user_id.id == user.id:
+            return True
+        
+        # Shared directly with user
+        if user.id in self.share_line_ids.mapped('user_id').ids:
+            return True
+        
+        # Internal sharing
+        if self.share_access in ('internal_view', 'internal_edit'):
+            return True
+        
+        return False
+
+    @api.model
+    def search(self, args, offset=0, limit=None, order=None, count=False):
+        """Override search to filter documents user has access to"""
+        # Add access domain if not superuser
+        if not self.env.su:
+            user = self.env.user
+            access_domain = [
+                '|', '|',
+                    ('user_id', '=', user.id),
+                    ('share_line_ids.user_id', '=', user.id),
+                    ('share_access', 'in', ['internal_view', 'internal_edit'])
+            ]
+            args = expression.AND([args, access_domain])
+        
+        return super().search(args, offset=offset, limit=limit, order=order, count=count)
+
+    def read(self, fields=None, load='_classic_read'):
+        """Override read to check access"""
+        # Check access before reading
+        for doc in self:
+            if not doc._check_user_access():
+                raise AccessError(_('You do not have access to this document.'))
+        return super().read(fields=fields, load=load)
+
     # -------------------------------------------------------------------------
     # CRUD
     # -------------------------------------------------------------------------
@@ -307,10 +360,79 @@ class CustomDocument(models.Model):
             token = self._generate_token()
             self.write({field: token})
         return token
+    # In models/document.py
+# REPLACE the existing get_share_link method with these two methods:
 
     def get_share_link(self, mode='view'):
-        """Return a token-based URL for public access."""
+        """Return the actual document content URL (requires authentication).
+        
+        This generates internal links like:
+        - /web/content/custom.document/{id}/file/{filename}
+        - /web/content/custom.document/{id}/file/{filename}?download=true
+        """
+        import logging
+        _logger = logging.getLogger(__name__)
+        
         self.ensure_one()
+        
+        _logger.info("🔗 GET_SHARE_LINK called")
+        _logger.info(f"  Mode: {mode}")
+        _logger.info(f"  Document: {self.name} (ID: {self.id})")
+        _logger.info(f"  Type: {self.document_type}")
+        _logger.info(f"  Share Access: {self.share_access}")
+        _logger.info(f"  Has File: {bool(self.file)}")
+        
+        # Check if sharing is enabled at all
+        if mode == 'edit':
+            allowed = self.share_access in ('link_edit', 'internal_edit')
+            _logger.info(f"  Edit mode - allowed: {allowed} (need link_edit or internal_edit)")
+            if not allowed:
+                _logger.warning(f"  ❌ Access denied for edit mode (current: {self.share_access})")
+                return False
+        else:  # view mode
+            allowed = self.share_access in ('link_view', 'link_edit', 'internal_view', 'internal_edit')
+            _logger.info(f"  View mode - allowed: {allowed}")
+            if not allowed:
+                _logger.warning(f"  ❌ Access denied for view mode (current: {self.share_access})")
+                return False
+        
+        if self.document_type != 'file':
+            _logger.warning(f"  ❌ Not a file document (type: {self.document_type})")
+            return False
+            
+        if not self.file:
+            _logger.warning("  ❌ No file attached")
+            return False
+        
+        # Generate the content URL
+        base = self.env['ir.config_parameter'].sudo().get_param('web.base.url', '').rstrip('/')
+        filename = self.file_name or 'document'
+        path = f"/web/content/custom.document/{self.id}/file/{filename}"
+        
+        # Add download parameter for edit mode
+        if mode == 'edit':
+            path += "?download=true"
+        
+        full_url = f"{base}{path}" if base else path
+        
+        _logger.info(f"  ✅ Generated link: {full_url}")
+        
+        return full_url
+
+
+    def get_public_share_link(self, mode='view'):
+        """Return a token-based public URL (no login required).
+        
+        This generates public links like:
+        - /documents/s/{token}
+        - /documents/s/{token}/download
+        
+        Only works when share_access is set to 'link_view' or 'link_edit'.
+        These links can be accessed by anyone without authentication.
+        """
+        self.ensure_one()
+        
+        # Only generate public links if explicitly enabled
         if mode == 'edit':
             if self.share_access != 'link_edit':
                 return False
@@ -319,10 +441,14 @@ class CustomDocument(models.Model):
             if self.share_access not in ('link_view', 'link_edit'):
                 return False
             token = self._ensure_token('view')
-
-        base = (self.env['ir.config_parameter'].sudo().get_param('web.base.url') or '').rstrip('/')
+        
+        base = self.env['ir.config_parameter'].sudo().get_param('web.base.url', '').rstrip('/')
         path = f"/documents/s/{token}"
-        return f"{base}{path}" if base else path   # relative URL works locally and behind proxies
+        
+        if mode == 'edit':
+            path += "/download"
+        
+        return f"{base}{path}" if base else path
 
 
 
@@ -396,43 +522,7 @@ class CustomDocument(models.Model):
             self.share_line_ids.filtered(lambda l: l.user_id.id == u.id)
         )
 
-    # def check_access(self, partner_id=None, token=None, access_type='read'):
-    #     """Check if user/partner has access to document"""
-    #     self.ensure_one()
-        
-    #     # System/admin always has access
-    #     if self.env.su:
-    #         return True
-        
-    #     # Check if current user is owner
-    #     if self.create_uid == self.env.user:
-    #         return True
-        
-    #     # Check token-based access
-    #     if token:
-    #         if token == self.share_token_view and self.share_access in ('link_view', 'link_edit'):
-    #             if access_type == 'read':
-    #                 return True
-    #         if token == self.share_token_edit and self.share_access == 'link_edit':
-    #             if access_type in ('read', 'write'):
-    #                 return True
-        
-    #     # Check partner-specific access
-    #     if partner_id or self.env.user.partner_id:
-    #         partner = partner_id or self.env.user.partner_id.id
-    #         share_line = self.share_line_ids.filtered(
-    #             lambda l: l.partner_id.id == partner
-    #         )
-            
-    #         if share_line:
-    #             if access_type == 'read':
-    #                 return True
-    #             if access_type == 'write' and share_line.role == 'editor':
-    #                 return True
-    #             if access_type == 'comment' and share_line.role in ('commenter', 'editor'):
-    #                 return True
-        
-    #     return False
+ 
     
 
     # --- REPLACE your current check_access with these two methods ---
@@ -776,3 +866,81 @@ class CustomDocument(models.Model):
         else:
             # Return the negation of the domain
             return ['!'] + shared_domain
+
+
+
+
+    def action_diagnose_sharing(self):
+        """Diagnostic button to check sharing setup"""
+        self.ensure_one()
+        import logging
+        _logger = logging.getLogger(__name__)
+        
+        # Collect diagnostic info
+        info = []
+        info.append("=" * 60)
+        info.append("DOCUMENT SHARING DIAGNOSTICS")
+        info.append("=" * 60)
+        info.append(f"Document: {self.name}")
+        info.append(f"ID: {self.id}")
+        info.append(f"Type: {self.document_type}")
+        info.append(f"Share Access: {self.share_access}")
+        info.append("")
+        
+        # Check file
+        info.append("FILE CHECK:")
+        info.append(f"  Has file: {bool(self.file)}")
+        info.append(f"  File name: {self.file_name or 'NONE'}")
+        info.append(f"  MIME type: {self.mimetype or 'NONE'}")
+        info.append("")
+        
+        # Test link generation
+        info.append("LINK GENERATION TEST:")
+        try:
+            view_link = self.get_share_link('view')
+            info.append(f"  ✅ View link: {view_link or 'FALSE/NONE'}")
+        except Exception as e:
+            info.append(f"  ❌ View link error: {e}")
+        
+        try:
+            edit_link = self.get_share_link('edit')
+            info.append(f"  ✅ Edit link: {edit_link or 'FALSE/NONE'}")
+        except Exception as e:
+            info.append(f"  ❌ Edit link error: {e}")
+        
+        try:
+            pub_view = self.get_public_share_link('view')
+            info.append(f"  ✅ Public view: {pub_view or 'FALSE/NONE'}")
+        except Exception as e:
+            info.append(f"  ❌ Public view error: {e}")
+        
+        try:
+            pub_edit = self.get_public_share_link('edit')
+            info.append(f"  ✅ Public edit: {pub_edit or 'FALSE/NONE'}")
+        except Exception as e:
+            info.append(f"  ❌ Public edit error: {e}")
+        
+        info.append("")
+        
+        # Recommendations
+        info.append("RECOMMENDATIONS:")
+        if self.share_access == 'private':
+            info.append("  ⚠️  Share Access is 'private' - no links will be generated")
+            info.append("     → Change to 'internal_view' or higher to enable sharing")
+        
+        if self.document_type != 'file':
+            info.append(f"  ⚠️  Document type is '{self.document_type}' (only 'file' type supports sharing)")
+        
+        if not self.file:
+            info.append("  ⚠️  No file uploaded - upload a file first")
+        
+        if not self.file_name:
+            info.append("  ⚠️  No file name - this may cause issues")
+        
+        info.append("=" * 60)
+        
+        # Log and display
+        message = "\n".join(info)
+        _logger.info(message)
+        
+        raise UserError(message)

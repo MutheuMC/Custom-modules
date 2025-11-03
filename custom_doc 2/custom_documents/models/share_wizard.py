@@ -104,6 +104,31 @@ class CustomDocumentShareWizard(models.TransientModel):
         compute='_compute_all_people_with_access'
     )
 
+    view_link = fields.Char(
+    string='Authenticated View Link',
+    compute='_compute_links',
+    help='Link that requires user to be logged in'
+    )
+
+    edit_link = fields.Char(
+        string='Authenticated Edit Link',
+        compute='_compute_links',
+        help='Link that requires user to be logged in'
+    )
+
+    # Public Share Links (no login required, token-based)
+    public_view_link = fields.Char(
+        string='Public View Link',
+        compute='_compute_links',
+        help='Public link anyone can access (no login required)'
+    )
+
+    public_edit_link = fields.Char(
+        string='Public Edit Link',
+        compute='_compute_links',
+        help='Public link anyone can access for downloading (no login required)'
+    )
+
 
      # --- Helpers ---
     def _check_can_edit_role(self):
@@ -159,16 +184,7 @@ class CustomDocumentShareWizard(models.TransientModel):
         for wizard in self:
             wizard.all_people_with_access = wizard.document_id.share_line_ids
 
-    @api.depends('document_id', 'document_id.share_access')
-    def _compute_links(self):
-        """Generate shareable links"""
-        for wizard in self:
-            if wizard.document_id:
-                wizard.view_link = wizard.document_id.get_share_link('view') or ''
-                wizard.edit_link = wizard.document_id.get_share_link('edit') or ''
-            else:
-                wizard.view_link = ''
-                wizard.edit_link = ''
+    
 
     def action_add_people(self):
         """Add selected people with chosen role"""
@@ -233,21 +249,92 @@ class CustomDocumentShareWizard(models.TransientModel):
             }
         }
 
+        # In models/share_wizard.py
+    # REPLACE the _compute_links and action_copy methods:
+
+    @api.depends('document_id', 'document_id.share_access')
+    def _compute_links(self):
+        """Generate both authenticated and public shareable links"""
+        import logging
+        _logger = logging.getLogger(__name__)
+        
+        for wizard in self:
+            _logger.info("=" * 60)
+            _logger.info("COMPUTING SHARE LINKS")
+            _logger.info("=" * 60)
+            
+            if not wizard.document_id:
+                _logger.warning("❌ No document_id")
+                wizard.view_link = ''
+                wizard.edit_link = ''
+                wizard.public_view_link = ''
+                wizard.public_edit_link = ''
+                continue
+            
+            doc = wizard.document_id
+            
+            _logger.info(f"📄 Document: {doc.name} (ID: {doc.id})")
+            _logger.info(f"📁 Document Type: {doc.document_type}")
+            _logger.info(f"🔒 Share Access: {doc.share_access}")
+            _logger.info(f"📎 Has File: {bool(doc.file)}")
+            _logger.info(f"📝 File Name: {doc.file_name}")
+            
+            # Authenticated links (require login)
+            view_link = doc.get_share_link('view')
+            edit_link = doc.get_share_link('edit')
+            
+            _logger.info(f"🔗 View Link: {view_link or 'NONE'}")
+            _logger.info(f"✏️  Edit Link: {edit_link or 'NONE'}")
+            
+            wizard.view_link = view_link or ''
+            wizard.edit_link = edit_link or ''
+            
+            # Public links (no login required, token-based)
+            public_view = doc.get_public_share_link('view')
+            public_edit = doc.get_public_share_link('edit')
+            
+            _logger.info(f"🌐 Public View: {public_view or 'NONE'}")
+            _logger.info(f"📥 Public Edit: {public_edit or 'NONE'}")
+            
+            wizard.public_view_link = public_view or ''
+            wizard.public_edit_link = public_edit or ''
+            
+            _logger.info("=" * 60)
+
+
     def action_copy_view_link(self):
-        """Copy view link using JavaScript client action"""
+        """Copy authenticated view link (requires login)"""
+        import logging
+        _logger = logging.getLogger(__name__)
+        
         self.ensure_one()
         
+        _logger.info("🖱️ COPY VIEW LINK CLICKED")
+        _logger.info(f"  view_link value: '{self.view_link}'")
+        _logger.info(f"  view_link length: {len(self.view_link or '')}")
+        _logger.info(f"  view_link bool: {bool(self.view_link)}")
+        _logger.info(f"  document: {self.document_id.name if self.document_id else 'NO DOC'}")
+        _logger.info(f"  share_access: {self.document_id.share_access if self.document_id else 'N/A'}")
+        
         if not self.view_link:
+            _logger.warning("❌ view_link is empty/False")
             return {
                 'type': 'ir.actions.client',
                 'tag': 'display_notification',
                 'params': {
                     'title': _('Link Not Available'),
-                    'message': _('Please enable link sharing first (set General Access to "Anyone with link").'),
+                    'message': _(
+                        'No link generated. Current access level: %s\n\n'
+                        'To enable links:\n'
+                        '• Set "General Access" to "Internal View" or higher\n'
+                        '• Ensure document has a file uploaded'
+                    ) % (self.document_id.share_access if self.document_id else 'unknown'),
                     'type': 'warning',
-                    'sticky': False,
+                    'sticky': True,
                 }
             }
+        
+        _logger.info(f"✅ Copying link: {self.view_link}")
         
         return {
             'type': 'ir.actions.client',
@@ -258,17 +345,18 @@ class CustomDocumentShareWizard(models.TransientModel):
             }
         }
 
+
     def action_copy_edit_link(self):
-        """Copy edit link using JavaScript client action"""
+        """Copy authenticated edit link (requires login)"""
         self.ensure_one()
         
-        if self.share_access != 'link_edit':
+        if self.share_access not in ('link_edit', 'internal_edit'):
             return {
                 'type': 'ir.actions.client',
                 'tag': 'display_notification',
                 'params': {
                     'title': _('Not Available'),
-                    'message': _('Edit links require "Anyone with link – Editor" access.'),
+                    'message': _('Edit links require "Editor" access level.'),
                     'type': 'warning',
                     'sticky': False,
                 }
@@ -292,5 +380,57 @@ class CustomDocumentShareWizard(models.TransientModel):
             'params': {
                 'text': self.edit_link,
                 'notificationTitle': _('✓ Edit link copied to clipboard'),
+            }
+        }
+
+
+    def action_copy_public_view_link(self):
+        """Copy public view link (no login required)"""
+        self.ensure_one()
+        
+        if not self.public_view_link:
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': _('Public Link Not Available'),
+                    'message': _('Set General Access to "Anyone with link – Viewer" to enable public links.'),
+                    'type': 'warning',
+                    'sticky': False,
+                }
+            }
+        
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'custom_documents.copy_to_clipboard',
+            'params': {
+                'text': self.public_view_link,
+                'notificationTitle': _('✓ Public view link copied to clipboard'),
+            }
+        }
+
+
+    def action_copy_public_edit_link(self):
+        """Copy public edit link (no login required)"""
+        self.ensure_one()
+        
+        if not self.public_edit_link:
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': _('Public Edit Link Not Available'),
+                    'message': _('Set General Access to "Anyone with link – Editor" to enable public edit links.'),
+                    'type': 'warning',
+                    'sticky': False,
+                }
+            }
+        
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'custom_documents.copy_to_clipboard',
+            'params': {
+                'text': self.public_edit_link,
+                'notificationTitle': _('✓ Public edit link copied to clipboard'),
             }
         }

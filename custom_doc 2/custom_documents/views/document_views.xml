@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
+    
+        
+
+    
+   
+
 
 
 
@@ -18,6 +24,12 @@
                         create="0">                
                 <field name="is_starred" column_invisible="1"/>
                 <field name="file_kind" column_invisible="1"/>
+
+                <button name="action_diagnose_sharing" 
+                type="object" 
+                string="🔍 Diagnose Sharing"
+                class="btn-warning"
+                groups="base.group_no_one"/>
 
                 <!-- ⭐ Star / Unstar -->
                 <button name="action_toggle_star" type="object" string=" " title="Unstar"

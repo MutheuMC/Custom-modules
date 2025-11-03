@@ -10,8 +10,18 @@ registry.category("actions").add("custom_documents.copy_to_clipboard", async (en
     const text = (params && params.text) || "";
     const title = (params && params.notificationTitle) || "Copied to clipboard";
 
-    if (!text) {
-        notify.add("No text to copy", { type: "warning" });
+    // Debug logging
+    console.log("📋 Copy to clipboard called");
+    console.log("  Text length:", text.length);
+    console.log("  Text preview:", text.substring(0, 100));
+    console.log("  Full params:", params);
+
+    if (!text || text.trim() === "") {
+        console.error("❌ No text provided to copy");
+        notify.add("No text to copy. Please check your share settings.", { 
+            type: "warning",
+            sticky: true,
+        });
         return;
     }
 
@@ -29,7 +39,9 @@ registry.category("actions").add("custom_documents.copy_to_clipboard", async (en
         try {
             textarea.select();
             textarea.setSelectionRange(0, 99999); // For mobile devices
-            document.execCommand("copy");
+            const success = document.execCommand("copy");
+            console.log("  Fallback copy success:", success);
+            return success;
         } finally {
             document.body.removeChild(textarea);
         }
@@ -38,10 +50,14 @@ registry.category("actions").add("custom_documents.copy_to_clipboard", async (en
     try {
         // Try modern clipboard API first
         if (navigator.clipboard && navigator.clipboard.writeText) {
+            console.log("  Using modern clipboard API");
             await navigator.clipboard.writeText(text);
+            console.log("✅ Copy successful (modern API)");
         } else {
             // Fallback for older browsers or insecure contexts
+            console.log("  Using fallback copy method");
             await fallbackCopy(text);
+            console.log("✅ Copy successful (fallback)");
         }
         
         notify.add(title, { 
@@ -50,12 +66,18 @@ registry.category("actions").add("custom_documents.copy_to_clipboard", async (en
         });
         
     } catch (error) {
-        console.error("Copy to clipboard failed:", error);
-        notify.add("Could not copy to clipboard. Please copy manually.", { 
-            type: "warning",
-            sticky: true,
-        });
+        console.error("❌ Copy to clipboard failed:", error);
+        console.error("  Error details:", error.message);
+        
+        // Show manual copy dialog as last resort
+        notify.add(
+            `Could not copy automatically. Please copy manually:\n\n${text}`, 
+            { 
+                type: "warning",
+                sticky: true,
+            }
+        );
     }
 });
 
-console.log("✓ Copy to clipboard client action registered");
+console.log("✓ Copy to clipboard client action registered (with debug)");
