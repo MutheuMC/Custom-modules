@@ -85,36 +85,23 @@ class CustomDocument(models.Model):
     # SHARE FIELDS - UPDATED FOR GOOGLE DOCS-STYLE SHARING
     # -------------------------------------------------------------------------
     share_access = fields.Selection([
-        ('private', 'Restricted'),
-        ('internal_view', 'Your organization – Viewer'),
-        ('internal_edit', 'Your organization – Editor'),
-        ('link_view', 'Anyone with link – Viewer'),
-        ('link_edit', 'Anyone with link – Editor'),
-    ], string='General Access', default='private', tracking=True)
+        ('private', 'Private (Only me)'),
+        ('internal', 'Shared with specific people'),
+    ], string='Sharing', default='private', tracking=True)
 
     share_line_ids = fields.One2many(
         'custom.document.share.line',
         'document_id',
-        string='People with Access',
+        string='Shared With',
         copy=False,
     )
-    share_token_view = fields.Char(
-        'View token', 
-        copy=False, 
-        default=lambda self: token_urlsafe(32)
-    )
-    share_token_edit = fields.Char(
-        'Edit token', 
-        copy=False, 
-        default=lambda self: token_urlsafe(32)
-    )
     
-    # Computed fields for share status
     is_shared = fields.Boolean(
         string='Is Shared',
         compute='_compute_is_shared',
         store=True
     )
+    
     shared_with_count = fields.Integer(
         string='Shared With',
         compute='_compute_shared_with_count',
@@ -344,232 +331,7 @@ class CustomDocument(models.Model):
                     vals['mimetype'] = mt
         return super().write(vals)
 
-    # -------------------------------------------------------------------------
-    # SHARE METHODS
-    # -------------------------------------------------------------------------
-    def _generate_token(self):
-        """Generate a secure random token"""
-        return token_urlsafe(32)
-
-    def _ensure_token(self, kind='view'):
-        """Ensure token exists and return it"""
-        self.ensure_one()
-        field = 'share_token_view' if kind == 'view' else 'share_token_edit'
-        token = self[field]
-        if not token:
-            token = self._generate_token()
-            self.write({field: token})
-        return token
-    # In models/document.py
-# REPLACE the existing get_share_link method with these two methods:
-
-    def get_share_link(self, mode='view'):
-        """Return the actual document content URL (requires authentication).
-        
-        This generates internal links like:
-        - /web/content/custom.document/{id}/file/{filename}
-        - /web/content/custom.document/{id}/file/{filename}?download=true
-        """
-        import logging
-        _logger = logging.getLogger(__name__)
-        
-        self.ensure_one()
-        
-        _logger.info("🔗 GET_SHARE_LINK called")
-        _logger.info(f"  Mode: {mode}")
-        _logger.info(f"  Document: {self.name} (ID: {self.id})")
-        _logger.info(f"  Type: {self.document_type}")
-        _logger.info(f"  Share Access: {self.share_access}")
-        _logger.info(f"  Has File: {bool(self.file)}")
-        
-        # Check if sharing is enabled at all
-        if mode == 'edit':
-            allowed = self.share_access in ('link_edit', 'internal_edit')
-            _logger.info(f"  Edit mode - allowed: {allowed} (need link_edit or internal_edit)")
-            if not allowed:
-                _logger.warning(f"  ❌ Access denied for edit mode (current: {self.share_access})")
-                return False
-        else:  # view mode
-            allowed = self.share_access in ('link_view', 'link_edit', 'internal_view', 'internal_edit')
-            _logger.info(f"  View mode - allowed: {allowed}")
-            if not allowed:
-                _logger.warning(f"  ❌ Access denied for view mode (current: {self.share_access})")
-                return False
-        
-        if self.document_type != 'file':
-            _logger.warning(f"  ❌ Not a file document (type: {self.document_type})")
-            return False
-            
-        if not self.file:
-            _logger.warning("  ❌ No file attached")
-            return False
-        
-        # Generate the content URL
-        base = self.env['ir.config_parameter'].sudo().get_param('web.base.url', '').rstrip('/')
-        filename = self.file_name or 'document'
-        path = f"/web/content/custom.document/{self.id}/file/{filename}"
-        
-        # Add download parameter for edit mode
-        if mode == 'edit':
-            path += "?download=true"
-        
-        full_url = f"{base}{path}" if base else path
-        
-        _logger.info(f"  ✅ Generated link: {full_url}")
-        
-        return full_url
-
-
-    def get_public_share_link(self, mode='view'):
-        """Return a token-based public URL (no login required).
-        
-        This generates public links like:
-        - /documents/s/{token}
-        - /documents/s/{token}/download
-        
-        Only works when share_access is set to 'link_view' or 'link_edit'.
-        These links can be accessed by anyone without authentication.
-        """
-        self.ensure_one()
-        
-        # Only generate public links if explicitly enabled
-        if mode == 'edit':
-            if self.share_access != 'link_edit':
-                return False
-            token = self._ensure_token('edit')
-        else:
-            if self.share_access not in ('link_view', 'link_edit'):
-                return False
-            token = self._ensure_token('view')
-        
-        base = self.env['ir.config_parameter'].sudo().get_param('web.base.url', '').rstrip('/')
-        path = f"/documents/s/{token}"
-        
-        if mode == 'edit':
-            path += "/download"
-        
-        return f"{base}{path}" if base else path
-
-
-
-    def regenerate_share_token(self):
-        """Regenerate share tokens (invalidates old links)"""
-        self.ensure_one()
-        self.write({
-            'share_token_view': self._generate_token(),
-            'share_token_edit': self._generate_token(),
-        })
-        return {
-            'type': 'ir.actions.client',
-            'tag': 'display_notification',
-            'params': {
-                'title': _('Tokens Regenerated'),
-                'message': _('All previous share links have been invalidated.'),
-                'type': 'warning',
-                'sticky': False,
-            }
-        }
-
-    def action_open_share_wizard(self):
-        """Open share wizard"""
-        self.ensure_one()
-        return {
-            'name': _('Share "%s"', self.name),
-            'type': 'ir.actions.act_window',
-            'res_model': 'custom.document.share.wizard',
-            'view_mode': 'form',
-            'target': 'new',
-            'context': {
-                'default_document_id': self.id,
-            }
-        }
-
-    def _is_editor(self):
-        """Check if current user can edit this document"""
-        self.ensure_one()
-        u = self.env.user
-        
-        # Owner can always edit
-        if self.user_id.id == u.id:
-            return True
-        
-        # Internal edit access
-        if self.share_access == 'internal_edit':
-            return True
-        
-        # Check share lines
-        return bool(
-            self.share_line_ids.filtered(
-                lambda l: l.user_id.id == u.id and l.role == 'editor'
-            )
-        )
-
-    def _can_view(self):
-        """Check if current user can view this document"""
-        self.ensure_one()
-        u = self.env.user
-        
-        # Owner can always view
-        if self.user_id.id == u.id:
-            return True
-        
-        # Internal users
-        if self.share_access in ('internal_view', 'internal_edit'):
-            return True
-        
-        # Check share lines (any role can view)
-        return bool(
-            self.share_line_ids.filtered(lambda l: l.user_id.id == u.id)
-        )
-
- 
-    
-
-    # --- REPLACE your current check_access with these two methods ---
-
-    def has_share_access(self, partner_id=None, token=None, access_type='read'):
-        """Custom share logic (token/partner-based). Safe if called on empty set."""
-        if not self:
-            return False
-        self.ensure_one()
-
-        # System/admin always has access
-        if self.env.su:
-            return True
-
-        # Owner can always view/edit (use your original rule – keep as you had)
-        if self.create_uid == self.env.user:
-            return True
-
-        # Token-based access
-        if token:
-            if token == self.share_token_view and self.share_access in ('link_view', 'link_edit'):
-                if access_type == 'read':
-                    return True
-            if token == self.share_token_edit and self.share_access == 'link_edit':
-                if access_type in ('read', 'write'):
-                    return True
-
-        # Partner-specific access
-        partner = partner_id or (self.env.user.partner_id.id if self.env.user.partner_id else False)
-        if partner:
-            line = self.share_line_ids.filtered(lambda l: l.partner_id.id == partner)
-            if line:
-                if access_type == 'read':
-                    return True
-                if access_type == 'comment' and line.role in ('commenter', 'editor'):
-                    return True
-                if access_type == 'write' and line.role == 'editor':
-                    return True
-
-        return False
-
-
-    def check_access(self, *args, **kwargs):
-        return super().check_access(*args, **kwargs)
-
-
-
+   
     # -------------------------------------------------------------------------
     # Actions
     # -------------------------------------------------------------------------
@@ -868,79 +630,56 @@ class CustomDocument(models.Model):
             return ['!'] + shared_domain
 
 
+    # -------------------------------------------------------------------------
+    # Access Control
+    # -------------------------------------------------------------------------
+    def check_access_rights(self, operation, raise_exception=True):
+        """Allow read access for shared documents"""
+        res = super().check_access_rights(operation, raise_exception)
+        if operation == 'read':
+            return True  # Read access handled by record rules
+        return res
 
-
-    def action_diagnose_sharing(self):
-        """Diagnostic button to check sharing setup"""
+    def _check_can_access(self):
+        """Check if current user can access this document"""
         self.ensure_one()
-        import logging
-        _logger = logging.getLogger(__name__)
+        user = self.env.user
         
-        # Collect diagnostic info
-        info = []
-        info.append("=" * 60)
-        info.append("DOCUMENT SHARING DIAGNOSTICS")
-        info.append("=" * 60)
-        info.append(f"Document: {self.name}")
-        info.append(f"ID: {self.id}")
-        info.append(f"Type: {self.document_type}")
-        info.append(f"Share Access: {self.share_access}")
-        info.append("")
+        # Owner always has access
+        if self.user_id == user:
+            return True
         
-        # Check file
-        info.append("FILE CHECK:")
-        info.append(f"  Has file: {bool(self.file)}")
-        info.append(f"  File name: {self.file_name or 'NONE'}")
-        info.append(f"  MIME type: {self.mimetype or 'NONE'}")
-        info.append("")
+        # Admin always has access
+        if user.has_group('base.group_system'):
+            return True
         
-        # Test link generation
-        info.append("LINK GENERATION TEST:")
-        try:
-            view_link = self.get_share_link('view')
-            info.append(f"  ✅ View link: {view_link or 'FALSE/NONE'}")
-        except Exception as e:
-            info.append(f"  ❌ View link error: {e}")
+        # Directly shared
+        if user.id in self.share_line_ids.mapped('user_id').ids:
+            return True
         
-        try:
-            edit_link = self.get_share_link('edit')
-            info.append(f"  ✅ Edit link: {edit_link or 'FALSE/NONE'}")
-        except Exception as e:
-            info.append(f"  ❌ Edit link error: {e}")
+        # Check if in a shared folder (recursive check)
+        if self.folder_id:
+            return self.folder_id._check_user_has_access(user)
         
-        try:
-            pub_view = self.get_public_share_link('view')
-            info.append(f"  ✅ Public view: {pub_view or 'FALSE/NONE'}")
-        except Exception as e:
-            info.append(f"  ❌ Public view error: {e}")
-        
-        try:
-            pub_edit = self.get_public_share_link('edit')
-            info.append(f"  ✅ Public edit: {pub_edit or 'FALSE/NONE'}")
-        except Exception as e:
-            info.append(f"  ❌ Public edit error: {e}")
-        
-        info.append("")
-        
-        # Recommendations
-        info.append("RECOMMENDATIONS:")
-        if self.share_access == 'private':
-            info.append("  ⚠️  Share Access is 'private' - no links will be generated")
-            info.append("     → Change to 'internal_view' or higher to enable sharing")
-        
-        if self.document_type != 'file':
-            info.append(f"  ⚠️  Document type is '{self.document_type}' (only 'file' type supports sharing)")
-        
-        if not self.file:
-            info.append("  ⚠️  No file uploaded - upload a file first")
-        
-        if not self.file_name:
-            info.append("  ⚠️  No file name - this may cause issues")
-        
-        info.append("=" * 60)
-        
-        # Log and display
-        message = "\n".join(info)
-        _logger.info(message)
-        
-        raise UserError(message)
+        return False
+
+    # -------------------------------------------------------------------------
+    # SHARE METHODS
+    # -------------------------------------------------------------------------
+    def action_share_document(self):
+        """Open share wizard"""
+        self.ensure_one()
+        return {
+            'name': _('Share "%s"', self.name),
+            'type': 'ir.actions.act_window',
+            'res_model': 'custom.document.share.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {
+                'default_document_id': self.id,
+            }
+        }
+
+
+
+ 

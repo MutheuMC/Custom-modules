@@ -18,29 +18,29 @@ class CustomDocumentListController extends ListController {
     this.action = useService("action");
 
     // Intercept anchor clicks inside data rows to avoid navigation
-    this._blockRowAnchors = (ev) => {
-      const anchor = ev.target.closest(".o_list_view .o_data_row a");
-      if (!anchor) return;
-      // Allow the row selector/checkbox
-      if (anchor.classList.contains("o_list_record_selector")) return;
-      ev.preventDefault();
-      ev.stopPropagation();
-    };
+    // this._blockRowAnchors = (ev) => {
+    //   const anchor = ev.target.closest(".o_list_view .o_data_row a");
+    //   if (!anchor) return;
+    //   // Allow the row selector/checkbox
+    //   if (anchor.classList.contains("o_list_record_selector")) return;
+    //   ev.preventDefault();
+    //   ev.stopPropagation();
+    // };
 
-    onMounted(() => {
-      // Capture phase so we stop it before default handlers
-      this.el?.addEventListener("click", this._blockRowAnchors, true);
-      this.el?.addEventListener("dblclick", this._blockRowAnchors, true);
-    });
-    onWillUnmount(() => {
-      this.el?.removeEventListener("click", this._blockRowAnchors, true);
-      this.el?.removeEventListener("dblclick", this._blockRowAnchors, true);
-    });
+    // onMounted(() => {
+    //   // Capture phase so we stop it before default handlers
+    //   this.el?.addEventListener("click", this._blockRowAnchors, true);
+    //   this.el?.addEventListener("dblclick", this._blockRowAnchors, true);
+    // });
+    // onWillUnmount(() => {
+    //   this.el?.removeEventListener("click", this._blockRowAnchors, true);
+    //   this.el?.removeEventListener("dblclick", this._blockRowAnchors, true);
+    // });
   }
 
   // Hard-block all programmatic opens (row click, Enter key, dblclick)
   async openRecord(/*record, options*/) {
-    return; // no-op
+    return super.openRecord(record);
   }
 
   // Helpers used by the dropdown buttons
@@ -111,26 +111,26 @@ class CustomDocumentKanbanController extends KanbanController {
     this.action = useService("action");
 
     // Intercept anchor clicks inside kanban cards to avoid navigation
-    this._blockCardAnchors = (ev) => {
-      const anchor = ev.target.closest(".o_kanban_view .o_kanban_record a");
-      if (!anchor) return;
-      ev.preventDefault();
-      ev.stopPropagation();
-    };
+    // this._blockCardAnchors = (ev) => {
+    //   const anchor = ev.target.closest(".o_kanban_view .o_kanban_record a");
+    //   if (!anchor) return;
+    //   ev.preventDefault();
+    //   ev.stopPropagation();
+    // };
 
-    onMounted(() => {
-      this.el?.addEventListener("click", this._blockCardAnchors, true);
-      this.el?.addEventListener("dblclick", this._blockCardAnchors, true);
-    });
-    onWillUnmount(() => {
-      this.el?.removeEventListener("click", this._blockCardAnchors, true);
-      this.el?.removeEventListener("dblclick", this._blockCardAnchors, true);
-    });
+    // onMounted(() => {
+    //   this.el?.addEventListener("click", this._blockCardAnchors, true);
+    //   this.el?.addEventListener("dblclick", this._blockCardAnchors, true);
+    // });
+    // onWillUnmount(() => {
+    //   this.el?.removeEventListener("click", this._blockCardAnchors, true);
+    //   this.el?.removeEventListener("dblclick", this._blockCardAnchors, true);
+    // });
   }
 
   // Block opening a record from kanban card clicks, too
   async openRecord(/*record, options*/) {
-    return; // no-op
+    return super.openRecord(record);
   }
 
   _getCurrentFolderId() {

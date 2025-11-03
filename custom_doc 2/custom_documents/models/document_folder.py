@@ -9,6 +9,7 @@ COMPANY_DEFAULT_CHILDREN = ["Finance", "Legal", "Marketing", "Admin", "Inbox"]
 class DocumentFolder(models.Model):
     _name = 'custom.document.folder'
     _description = 'Document Folder'
+    _inherit = ['mail.thread', 'mail.activity.mixin']  
     _parent_name = 'parent_id'
     _parent_store = True
     _rec_name = 'name'
@@ -42,6 +43,19 @@ class DocumentFolder(models.Model):
         ('recent', 'Recent'),
         ('trash', 'Trash'),
     ], string='Virtual Type')
+
+
+     # Add sharing fields
+    share_ids = fields.One2many(
+        'custom.document.folder.share',
+        'folder_id',
+        string='Shared With'
+    )
+    
+    is_shared = fields.Boolean(
+        compute='_compute_is_shared',
+        store=True
+    )
 
     _sql_constraints = [
     ('unique_company_root', 
@@ -352,3 +366,24 @@ class DocumentFolder(models.Model):
             # All active documents
             return [('active', '=', True)]
         return []
+
+
+
+    @api.depends('share_ids')
+    def _compute_is_shared(self):
+        for folder in self:
+            folder.is_shared = bool(folder.share_ids)
+    
+    def action_share_folder(self):
+        """Open folder share wizard"""
+        self.ensure_one()
+        return {
+            'name': _('Share Folder: %s', self.name),
+            'type': 'ir.actions.act_window',
+            'res_model': 'custom.folder.share.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {
+                'default_folder_id': self.id,
+            }
+        }

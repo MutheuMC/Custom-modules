@@ -7,6 +7,7 @@ class CustomDocumentFolderWizard(models.TransientModel):
     name = fields.Char(required=True, string="Folder Name")
     parent_id = fields.Many2one("custom.document.folder", string="Parent Folder")
 
+
     @api.model
     def default_get(self, fields_list):
         res = super().default_get(fields_list)

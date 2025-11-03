@@ -10,3 +10,5 @@ from . import properties_wizard
 from . import hr_employee
 from . import share_line
 from . import share_wizard
+from . import folder_share       
+# from . import folder_share_wizard 

@@ -1,292 +1,181 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-
-  <!-- =========================================================
-       SHARE LINE CARD VIEW (Custom display like owner)
-       ========================================================= -->
-  <record id="view_custom_document_share_line_card" model="ir.ui.view">
-    <field name="name">custom.document.share.line.card</field>
-    <field name="model">custom.document.share.line</field>
-    <field name="arch" type="xml">
-      <list editable="bottom" delete="1" create="0" class="o_share_line_cards">
-        
-        <!-- Avatar Column -->
-        <field name="partner_id" 
-               widget="image"
-               nolabel="1"
-               readonly="1"
-               class="o_avatar_cell"
-               options="{'size': [40, 40], 'preview_image': 'avatar_128'}"/>
-        
-        <!-- Name & Email Column -->
-        <field name="partner_id" 
-               string="Person"
-               readonly="1" 
-               options="{'no_open': True}"/>
-        
-        <field name="email" 
-               string="Email"
-               readonly="1" 
-               optional="show"/>
-        
-        <!-- Role Column -->
-        <field name="role"
-               string="Access Level"
-               widget="badge"
-               decoration-info="role == 'viewer'"
-               decoration-warning="role == 'commenter'"
-               decoration-success="role == 'editor'"/>
-        
-        <!-- Date Column -->
-        <field name="create_date" 
-               string="Shared On" 
-               readonly="1" 
-               optional="hide"/>
-      </list>
-    </field>
-  </record>
-
-  <!-- =========================================================
-       SHARE LINE LIST (Odoo 18 uses <list>, not <tree>)
-       ========================================================= -->
-  <record id="view_custom_document_share_line_list" model="ir.ui.view">
-    <field name="name">custom.document.share.line.list</field>
-    <field name="model">custom.document.share.line</field>
-    <field name="arch" type="xml">
-      <list editable="bottom" delete="1" create="0">
-        <field name="partner_id" readonly="1"/>
-        <field name="email" readonly="1" optional="show"/>
-        <field name="role"
-               widget="badge"
-               decoration-info="role == 'viewer'"
-               decoration-warning="role == 'commenter'"
-               decoration-success="role == 'editor'"/>
-        <field name="create_date" string="Shared On" readonly="1" optional="hide"/>
-      </list>
-    </field>
-  </record>
-
-  <!-- =========================================================
-       SHARE LINE FORM (for safety / opening a single line)
-       ========================================================= -->
-  <record id="view_custom_document_share_line_form" model="ir.ui.view">
-    <field name="name">custom.document.share.line.form</field>
-    <field name="model">custom.document.share.line</field>
-    <field name="arch" type="xml">
-      <form string="Share Access" create="0">
-        <sheet>
-          <group>
-            <field name="partner_id" readonly="1"/>
-            <field name="email" readonly="1"/>
-            <field name="role"/>
-            <field name="create_date" readonly="1"/>
-          </group>
-        </sheet>
-      </form>
-    </field>
-  </record>
-
-  <!-- =========================================================
-       SHARE WIZARD (Google Docs–style) - FIXED
-       ========================================================= -->
-  <record id="view_custom_document_share_wizard_form" model="ir.ui.view">
-    <field name="name">custom.document.share.wizard.form</field>
-    <field name="model">custom.document.share.wizard</field>
-    <field name="arch" type="xml">
-      <form string="Share" create="0" edit="0" delete="0">
-        <sheet>
-          <group>
-            <!-- ============ ADD PEOPLE SECTION ============ -->
-            <group string="Add People" class="mb-3">
-              <label for="partner_ids" string="People"/>
-              <div class="o_row">
-                <field name="partner_ids"
-                       widget="many2many_tags"
-                       placeholder="Enter name or email..."
-                       options="{'no_create_edit': True, 'no_quick_create': True}"
-                       class="oe_inline"
-                       nolabel="1"/>
-              </div>
-
-              <field name="role"
-                     widget="radio"
-                     options="{'horizontal': True}"/>
-
-              <button name="action_add_people"
-                      type="object"
-                      string="Add People"
-                      class="btn-primary"
-                      invisible="not partner_ids"/>
-            </group>
-              <!-- Hidden fields -->
-          <field name="owner_user_id" invisible="1"/>
-          <field name="owner_partner_id" invisible="1"/>
-          <field name="owner_email" invisible="1"/>
-          <field name="owner_name" invisible="1"/>
-
-       <!-- ============ PEOPLE WITH ACCESS SECTION (styled like screenshot) ============ -->
-          <group string="People with access">
-            <div class="o_share_people_table">
-
-              <!-- Owner row -->
-              <div class="o_share_owner_row" invisible="not owner_partner_id">
-                <div class="o_owner_left">
-                  <field name="owner_partner_id"
-                        widget="image"
-                        nolabel="1"
-                        readonly="1"
-                        class="o_avatar o_avatar_circle"
-                        options="{'size': [24, 24], 'preview_image': 'avatar_128'}"/>
-                  <div class="o_owner_text">
-                    <span class="o_owner_name">
-                      <field name="owner_name" nolabel="1" readonly="1"/>
-                    </span>
+    <!-- =========================================================
+         DOCUMENT SHARE WIZARD (Simplified - No Roles)
+         ========================================================= -->
+    <record id="view_custom_document_share_wizard_form_simple" model="ir.ui.view">
+        <field name="name">custom.document.share.wizard.form.simple</field>
+        <field name="model">custom.document.share.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Share Document" create="0" edit="0" delete="0">
+                <sheet>
+                    <div class="oe_title">
+                        <label for="document_name"/>
+                        <h1>
+                            <field name="document_name" readonly="1"/>
+                        </h1>
+                    </div>
+                    
+                    <group>
+                        <!-- ADD PEOPLE SECTION -->
+                        <group string="Share with people">
+                            <field name="partner_ids"
+                                   widget="many2many_tags"
+                                   placeholder="Enter names to share..."
+                                   options="{'no_create_edit': True}"
+                                   nolabel="1"/>
+                            
+                            <div class="text-muted small">
+                                <i class="fa fa-info-circle"/> 
+                                Selected people will receive a notification and can view this document
+                            </div>
+                        </group>
+                    </group>
+                    
+                    <group>
+                        <!-- PEOPLE WITH ACCESS -->
+                        <group string="People with access">
+                            <div class="o_share_owner mb-2">
+                                <div class="d-flex align-items-center">
+                                    <i class="fa fa-user-circle fa-2x me-2 text-primary"></i>
+                                    <div>
+                                        <strong><field name="owner_name" readonly="1" nolabel="1"/></strong>
+                                        <div class="text-muted small">Owner</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <field name="share_line_ids" nolabel="1">
+                                <list editable="bottom" delete="1" create="0">
+                                    <field name="partner_id" 
+                                           widget="many2one_avatar"
+                                           readonly="1"
+                                           options="{'no_open': True}"/>
+                                    <field name="email" readonly="1" optional="show"/>
+                                    <field name="create_date" string="Shared On" readonly="1"/>
+                                </list>
+                            </field>
+                            
+                            <div class="alert alert-info small" invisible="share_line_ids">
+                                <i class="fa fa-lock"/> This document is not shared yet
+                            </div>
+                        </group>
+                    </group>
+                    
+                    <group>
+                        <group>
+                            <field name="share_access" widget="badge" readonly="1"/>
+                        </group>
+                    </group>
+                </sheet>
                 
-                  </div>
-                </div>
-                <div class="o_owner_right">
-                  <span class="badge bg-primary">Owner</span>
-                </div>
-              </div>
-
-              <!-- People list -->
-                  <field name="people_ids" nolabel="1" context="{'default_document_id': document_id}">
-                    <list class="o_share_people_inline_list" editable="bottom" create="0" delete="1">
-                      <!-- Avatar only (hide the text part via CSS) -->
-                      <field name="partner_id"
-                            nolabel="1"
-                            widget="many2one_avatar"
-                            class="col_avatar"
-                            options="{'no_open': True}"
-                            readonly="1"/>
-
-
-
-                      <!-- Access level (badge widget renders its own <span>) -->
-                      <field name="role"
-                            string="Access level"
-                            widget="selection"
-                            decoration-primary="role == 'owner'"
-                            decoration-info="role == 'viewer'"
-                            decoration-warning="role == 'commenter'"
-                            decoration-success="role == 'editor'"/>
-                      <!-- Delete icon column is auto-provided by delete="1" -->
-                    </list>
-                  </field>
-
-
-           
-
-            </div>
-          </group>
-
-          </group>
-
-
-          <group>
-
-             <!-- In views/share_views.xml -->
-<!-- REPLACE the "General Access" group section with this: -->
-
-<group string="General Access">
-  <field name="share_access"
-         widget="radio"
-         options="{'horizontal': False}"/>
-
-  <!-- Authenticated Links Section -->
-  <div class="mt-3">
-    <div class="mb-2">
-      <strong>🔒 Internal Links (Require Login)</strong>
-      <div class="text-muted small">
-        Users must be logged into Odoo to access these links
-      </div>
-    </div>
+                <footer>
+                    <button name="action_share" 
+                            type="object" 
+                            string="Share" 
+                            class="btn-primary"
+                            invisible="not partner_ids"/>
+                    <button string="Done" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
     
-    <div class="d-flex gap-2 mb-2">
-      <button name="action_copy_view_link"
-              type="object"
-              string="Copy View Link"
-              icon="fa-eye"
-              class="btn btn-secondary btn-sm"
-              invisible="not view_link"/>
-      
-      <button name="action_copy_edit_link"
-              type="object"
-              string="Copy Edit Link"
-              icon="fa-edit"
-              class="btn btn-secondary btn-sm"
-              invisible="not edit_link"/>
-    </div>
-  </div>
-
-  <!-- Public Links Section -->
-  <div class="mt-3">
-    <div class="mb-2">
-      <strong>🌐 Public Links (No Login Required)</strong>
-      <div class="text-muted small">
-        Anyone with these links can access the document without logging in
-      </div>
-    </div>
+    <!-- Document Share Action -->
+    <record id="action_custom_document_share_wizard" model="ir.actions.act_window">
+        <field name="name">Share Document</field>
+        <field name="res_model">custom.document.share.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_custom_document_share_wizard_form_simple"/>
+        <field name="target">new</field>
+    </record>
     
-    <div class="d-flex gap-2 mb-2">
-      <button name="action_copy_public_view_link"
-              type="object"
-              string="Copy Public View Link"
-              icon="fa-globe"
-              class="btn btn-success btn-sm"
-              invisible="not public_view_link"/>
-      
-      <button name="action_copy_public_edit_link"
-              type="object"
-              string="Copy Public Download Link"
-              icon="fa-download"
-              class="btn btn-success btn-sm"
-              invisible="not public_edit_link"/>
-    </div>
     
-    <div class="alert alert-info small mt-2" 
-         invisible="public_view_link or public_edit_link">
-      <i class="fa fa-info-circle"/> 
-      To enable public links, set General Access to 
-      <strong>"Anyone with link"</strong>
-    </div>
-  </div>
-
-  <!-- Info Box -->
-  <div class="alert alert-warning small mt-3">
-    <strong>Link Types:</strong>
-    <ul class="mb-0 ps-3">
-      <li><strong>Internal Links:</strong> Direct content URLs. Users must log in first.</li>
-      <li><strong>Public Links:</strong> Token-based URLs. Work without login (if enabled).</li>
-    </ul>
-  </div>
-</group>
-          </group>
-
-
-       
-
-           
-
-   
-
-        </sheet>
-
-        <footer>
-          <button string="Done" class="btn-primary" special="cancel"/>
-        </footer>
-      </form>
-    </field>
-  </record>
-
-  <!-- =========================================================
-       SHARE WIZARD ACTION (opens in modal)
-       ========================================================= -->
-  <record id="action_custom_document_share_wizard" model="ir.actions.act_window">
-    <field name="name">Share Document</field>
-    <field name="res_model">custom.document.share.wizard</field>
-    <field name="view_mode">form</field>
-    <field name="target">new</field>
-  </record>
-
+    <!-- =========================================================
+         FOLDER SHARE WIZARD
+         ========================================================= -->
+    <record id="view_custom_folder_share_wizard_form" model="ir.ui.view">
+        <field name="name">custom.folder.share.wizard.form</field>
+        <field name="model">custom.folder.share.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Share Folder" create="0" edit="0" delete="0">
+                <sheet>
+                    <div class="oe_title">
+                        <label for="folder_name"/>
+                        <h1>
+                            <i class="fa fa-folder-o me-2"/>
+                            <field name="folder_name" readonly="1"/>
+                        </h1>
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <strong><i class="fa fa-exclamation-triangle"/> Important:</strong>
+                        People you share this folder with will have access to:
+                        <ul class="mb-0">
+                            <li>All documents currently in this folder</li>
+                            <li>All documents added to this folder in the future</li>
+                            <li>All subfolders and their contents</li>
+                        </ul>
+                    </div>
+                    
+                    <group>
+                        <group string="Share with people">
+                            <field name="partner_ids"
+                                   widget="many2many_tags"
+                                   placeholder="Enter names to share..."
+                                   options="{'no_create_edit': True}"
+                                   nolabel="1"/>
+                        </group>
+                    </group>
+                    
+                    <group>
+                        <group string="People with access">
+                            <div class="o_share_owner mb-2">
+                                <div class="d-flex align-items-center">
+                                    <i class="fa fa-user-circle fa-2x me-2 text-primary"></i>
+                                    <div>
+                                        <strong><field name="owner_name" readonly="1" nolabel="1"/></strong>
+                                        <div class="text-muted small">Owner</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <field name="share_ids" nolabel="1">
+                                <list editable="bottom" delete="1" create="0">
+                                    <field name="partner_id" 
+                                           widget="many2one_avatar"
+                                           readonly="1"
+                                           options="{'no_open': True}"/>
+                                    <field name="email" readonly="1" optional="show"/>
+                                    <field name="create_date" string="Shared On" readonly="1"/>
+                                </list>
+                            </field>
+                            
+                            <div class="alert alert-info small" invisible="share_ids">
+                                <i class="fa fa-lock"/> This folder is not shared yet
+                            </div>
+                        </group>
+                    </group>
+                </sheet>
+                
+                <footer>
+                    <button name="action_share" 
+                            type="object" 
+                            string="Share" 
+                            class="btn-primary"
+                            invisible="not partner_ids"/>
+                    <button string="Done" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+    
+    <!-- Folder Share Action -->
+    <record id="action_custom_folder_share_wizard" model="ir.actions.act_window">
+        <field name="name">Share Folder</field>
+        <field name="res_model">custom.folder.share.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_custom_folder_share_wizard_form"/>
+        <field name="target">new</field>
+    </record>
 </odoo>

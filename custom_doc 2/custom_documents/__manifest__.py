@@ -27,8 +27,7 @@
             'custom_documents/static/src/scss/custom_documents.scss',
             'custom_documents/static/src/xml/custom_document_list_buttons.xml',
             'custom_documents/static/src/scss/custom_docs.scss',
-            'custom_documents/static/src/js/share_copy.js',
-              'custom_documents/static/src/js/document_list_hover.js', 
+            'custom_documents/static/src/js/document_list_hover.js', 
             'custom_documents/static/src/scss/share_wizard.scss',
             
         ],
