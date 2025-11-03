@@ -31,6 +31,13 @@ class CustomDocumentFolderShare(models.Model):
         default=True,
         help='Give access to all subfolders and documents inside'
     )
+
+    email = fields.Char(
+    string='Email',
+    related='partner_id.email',
+    readonly=True,
+    store=True
+)
     
     _sql_constraints = [
         ('unique_folder_partner',
@@ -50,8 +57,8 @@ class CustomDocumentFolderShare(models.Model):
         # Send notification
         for rec in records:
             rec.folder_id.message_post(
-                body=_('%s shared this folder with you', rec.folder_id.user_id.name),
-                subject=_('Folder Shared: %s', rec.folder_id.name),
+                body=_('%s shared this folder with you') % rec.folder_id.user_id.name,
+                subject=_('Folder Shared: %s') % rec.folder_id.name,
                 message_type='notification',
                 partner_ids=[rec.partner_id.id],
                 subtype_xmlid='mail.mt_comment',

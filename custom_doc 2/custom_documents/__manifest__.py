@@ -1,6 +1,6 @@
 {
     'name': 'Documents  Management File System',
-    'version': '18.0.21.5.6',
+    'version': '18.0.21.7.9',
     'category': 'Document Management',
     'summary': 'Custom Document Management System Systems',
     'depends': ['base', 'web', 'mail', 'hr'],

@@ -314,6 +314,26 @@ class CustomDocument(models.Model):
                     if mt:
                         vals['mimetype'] = mt
         return super().create(vals_list)
+    
+
+    def _is_editor(self):
+        """Who can edit this document? Owner, Admin, or explicitly shared user."""
+        self.ensure_one()
+        user = self.env.user
+
+        # Superusers
+        if user.has_group('base.group_system'):
+            return True
+
+        # Owner
+        if self.user_id.id == user.id:
+            return True
+
+        # Anyone explicitly shared on this doc (since your sharing model has no per-line permission flag)
+        if user.id in self.share_line_ids.mapped('user_id').ids:
+            return True
+
+        return False
 
     def write(self, vals):
         """Override write to check permissions"""
@@ -464,7 +484,7 @@ class CustomDocument(models.Model):
 
     def action_menu_share(self):
         self._ensure_single(_("share"))
-        return self.action_open_share_wizard()
+        return self.action_share_document()
 
     def action_menu_move_to_trash(self):
         self.sudo().write({'active': False})

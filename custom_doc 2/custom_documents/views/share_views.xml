@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+
     <!-- =========================================================
-         DOCUMENT SHARE WIZARD (Simplified - No Roles)
+         DOCUMENT SHARE WIZARD (Simplified)
          ========================================================= -->
     <record id="view_custom_document_share_wizard_form_simple" model="ir.ui.view">
         <field name="name">custom.document.share.wizard.form.simple</field>
@@ -15,23 +16,22 @@
                             <field name="document_name" readonly="1"/>
                         </h1>
                     </div>
-                    
+
                     <group>
-                        <!-- ADD PEOPLE SECTION -->
+                        <!-- ADD PEOPLE -->
                         <group string="Share with people">
                             <field name="partner_ids"
                                    widget="many2many_tags"
                                    placeholder="Enter names to share..."
                                    options="{'no_create_edit': True}"
                                    nolabel="1"/>
-                            
                             <div class="text-muted small">
-                                <i class="fa fa-info-circle"/> 
+                                <i class="fa fa-info-circle"/>
                                 Selected people will receive a notification and can view this document
                             </div>
                         </group>
                     </group>
-                    
+
                     <group>
                         <!-- PEOPLE WITH ACCESS -->
                         <group string="People with access">
@@ -44,35 +44,39 @@
                                     </div>
                                 </div>
                             </div>
-                            
-                            <field name="share_line_ids" nolabel="1">
+
+                            <field name="share_line_ids"
+                                   nolabel="1"
+                                   context="{'default_document_id': document_id}"
+                                   editable="bottom">
                                 <list editable="bottom" delete="1" create="0">
-                                    <field name="partner_id" 
+                                    <field name="partner_id"
                                            widget="many2one_avatar"
                                            readonly="1"
                                            options="{'no_open': True}"/>
+                                    <!-- Optional column only if you added it on the line model -->
                                     <field name="email" readonly="1" optional="show"/>
                                     <field name="create_date" string="Shared On" readonly="1"/>
                                 </list>
                             </field>
-                            
+
                             <div class="alert alert-info small" invisible="share_line_ids">
                                 <i class="fa fa-lock"/> This document is not shared yet
                             </div>
                         </group>
                     </group>
-                    
+
                     <group>
                         <group>
                             <field name="share_access" widget="badge" readonly="1"/>
                         </group>
                     </group>
                 </sheet>
-                
+
                 <footer>
-                    <button name="action_share" 
-                            type="object" 
-                            string="Share" 
+                    <button name="action_share"
+                            type="object"
+                            string="Share"
                             class="btn-primary"
                             invisible="not partner_ids"/>
                     <button string="Done" class="btn-secondary" special="cancel"/>
@@ -80,7 +84,7 @@
             </form>
         </field>
     </record>
-    
+
     <!-- Document Share Action -->
     <record id="action_custom_document_share_wizard" model="ir.actions.act_window">
         <field name="name">Share Document</field>
@@ -89,8 +93,7 @@
         <field name="view_id" ref="view_custom_document_share_wizard_form_simple"/>
         <field name="target">new</field>
     </record>
-    
-    
+
     <!-- =========================================================
          FOLDER SHARE WIZARD
          ========================================================= -->
@@ -107,7 +110,7 @@
                             <field name="folder_name" readonly="1"/>
                         </h1>
                     </div>
-                    
+
                     <div class="alert alert-warning">
                         <strong><i class="fa fa-exclamation-triangle"/> Important:</strong>
                         People you share this folder with will have access to:
@@ -117,7 +120,7 @@
                             <li>All subfolders and their contents</li>
                         </ul>
                     </div>
-                    
+
                     <group>
                         <group string="Share with people">
                             <field name="partner_ids"
@@ -127,7 +130,7 @@
                                    nolabel="1"/>
                         </group>
                     </group>
-                    
+
                     <group>
                         <group string="People with access">
                             <div class="o_share_owner mb-2">
@@ -139,29 +142,30 @@
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <field name="share_ids" nolabel="1">
                                 <list editable="bottom" delete="1" create="0">
-                                    <field name="partner_id" 
+                                    <field name="partner_id"
                                            widget="many2one_avatar"
                                            readonly="1"
                                            options="{'no_open': True}"/>
+                                    <!-- Optional if you added it on the folder share model -->
                                     <field name="email" readonly="1" optional="show"/>
                                     <field name="create_date" string="Shared On" readonly="1"/>
                                 </list>
                             </field>
-                            
+
                             <div class="alert alert-info small" invisible="share_ids">
                                 <i class="fa fa-lock"/> This folder is not shared yet
                             </div>
                         </group>
                     </group>
                 </sheet>
-                
+
                 <footer>
-                    <button name="action_share" 
-                            type="object" 
-                            string="Share" 
+                    <button name="action_share"
+                            type="object"
+                            string="Share"
                             class="btn-primary"
                             invisible="not partner_ids"/>
                     <button string="Done" class="btn-secondary" special="cancel"/>
@@ -169,7 +173,7 @@
             </form>
         </field>
     </record>
-    
+
     <!-- Folder Share Action -->
     <record id="action_custom_folder_share_wizard" model="ir.actions.act_window">
         <field name="name">Share Folder</field>
@@ -178,4 +182,5 @@
         <field name="view_id" ref="view_custom_folder_share_wizard_form"/>
         <field name="target">new</field>
     </record>
+
 </odoo>

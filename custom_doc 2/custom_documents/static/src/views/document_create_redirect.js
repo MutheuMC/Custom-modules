@@ -39,9 +39,7 @@ class CustomDocumentListController extends ListController {
   }
 
   // Hard-block all programmatic opens (row click, Enter key, dblclick)
-  async openRecord(/*record, options*/) {
-    return super.openRecord(record);
-  }
+ 
 
   // Helpers used by the dropdown buttons
   _getCurrentFolderId() {
@@ -128,10 +126,6 @@ class CustomDocumentKanbanController extends KanbanController {
     // });
   }
 
-  // Block opening a record from kanban card clicks, too
-  async openRecord(/*record, options*/) {
-    return super.openRecord(record);
-  }
 
   _getCurrentFolderId() {
     if (this.props.context?.default_folder_id) {

@@ -9,7 +9,7 @@ COMPANY_DEFAULT_CHILDREN = ["Finance", "Legal", "Marketing", "Admin", "Inbox"]
 class DocumentFolder(models.Model):
     _name = 'custom.document.folder'
     _description = 'Document Folder'
-    _inherit = ['mail.thread', 'mail.activity.mixin']  
+    # _inherit = ['mail.thread', 'mail.activity.mixin']  
     _parent_name = 'parent_id'
     _parent_store = True
     _rec_name = 'name'
