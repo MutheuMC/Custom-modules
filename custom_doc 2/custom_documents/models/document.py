@@ -92,7 +92,7 @@ class CustomDocument(models.Model):
     share_line_ids = fields.One2many(
         'custom.document.share.line',
         'document_id',
-        string='Shared With',
+        string='People with Access',
         copy=False,
     )
     
@@ -103,7 +103,7 @@ class CustomDocument(models.Model):
     )
     
     shared_with_count = fields.Integer(
-        string='Shared With',
+        string='Shared Count',
         compute='_compute_shared_with_count',
         store=True
     )

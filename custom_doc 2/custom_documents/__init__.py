@@ -6,32 +6,30 @@ def post_init_hook(env):
     
     # Create virtual folders ONCE for the entire instance
     if not folder_model.sudo().search([('is_virtual', '=', True)], limit=1):
-        folder_model._ensure_virtual_folders()
+        folder_model.sudo()._ensure_virtual_folders()
     
     # Now create company-specific structures
-    # FIXED: Only create folders for companies the current user has access to
+    # Get the user who is installing (typically admin)
     user = env.user
     
-    # Get companies the user belongs to
-    if user.company_ids:
-        companies = user.company_ids
-    else:
-        # Fallback to user's current company
-        companies = env['res.company'].browse(user.company_id.id)
+    # Get all active companies (not just the ones the installing user has access to)
+    # This ensures all companies get the structure
+    companies = env['res.company'].sudo().search([])
     
     for company in companies:
-        folder_model = folder_model.with_company(company)
+        folder_model_sudo = folder_model.sudo().with_company(company)
         
         # Create Company root folder
-        folder_model._get_company_root(company)
+        folder_model_sudo._get_company_root(company)
         
         # Create default company folders  
-        folder_model._ensure_default_company_children(company)
+        folder_model_sudo._ensure_default_company_children(company)
         
-        # Create employee folders if hr.employee is installed
-        if 'hr.employee' in env:
-            folder_model._ensure_employees_root(company)
+        # Create employee folders if hr module is installed
+        # FIXED: Check if the model exists, not if module is in env
+        if 'hr.employee' in env.registry:
+            folder_model_sudo._ensure_employees_root(company)
             # Only create folders for employees in this company
-            employees = env['hr.employee'].search([('company_id', '=', company.id)])
+            employees = env['hr.employee'].sudo().search([('company_id', '=', company.id)])
             for emp in employees:
-                folder_model._ensure_employee_folder(emp)
+                folder_model_sudo._ensure_employee_folder(emp)

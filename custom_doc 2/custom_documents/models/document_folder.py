@@ -57,11 +57,16 @@ class DocumentFolder(models.Model):
         store=True
     )
 
-    _sql_constraints = [
-    ('unique_company_root', 
-     'UNIQUE(company_id, is_company_root) WHERE is_company_root = True AND company_id IS NOT NULL', 
-     'Only one Company root folder per company is allowed!'),
-        ]
+    @api.constrains('is_company_root', 'company_id')
+    def _constr_unique_company_root(self):
+        for rec in self.filtered('is_company_root'):
+            exists = self.search_count([
+                ('id', '!=', rec.id),
+                ('company_id', '=', rec.company_id.id),
+                ('is_company_root', '=', True),
+            ])
+            if exists:
+                raise ValidationError(_('Only one Company root folder per company is allowed!'))
 
     # ------------------------------------------------------------
     # Computes / constraints
@@ -263,7 +268,7 @@ class DocumentFolder(models.Model):
         company = self.env.company
         
         # Create virtual folders
-        self._ensure_virtual_folders(company)
+        self.sudo()._ensure_virtual_folders()
         
         # Create Company root folder
         selfSudo = self.sudo()
@@ -272,10 +277,11 @@ class DocumentFolder(models.Model):
         # Create default company folders
         selfSudo._ensure_default_company_children(company)
         
-        # Create employee folders if hr.employee is installed
-        if 'hr.employee' in self.env:
+        # Create employee folders if hr.employee model exists
+        # FIXED: Check if model is registered
+        if 'hr.employee' in self.env.registry:
             selfSudo._ensure_employees_root(company)
-            employees = self.env['hr.employee'].search([('company_id', '=', company.id)])
+            employees = self.env['hr.employee'].sudo().search([('company_id', '=', company.id)])
             for emp in employees:
                 selfSudo._ensure_employee_folder(emp)
     
