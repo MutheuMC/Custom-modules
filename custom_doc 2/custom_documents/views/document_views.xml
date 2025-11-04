@@ -8,31 +8,32 @@
         <field name="name">custom.document.list</field>
         <field name="model">custom.document</field>
         <field name="arch" type="xml">
-            <list string="Documents" 
-                        js_class="custom_document_list" 
-                        class="o_list_compact custom_document_list" 
-                        delete="0" 
-                        create="0">                
+            <list string="Documents"
+                  js_class="custom_document_list"
+                  class="o_list_compact custom_document_list"
+                  delete="0"
+                  create="0">
+
                 <field name="is_starred" column_invisible="1"/>
                 <field name="file_kind" column_invisible="1"/>
 
                 <!-- ⭐ Star / Unstar -->
                 <button name="action_toggle_star" type="object" string=" " title="Unstar"
-                        icon="fa-star" class="btn btn-link p-0"
+                        icon="fa-star" class="btn btn-link p-0 starred"
                         invisible="not is_starred"/>
                 <button name="action_toggle_star" type="object" string=" " title="Star"
-                        icon="fa-star-o" class="btn btn-link p-0"
+                        icon="fa-star-o" class="btn btn-link p-0 starred"
                         invisible="is_starred"/>
 
-                <!-- Type icon -->
+                <!-- Type-specific actions -->
                 <button name="action_view_file" type="object" string=" " title="Open PDF"
-                        icon="fa-file-pdf-o" class="btn btn-link p-0 text-danger"
+                        icon="fa-file-pdf-o" class="btn btn-link p-0 text-danger starred"
                         invisible="file_kind != 'pdf'"/>
                 <button name="action_download" type="object" string=" " title="Open file"
-                        icon="fa-file-o" class="btn btn-link p-0"
+                        icon="fa-file-o" class="btn btn-link p-0 starred"
                         invisible="file_kind != 'file'"/>
                 <button name="action_download" type="object" string=" " title="Open link"
-                        icon="fa-link" class="btn btn-link p-0"
+                        icon="fa-link" class="btn btn-link p-0 starred"
                         invisible="file_kind != 'url'"/>
 
                 <!-- Regular columns -->
@@ -47,47 +48,8 @@
         </field>
     </record>
 
-    <!-- ===========================
-         Document Form View 
-         =========================== -->
-    <record id="view_custom_document_form" model="ir.ui.view">
-        <field name="name">custom.document.form</field>
-        <field name="model">custom.document</field>
-        <field name="arch" type="xml">
-            <form string="Document">
-                <sheet>
-                    <group>
-                        <field name="name"/>
-                        <field name="document_type"/>
-                        <field name="folder_id"/>
-                        <!-- Tags with native quick-create -->
-                        <field name="tag_ids"
-                               widget="many2many_tags"
-                               placeholder="Add a tag"
-                               options="{'color_field': 'color', 'no_quick_create': false, 'no_create_edit': false}"/>
-                    </group>
-
-                    <!-- In Odoo 18 use invisible= instead of attrs= -->
-                    <group invisible="[('document_type','!=','file')]">
-                        <field name="file" filename="file_name"/>
-                        <field name="file_name"/>
-                    </group>
-
-                    <group invisible="[('document_type','!=','url')]">
-                        <field name="url"/>
-                    </group>
-
-                    <group>
-                        <field name="description"/>
-                    </group>
-                </sheet>
-            </form>
-        </field>
-    </record>
-
-
-        <!-- =========================================================
-         RICH DOCUMENT FORM VIEW (opens when you click a row)
+    <!-- =========================================================
+         RICH DOCUMENT FORM VIEW (the only form we keep/use)
          ========================================================= -->
     <record id="view_custom_document_form_rich" model="ir.ui.view">
         <field name="name">custom.document.form.rich</field>
@@ -96,28 +58,34 @@
             <form string="Document" create="0">
                 <header>
                     <!-- Quick Actions -->
-                    <button name="action_download" 
-                            type="object" 
-                            string="Download" 
+                    <button name="action_download"
+                            type="object"
+                            string="Download"
                             class="btn-primary"
                             icon="fa-download"
                             invisible="document_type != 'file'"/>
-                    
-                    <button name="action_share_document" 
-                            type="object" 
-                            string="Share" 
+
+                    <button name="action_share_document"
+                            type="object"
+                            string="Share"
                             class="btn-secondary"
                             icon="fa-share-alt"/>
-                    
-                    <button name="action_toggle_star" 
-                            type="object" 
+
+                     <button name="action_open_upload_wizard"
+                            type="object"
+                            string="Edit"
+                            class="btn-secondary"
+                            icon="fa-pencil"/>
+
+                    <button name="action_toggle_star"
+                            type="object"
                             icon="fa-star"
                             class="btn-warning"
                             invisible="not is_starred"
                             help="Unstar"/>
-                    
-                    <button name="action_toggle_star" 
-                            type="object" 
+                            
+                    <button name="action_toggle_star"
+                            type="object"
                             icon="fa-star-o"
                             class="btn-secondary"
                             invisible="is_starred"
@@ -127,19 +95,18 @@
                 <sheet>
                     <div class="oe_button_box" name="button_box">
                         <!-- Shared Status -->
-                        <button name="action_share_document" 
-                                type="object" 
-                                class="oe_stat_button" 
+                        <button name="action_share_document"
+                                type="object"
+                                class="oe_stat_button"
                                 icon="fa-share-alt"
                                 invisible="not is_shared">
-                            <field name="shared_with_count" widget="statinfo" 
-                                   string="Shared With"/>
+                            <field name="shared_with_count" widget="statinfo" string="Shared With"/>
                         </button>
-                        
+
                         <!-- Lock Status -->
-                        <button name="action_lock" 
-                                type="object" 
-                                class="oe_stat_button" 
+                        <button name="action_lock"
+                                type="object"
+                                class="oe_stat_button"
                                 icon="fa-lock"
                                 invisible="not is_locked">
                             <div class="o_field_widget o_stat_info">
@@ -149,9 +116,9 @@
                                 </span>
                             </div>
                         </button>
-                        
+
                         <!-- File Size -->
-                        <button class="oe_stat_button" 
+                        <button class="oe_stat_button"
                                 icon="fa-file-o"
                                 invisible="document_type != 'file'">
                             <div class="o_field_widget o_stat_info">
@@ -163,27 +130,23 @@
                         </button>
                     </div>
 
-                    <!-- Document Title -->
-                    <div class="oe_title">
-                        <label for="name" class="oe_edit_only"/>
-                        <h1>
-                            <field name="name" placeholder="Document Name" required="1"/>
-                        </h1>
-                    </div>
 
                     <!-- Tabs -->
                     <notebook>
                         <!-- PREVIEW TAB -->
                         <page string="Preview" name="preview">
                             <group>
+
                                 <!-- PDF Viewer -->
-                                <field name="file" 
-                                       filename="file_name"
-                                       widget="pdf_viewer"
-                                       invisible="not is_pdf"
-                                       options="{'height': 800}"
-                                       nolabel="1"/>
-                                
+                                <div class="o_pdf_readonly">
+                                    <field name="file"
+                                        filename="file_name"
+                                        widget="pdf_viewer"
+                                        invisible="not is_pdf"
+                                        options="{'height': 800}"
+                                        nolabel="1"/>
+                                </div>
+
                                 <!-- Image Viewer -->
                                 <div invisible="is_pdf or document_type != 'file'" class="text-center">
                                     <field name="file"
@@ -191,28 +154,28 @@
                                            options="{'size': [0, 600]}"
                                            nolabel="1"/>
                                 </div>
-                                
+
                                 <!-- Other Files -->
-                                <div invisible="is_pdf or document_type != 'file'" 
+                                <div invisible="is_pdf or document_type != 'file'"
                                      class="text-center py-5">
                                     <i class="fa fa-file-o fa-5x text-muted mb-3"></i>
                                     <p class="lead">Preview not available for this file type</p>
-                                    <button name="action_download" 
-                                            type="object" 
-                                            string="Download File" 
+                                    <button name="action_download"
+                                            type="object"
+                                            string="Download File"
                                             class="btn btn-primary btn-lg"
                                             icon="fa-download"/>
                                 </div>
-                                
+
                                 <!-- URL Display -->
                                 <div invisible="document_type != 'url'" class="text-center py-5">
                                     <i class="fa fa-link fa-5x text-muted mb-3"></i>
                                     <p class="lead">URL Link</p>
                                     <field name="url" widget="url" nolabel="1" class="h4"/>
                                     <br/>
-                                    <button name="action_download" 
-                                            type="object" 
-                                            string="Open Link" 
+                                    <button name="action_download"
+                                            type="object"
+                                            string="Open Link"
                                             class="btn btn-primary btn-lg"
                                             icon="fa-external-link"/>
                                 </div>
@@ -228,38 +191,37 @@
                                     <field name="mimetype" readonly="1"/>
                                     <field name="is_pdf" invisible="1"/>
                                 </group>
-                                
+
                                 <group string="URL Information" invisible="document_type != 'url'">
                                     <field name="document_type" readonly="1"/>
                                     <field name="url" widget="url"/>
                                 </group>
-                                
+
                                 <group string="Organization">
-                                    <field name="folder_id" 
-                                           options="{'no_create': True}"/>
-                                    <field name="tag_ids" 
+                                    <field name="folder_id" options="{'no_create': True}"/>
+                                    <field name="tag_ids"
                                            widget="many2many_tags"
                                            options="{'color_field': 'color', 'no_quick_create': False}"/>
                                     <field name="priority" widget="priority"/>
                                 </group>
-                                
+
                                 <group string="Ownership">
-                                    <field name="user_id" 
+                                    <field name="user_id"
                                            widget="many2one_avatar_user"
                                            readonly="1"/>
-                                    <field name="company_id" 
+                                    <field name="company_id"
                                            groups="base.group_multi_company"
                                            readonly="1"/>
                                 </group>
-                                
+
                                 <group string="Timestamps">
                                     <field name="create_date" readonly="1"/>
                                     <field name="write_date" readonly="1"/>
                                 </group>
                             </group>
-                            
+
                             <group string="Description">
-                                <field name="description" 
+                                <field name="description"
                                        nolabel="1"
                                        placeholder="Add a description for this document..."/>
                             </group>
@@ -269,45 +231,46 @@
                         <page string="Sharing" name="sharing">
                             <group>
                                 <group string="Sharing Status">
-                                    <field name="share_access" 
+                                    <field name="share_access"
                                            widget="badge"
                                            decoration-info="share_access == 'private'"
                                            decoration-success="share_access == 'internal'"/>
                                     <field name="is_shared" invisible="1"/>
                                 </group>
                             </group>
-                            
+
                             <!-- Owner Info -->
                             <group string="Document Owner">
                                 <div class="d-flex align-items-center mb-3">
-                                    <field name="user_id" 
+                                    <field name="user_id"
                                            widget="many2one_avatar_user"
                                            readonly="1"
                                            nolabel="1"
                                            options="{'display_avatar_name': True}"/>
                                 </div>
                             </group>
-                            
+
                             <!-- People with Access -->
                             <group string="People with Access" invisible="not share_line_ids">
                                 <field name="share_line_ids" nolabel="1">
                                     <list editable="bottom" delete="1" create="0">
-                                        <field name="partner_id" 
+                                        <field name="partner_id"
                                                widget="many2one_avatar"
                                                readonly="1"
                                                options="{'no_open': True}"/>
+                                        <!-- Optional if your line model has it -->
                                         <field name="email" readonly="1" optional="show"/>
                                         <field name="create_date" string="Shared On" readonly="1"/>
                                     </list>
                                 </field>
                             </group>
-                            
+
                             <!-- No Shares Message -->
                             <div class="alert alert-info" invisible="share_line_ids">
                                 <h4><i class="fa fa-lock"/> This document is private</h4>
                                 <p>Only you can access this document.</p>
                                 <p class="mb-0">
-                                    Click the <strong>Share</strong> button in the header 
+                                    Click the <strong>Share</strong> button in the header
                                     to share with other users.
                                 </p>
                             </div>
@@ -315,12 +278,12 @@
                     </notebook>
                 </sheet>
 
-                <!-- Chatter (Messages & Activities) -->
-                <div class="oe_chatter">
+                <!-- Chatter -->
+               <chatter>
                     <field name="message_follower_ids"/>
                     <field name="activity_ids"/>
-                    <field name="message_ids" options="{'post_refresh': 'recipients'}"/>
-                </div>
+                    <field name="message_ids"/>
+                </chatter>
             </form>
         </field>
     </record>
@@ -328,7 +291,7 @@
     <!-- ===============================================
          Document Search View with Hierarchical Searchpanel
          =============================================== -->
-       <record id="view_custom_document_search" model="ir.ui.view">
+    <record id="view_custom_document_search" model="ir.ui.view">
         <field name="name">custom.document.search</field>
         <field name="model">custom.document</field>
         <field name="arch" type="xml">
@@ -339,13 +302,13 @@
                 <field name="tag_ids"/>
 
                 <!-- Filters for virtual folders -->
-                <filter string="My Drive" name="my_drive" 
+                <filter string="My Drive" name="my_drive"
                         domain="[('user_id', '=', uid), ('active', '=', True)]"/>
-                <filter string="Shared with me" name="shared_with_me" 
+                <filter string="Shared with me" name="shared_with_me"
                         domain="[('message_follower_ids.partner_id.user_ids', 'in', [uid]), ('user_id', '!=', uid), ('active', '=', True)]"/>
-                <filter string="Recent" name="recent" 
+                <filter string="Recent" name="recent"
                         domain="[('write_date', '&gt;=', (context_today() - datetime.timedelta(days=7)).strftime('%Y-%m-%d')), ('active', '=', True)]"/>
-                <filter string="Trash" name="trash" 
+                <filter string="Trash" name="trash"
                         domain="[('active', '=', False)]"
                         context="{'active_test': False}"/>
 
@@ -358,19 +321,50 @@
 
                 <!-- LEFT SIDEBAR with Hierarchical Folders -->
                 <searchpanel>
+                    <!-- QUICK VIEWS: must be single-select when using domain -->
+                    <filter name="sp_my_drive"
+                            string="My Drive"
+                            select="one"
+                            icon="fa-user"
+                            domain="[('user_id', '=', uid), ('active','=', True)]"/>
+
+                    <filter name="sp_shared_with_me"
+                            string="Shared with me"
+                            select="one"
+                            icon="fa-share-alt"
+                            domain="[('message_follower_ids.partner_id.user_ids','in',[uid]),
+                                    ('user_id','!=',uid), ('active','=', True)]"/>
+
+                    <filter name="sp_recent"
+                            string="Recent"
+                            select="one"
+                            icon="fa-clock-o"
+                            domain="[('write_date','&gt;=', (context_today() - datetime.timedelta(days=7)).strftime('%%Y-%%m-%%d'))]"/>
+
+                    <filter name="sp_trash"
+                            string="Trash"
+                            select="one"
+                            icon="fa-trash-o"
+                            context="{'active_test': False}"
+                            domain="[('active','=', False)]"/>
+
+                    <separator/>
+
+                    <!-- REAL FOLDERS (category) — NO domain here) -->
                     <field name="folder_id"
-                        string=""
+                        string="Folders"
                         select="one"
-                        icon="fa-folder-o"
-                        enable_counters="1"
-                        expand="1"
                         hierarchize="1"
-                        context="{'searchpanel_default_folder_id': self}"/>
+                        expand="1"
+                        enable_counters="1"/>
                 </searchpanel>
+
 
             </search>
         </field>
     </record>
+
+    
 
     <!-- ===========================
          Main Document Action
@@ -380,10 +374,8 @@
         <field name="res_model">custom.document</field>
         <field name="view_mode">list,form</field>
         <field name="views"
-            eval="[(ref('view_custom_document_list'), 'list'),
-                    (ref('view_custom_document_form_rich'), 'form'),
-                    (ref('view_custom_document_form'), 'form')]"/>
-                                    
+               eval="[(ref('view_custom_document_list'), 'list'),
+                      (ref('view_custom_document_form_rich'), 'form')]"/>
         <field name="search_view_id" ref="view_custom_document_search"/>
         <field name="context">{}</field>
         <field name="help" type="html">
@@ -393,14 +385,14 @@
     </record>
 
     <!-- ===========================
-         Optional shortcut actions
+         Optional shortcut actions (all point to rich form)
          =========================== -->
     <record id="action_my_drive" model="ir.actions.act_window">
         <field name="name">My Drive</field>
         <field name="res_model">custom.document</field>
         <field name="view_mode">list,form</field>
         <field name="views" eval="[(ref('view_custom_document_list'), 'list'),
-                                   (ref('view_custom_document_form'), 'form')]"/>
+                                   (ref('view_custom_document_form_rich'), 'form')]"/>
         <field name="search_view_id" ref="view_custom_document_search"/>
         <field name="context">{'search_default_my_drive': 1}</field>
         <field name="help" type="html">
@@ -414,7 +406,7 @@
         <field name="res_model">custom.document</field>
         <field name="view_mode">list,form</field>
         <field name="views" eval="[(ref('view_custom_document_list'), 'list'),
-                                   (ref('view_custom_document_form'), 'form')]"/>
+                                   (ref('view_custom_document_form_rich'), 'form')]"/>
         <field name="search_view_id" ref="view_custom_document_search"/>
         <field name="context">{'search_default_shared_with_me': 1}</field>
         <field name="help" type="html">
@@ -428,7 +420,7 @@
         <field name="res_model">custom.document</field>
         <field name="view_mode">list,form</field>
         <field name="views" eval="[(ref('view_custom_document_list'), 'list'),
-                                   (ref('view_custom_document_form'), 'form')]"/>
+                                   (ref('view_custom_document_form_rich'), 'form')]"/>
         <field name="search_view_id" ref="view_custom_document_search"/>
         <field name="context">{'search_default_recent': 1}</field>
         <field name="help" type="html">
@@ -442,7 +434,7 @@
         <field name="res_model">custom.document</field>
         <field name="view_mode">list,form</field>
         <field name="views" eval="[(ref('view_custom_document_list'), 'list'),
-                                   (ref('view_custom_document_form'), 'form')]"/>
+                                   (ref('view_custom_document_form_rich'), 'form')]"/>
         <field name="search_view_id" ref="view_custom_document_search"/>
         <field name="context">{'search_default_trash': 1, 'active_test': False}</field>
         <field name="help" type="html">
@@ -452,8 +444,7 @@
     </record>
 
     <!-- ===========================
-         Folder List (unchanged)
-         with quick open button
+         Folder List
          =========================== -->
     <record id="view_custom_document_folder_list" model="ir.ui.view">
         <field name="name">custom.document.folder.list</field>
@@ -462,7 +453,8 @@
             <list string="Folders" js_class="custom_folder_list">
                 <button name="action_view_folder_documents" type="object" string="" title="View Documents"
                         icon="fa-folder-open" class="btn btn-link p-0"/>
-                <field name="complete_name"/>
+                <field name="name"/>
+                
                 <field name="user_id"/>
                 <field name="document_count"/>
             </list>
@@ -474,7 +466,7 @@
         <field name="res_model">custom.document</field>
         <field name="view_mode">list,form</field>
         <field name="views" eval="[(ref('view_custom_document_list'), 'list'),
-                                   (ref('view_custom_document_form'), 'form')]"/>
+                                   (ref('view_custom_document_form_rich'), 'form')]"/>
         <field name="search_view_id" ref="view_custom_document_search"/>
         <field name="domain">[('folder_id', '=', active_id)]</field>
         <field name="context">{'default_folder_id': active_id}</field>

@@ -10,12 +10,7 @@
         <field name="arch" type="xml">
             <form string="Share Document" create="0" edit="0" delete="0">
                 <sheet>
-                    <div class="oe_title">
-                        <label for="document_name"/>
-                        <h1>
-                            <field name="document_name" readonly="1"/>
-                        </h1>
-                    </div>
+                    
 
                     <group>
                         <!-- ADD PEOPLE -->
@@ -25,49 +20,79 @@
                                    placeholder="Enter names to share..."
                                    options="{'no_create_edit': True}"
                                    nolabel="1"/>
-                            <div class="text-muted small">
+                            <!-- <div class="text-muted small">
                                 <i class="fa fa-info-circle"/>
                                 Selected people will receive a notification and can view this document
-                            </div>
+                            </div> -->
                         </group>
-                    </group>
-
-                    <group>
-                        <!-- PEOPLE WITH ACCESS -->
+                         <!-- PEOPLE WITH ACCESS -->
                         <group string="People with access">
-                            <div class="o_share_owner mb-2">
-                                <div class="d-flex align-items-center">
-                                    <i class="fa fa-user-circle fa-2x me-2 text-primary"></i>
-                                    <div>
-                                        <strong><field name="owner_name" readonly="1" nolabel="1"/></strong>
-                                        <div class="text-muted small">Owner</div>
+                            <div class="o_share_people_table">
+                                <!-- Owner row (single line above the table) -->
+                                <div class="o_share_owner_row">
+                                    <div class="o_owner_left">
+                                        <field name="owner_partner_id"
+                                            widget="many2one_avatar"
+                                            nolabel="1"
+                                            readonly="1"
+                                            options="{'no_open': True, 'display_avatar_name': false}"/>
+
+                                        
+                                    </div>
+                                    <!-- Right side aligns with the Email column -->
+                                    <div class="o_owner_right">
+                                         <span class="badge rounded-pill bg-info">
+                                            <i class="fa fa-user-shield me-1"/> Owner
+                                        </span>
                                     </div>
                                 </div>
-                            </div>
 
-                            <field name="share_line_ids"
-                                   nolabel="1"
-                                   context="{'default_document_id': document_id}"
-                                   editable="bottom">
-                                <list editable="bottom" delete="1" create="0">
-                                    <field name="partner_id"
-                                           widget="many2one_avatar"
-                                           readonly="1"
-                                           options="{'no_open': True}"/>
-                                    <!-- Optional column only if you added it on the line model -->
-                                    <field name="email" readonly="1" optional="show"/>
-                                    <field name="create_date" string="Shared On" readonly="1"/>
-                                </list>
-                            </field>
+                                <!-- Inline list of people with access -->
+                                <field name="share_line_ids"
+                                    class="o_share_people_inline_list"
+                                    nolabel="1"
+                                    context="{'default_document_id': document_id}"
+                                    editable="bottom">
+                                    <list editable="bottom" delete="1" create="0">
+                                        <field name="partner_id"
+                                            string="Person"
+                                            widget="many2one_avatar"
+                                            readonly="1"
+                                            options="{'no_open': True}"/>
+                                        <field name="email" string="Email" readonly="1" optional="show"/>
+                                        <field name="create_date" string="Shared On" readonly="1"/>
+                                    </list>
+                                </field>
+                            </div>
 
                             <div class="alert alert-info small" invisible="share_line_ids">
                                 <i class="fa fa-lock"/> This document is not shared yet
                             </div>
                         </group>
+
+
+
+                    </group>
+
+                    <group>
+                       
                     </group>
 
                     <group>
                         <group>
+                              <button name="action_share_internal"
+            type="object"
+            class="btn-outline-primary"
+            string="Share with Internal Users"
+            invisible="internal_not_shared_count == 0"/>
+
+    <!-- show when everyone internal already has access -->
+    <span class="badge rounded-pill bg-success"
+          invisible="internal_not_shared_count != 0">
+        <i class="fa fa-check me-1"/> Shared with Internal Users
+    </span>
+                                
+                            
                             <field name="share_access" widget="badge" readonly="1"/>
                         </group>
                     </group>

@@ -80,6 +80,9 @@ class CustomDocumentShareWizard(models.TransientModel):
         readonly=True,
     )
 
+    internal_not_shared_count = fields.Integer(compute='_compute_internal_share_status', store=False)
+    internal_fully_shared = fields.Boolean(compute='_compute_internal_share_status', store=False)
+
     # ---- Defaults ----
     @api.model
     def default_get(self, fields_list):
@@ -127,6 +130,60 @@ class CustomDocumentShareWizard(models.TransientModel):
         self.partner_ids = [(5, 0, 0)]
 
         # Re-open the SAME wizard record to keep the modal open and refreshed
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': self._name,
+            'res_id': self.id,
+            'view_mode': 'form',
+            'target': 'new',
+            'name': _('Share "%s"') % doc.name,
+        }
+
+
+    def _internal_partner_ids(self):
+        """Active internal users (current/doc company)."""
+        self.ensure_one()
+        group_user = self.env.ref('base.group_user')
+        company_id = self.document_id.company_id.id or self.env.company.id
+        users = self.env['res.users'].search([
+            ('groups_id', 'in', group_user.id),
+            ('active', '=', True),
+            '|', ('company_id', '=', company_id),
+                 ('company_ids', 'in', [company_id]),
+        ])
+        return set(users.mapped('partner_id').ids)
+
+    @api.depends('document_id', 'document_id.share_line_ids.partner_id')
+    def _compute_internal_share_status(self):
+        for w in self:
+            if not w.document_id:
+                w.internal_not_shared_count = 0
+                w.internal_fully_shared = False
+                continue
+            internal_set = w._internal_partner_ids()
+            # don’t count the owner
+            if w.owner_partner_id:
+                internal_set.discard(w.owner_partner_id.id)
+            already = set(w.document_id.share_line_ids.mapped('partner_id').ids)
+            to_add = internal_set - already
+            w.internal_not_shared_count = len(to_add)
+            w.internal_fully_shared = (len(to_add) == 0)
+
+    
+    def action_share_internal(self):
+        """Share with ALL internal users, skip owner/duplicates, keep wizard open."""
+        self.ensure_one()
+        doc = self.document_id
+        internal = self._internal_partner_ids()
+        if self.owner_partner_id:
+            internal.discard(self.owner_partner_id.id)
+        already = set(doc.share_line_ids.mapped('partner_id').ids)
+        to_add = list(internal - already)
+        if to_add:
+            self.env['custom.document.share.line'].create(
+                [{'document_id': doc.id, 'partner_id': pid} for pid in to_add]
+            )
+        # reopen the same wizard so UI refreshes
         return {
             'type': 'ir.actions.act_window',
             'res_model': self._name,

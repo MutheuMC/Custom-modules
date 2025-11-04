@@ -8,14 +8,35 @@
 
 .o_field_widget.o_field_pdfviewer, .o_field_widget.o_field_pdf_viewer .o_pdfview_iframe{
 
-  height:800px !important;
+  min-height:800px !important;
+}
+
+.o_form_pdf_controls .d-flex .gap-1 .readonly{
+  display:none !important;
+}
+
+.o_pdf_readonly .o_widget_pdf_viewer .o_pdf_side_tools,
+.o_pdf_readonly .o_widget_pdf_viewer .o_left_toolbar,
+.o_pdf_readonly .o_widget_pdf_viewer .o_pdf_edit_toolbar {
+  display: none !important;
+}
+
+/* Safety: if buttons are individually rendered, hide common edit icons too */
+.o_pdf_readonly .o_widget_pdf_viewer .fa-pencil,
+.o_pdf_readonly .o_widget_pdf_viewer .fa-pencil-square-o,
+.o_pdf_readonly .o_widget_pdf_viewer .fa-trash {
+  display: none !important;
 }
 
 .o_list_view .btn-link.p-0 {
   line-height: 1;      /* tighter vertical alignment */
 }
 .o_list_view .fa {
-  font-size: 14px;     /* small icons like your screenshot */
+  font-size: 20px;     /* small icons like your screenshot */
+}
+
+.btn .btn-link.p-0 .starred{
+  color:yellow;
 }
 
 
@@ -26,19 +47,6 @@
 }
 
 
-
-.o_list_view .btn-link.p-0 {
-  line-height: 1;      /* tighter vertical alignment */
-}
-.o_list_view .fa {
-  font-size: 14px;     /* small icons like your screenshot */
-}
-
-.o_list_view .o_data_row a:not(.o_list_record_selector),
-.o_kanban_view .o_kanban_record a {
-  pointer-events: none;
-  text-decoration: none;
-}
 
 /* Document hover actions styling */
 .custom_document_list {

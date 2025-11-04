@@ -700,6 +700,30 @@ class CustomDocument(models.Model):
             }
         }
 
+    def action_open_upload_wizard(self):
+        """Open the document upload wizard prefilled with this record."""
+        self.ensure_one()
+        # If your XML ids differ, adjust the .ref() below.
+        view = self.env.ref('custom_documents.view_custom_document_upload_wizard_form')
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': 'custom.document.upload.wizard',
+            'view_mode': 'form',
+            'view_id': view.id,
+            'target': 'new',
+            'context': {
+                'default_document_id': self.id,
+                'default_name': self.name,
+                'default_document_type': self.document_type,
+                'default_file': self.file,
+                'default_file_name': self.file_name,
+                'default_url': self.url,
+                'default_folder_id': self.folder_id.id if self.folder_id else False,
+                'default_tag_ids': [(6, 0, self.tag_ids.ids)],
+                'default_description': self.description,
+            },
+        }
+
 
 
  

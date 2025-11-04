@@ -1,4 +1,5 @@
 /* ===== Share wizard — container ===== */
+.o_m2o_avatar .o_m2o_avatar_name { display: none !important; }
 .o_share_people_table {
   overflow: hidden;
   background: #fff;
@@ -8,8 +9,7 @@
 /* ===== Owner row ===== */
 .o_share_people_table .o_share_owner_row {
   display: flex;
-  gap:60px;
-  height: 52px;
+  align-items:space-between;
   border-bottom: 1px solid #e9ecef;
   background: #fff;
 }

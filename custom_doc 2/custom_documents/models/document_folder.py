@@ -144,6 +144,9 @@ class DocumentFolder(models.Model):
             'target': 'current',
         }
 
+    
+
+
     # ------------------------------------------------------------
     # Helpers to build the company/employee tree
     # ------------------------------------------------------------

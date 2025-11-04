@@ -25,11 +25,11 @@
               sequence="40"/> -->
     
     <!-- Folders Menu -->
-    <!-- <menuitem id="menu_custom_document_folders" 
+    <menuitem id="menu_custom_document_folders" 
               name="Manage Folders" 
               parent="menu_custom_document_root" 
-              action="action_custom_document_folder" 
-              sequence="45"/> -->
+              action="action_open_company_root_srv" 
+              sequence="45"/>
     
     <!-- Configuration Menu -->
     <menuitem id="menu_custom_document_config" 
