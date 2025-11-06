@@ -12,24 +12,19 @@
               parent="menu_custom_document_root" 
               action="action_custom_document" 
               sequence="10"/>
-    
 
-    
 
-    
-    <!-- Upload Document Menu -->
-    <!-- <menuitem id="menu_custom_document_upload" 
-              name="Upload Document" 
-              parent="menu_custom_document_root" 
-              action="action_custom_document_upload_wizard" 
-              sequence="40"/> -->
-    
-    <!-- Folders Menu -->
+
     <menuitem id="menu_custom_document_folders" 
               name="Manage Folders" 
               parent="menu_custom_document_root" 
-              action="action_open_company_root_srv" 
+              action="action_custom_document_folder_manage" 
               sequence="45"/>
+    
+
+    
+
+
     
     <!-- Configuration Menu -->
     <menuitem id="menu_custom_document_config" 

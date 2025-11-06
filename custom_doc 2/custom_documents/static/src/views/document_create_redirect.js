@@ -7,7 +7,6 @@ import { ListController } from "@web/views/list/list_controller";
 import { listView } from "@web/views/list/list_view";
 import { KanbanController } from "@web/views/kanban/kanban_controller";
 import { kanbanView } from "@web/views/kanban/kanban_view";
-import { onMounted, onWillUnmount } from "@odoo/owl";
 
 /* ---------------------------
  *  LIST: controller + buttons
@@ -16,30 +15,7 @@ class CustomDocumentListController extends ListController {
   setup() {
     super.setup();
     this.action = useService("action");
-
-    // Intercept anchor clicks inside data rows to avoid navigation
-    // this._blockRowAnchors = (ev) => {
-    //   const anchor = ev.target.closest(".o_list_view .o_data_row a");
-    //   if (!anchor) return;
-    //   // Allow the row selector/checkbox
-    //   if (anchor.classList.contains("o_list_record_selector")) return;
-    //   ev.preventDefault();
-    //   ev.stopPropagation();
-    // };
-
-    // onMounted(() => {
-    //   // Capture phase so we stop it before default handlers
-    //   this.el?.addEventListener("click", this._blockRowAnchors, true);
-    //   this.el?.addEventListener("dblclick", this._blockRowAnchors, true);
-    // });
-    // onWillUnmount(() => {
-    //   this.el?.removeEventListener("click", this._blockRowAnchors, true);
-    //   this.el?.removeEventListener("dblclick", this._blockRowAnchors, true);
-    // });
   }
-
-  // Hard-block all programmatic opens (row click, Enter key, dblclick)
- 
 
   // Helpers used by the dropdown buttons
   _getCurrentFolderId() {
@@ -64,6 +40,17 @@ class CustomDocumentListController extends ListController {
       additionalContext: {
         default_document_type: "file",
         default_folder_id: folderId || false,
+      },
+    });
+  }
+
+  async onUploadFolder() {
+    const folderId = this._getCurrentFolderId();
+    console.log("📦 Upload folder clicked, folder ID:", folderId);
+
+    await this.action.doAction("custom_documents.action_folder_upload_wizard", {
+      additionalContext: {
+        default_parent_folder_id: folderId || false,
       },
     });
   }
@@ -107,25 +94,7 @@ class CustomDocumentKanbanController extends KanbanController {
   setup() {
     super.setup();
     this.action = useService("action");
-
-    // Intercept anchor clicks inside kanban cards to avoid navigation
-    // this._blockCardAnchors = (ev) => {
-    //   const anchor = ev.target.closest(".o_kanban_view .o_kanban_record a");
-    //   if (!anchor) return;
-    //   ev.preventDefault();
-    //   ev.stopPropagation();
-    // };
-
-    // onMounted(() => {
-    //   this.el?.addEventListener("click", this._blockCardAnchors, true);
-    //   this.el?.addEventListener("dblclick", this._blockCardAnchors, true);
-    // });
-    // onWillUnmount(() => {
-    //   this.el?.removeEventListener("click", this._blockCardAnchors, true);
-    //   this.el?.removeEventListener("dblclick", this._blockCardAnchors, true);
-    // });
   }
-
 
   _getCurrentFolderId() {
     if (this.props.context?.default_folder_id) {
@@ -146,6 +115,15 @@ class CustomDocumentKanbanController extends KanbanController {
       additionalContext: {
         default_document_type: "file",
         default_folder_id: folderId || false,
+      },
+    });
+  }
+
+  async onUploadFolder() {
+    const folderId = this._getCurrentFolderId();
+    await this.action.doAction("custom_documents.action_folder_upload_wizard", {
+      additionalContext: {
+        default_parent_folder_id: folderId || false,
       },
     });
   }
@@ -192,4 +170,4 @@ export const customDocumentKanbanView = {
 registry.category("views").add("custom_document_list", customDocumentListView);
 registry.category("views").add("custom_document_kanban", customDocumentKanbanView);
 
-console.log("✓ Custom document views registered: rows/cards won't open records; tag wizard hooked.");
+console.log("✓ Custom document views registered with folder upload support");

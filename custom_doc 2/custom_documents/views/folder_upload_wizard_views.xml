@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ============================================
+         FOLDER UPLOAD WIZARD - ZIP METHOD
+         ============================================ -->
+    <record id="view_folder_upload_wizard_form" model="ir.ui.view">
+        <field name="name">custom.document.folder.upload.wizard.form</field>
+        <field name="model">custom.document.folder.upload.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Upload Folder">
+                <sheet>
+                    <div class="alert alert-info mb-3">
+                        <h4 class="mb-2">
+                            <i class="fa fa-upload me-2"/>Upload Folder with Documents
+                        </h4>
+                        <p class="mb-2">
+                            <strong>ZIP Method:</strong> Upload a ZIP file containing your folder structure. 
+                            All folders and files will be extracted and organized automatically.
+                        </p>
+                        <p class="mb-0">
+                            <strong>Multiple Files:</strong> Upload individual files and optionally 
+                            specify folder paths for organization.
+                        </p>
+                    </div>
+
+                    <group>
+                        <group>
+                            <field name="upload_type" widget="radio"/>
+                            <field name="parent_folder_id" 
+                                   options="{'no_create': True}"
+                                   placeholder="Upload to root if not specified"/>
+                        </group>
+                        <group>
+                            <field name="create_subfolders" 
+                                   invisible="upload_type == 'multiple'"/>
+                            <field name="skip_existing"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <!-- ZIP Upload Tab -->
+                        <page string="ZIP Upload" 
+                              name="zip_upload" 
+                              invisible="upload_type != 'zip'">
+                            <group>
+                                <group>
+                                    <field name="zip_file" 
+                                           filename="zip_filename" 
+                                           required="upload_type == 'zip'"/>
+                                    <field name="zip_filename" invisible="1"/>
+                                </group>
+                                <group>
+                                    <div class="alert alert-success">
+                                        <h5><i class="fa fa-lightbulb-o me-2"/>Tips for ZIP Upload:</h5>
+                                        <ul class="mb-0">
+                                            <li>ZIP file can contain folders and subfolders</li>
+                                            <li>All file types are supported</li>
+                                            <li>Folder structure will be preserved</li>
+                                            <li>Hidden files (starting with .) are skipped</li>
+                                            <li>System folders (__MACOSX, .DS_Store) are ignored</li>
+                                        </ul>
+                                    </div>
+                                </group>
+                            </group>
+                            
+                            <group string="Example ZIP Structure">
+                                <div class="text-muted small">
+                                    <pre style="background: #f8f9fa; padding: 1rem; border-radius: 4px;">
+my-folder.zip
+├── Documents/
+│   ├── report.pdf
+│   └── presentation.pptx
+├── Images/
+│   ├── photo1.jpg
+│   └── photo2.png
+└── readme.txt</pre>
+                                </div>
+                            </group>
+                        </page>
+
+                        <!-- Multiple Files Tab -->
+                        <page string="Multiple Files" 
+                              name="multiple_files" 
+                              invisible="upload_type != 'multiple'">
+                            <field name="file_ids">
+                                <list string="Files to Upload" editable="bottom">
+                                    <field name="file" 
+                                           filename="filename" 
+                                           required="1"/>
+                                    <field name="filename" required="1"/>
+                                    <field name="folder_path" 
+                                           placeholder="e.g., Documents/Reports"
+                                           optional="show"/>
+                                </list>
+                            </field>
+                            
+                            <div class="alert alert-info mt-3">
+                                <p class="mb-0">
+                                    <strong>Folder Path:</strong> Specify relative folder paths 
+                                    (e.g., "Documents/Reports") to organize files into subfolders. 
+                                    Leave empty to upload to the parent folder.
+                                </p>
+                            </div>
+                        </page>
+                        
+                        <!-- Results Tab (appears after upload) -->
+                        <page string="Results" 
+                              name="results" 
+                              invisible="files_uploaded == 0">
+                            <group>
+                                <group string="Upload Statistics">
+                                    <field name="folders_created" readonly="1"/>
+                                    <field name="files_uploaded" readonly="1"/>
+                                    <field name="files_skipped" readonly="1"/>
+                                </group>
+                            </group>
+                            
+                            <div class="alert alert-success">
+                                <h4><i class="fa fa-check-circle me-2"/>Upload Completed Successfully!</h4>
+                                <p class="mb-0">
+                                    Your files have been uploaded and organized. 
+                                    Click "View Documents" to see the uploaded files.
+                                </p>
+                            </div>
+                        </page>
+                    </notebook>
+                </sheet>
+                
+                <footer>
+                    <button name="action_upload" 
+                            type="object" 
+                            string="Upload" 
+                            class="btn-primary"
+                            invisible="files_uploaded != 0"/>
+                    <button string="View Documents"
+                            class="btn-primary"
+                            special="cancel"
+                            invisible="files_uploaded == 0"/>
+                    <button string="Cancel" 
+                            class="btn-secondary" 
+                            special="cancel"
+                            invisible="files_uploaded != 0"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Folder Upload Action -->
+    <record id="action_folder_upload_wizard" model="ir.actions.act_window">
+        <field name="name">Upload Folder</field>
+        <field name="res_model">custom.document.folder.upload.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+</odoo>

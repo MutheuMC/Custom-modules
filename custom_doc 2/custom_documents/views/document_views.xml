@@ -321,44 +321,15 @@
 
                 <!-- LEFT SIDEBAR with Hierarchical Folders -->
                 <searchpanel>
-                    <!-- QUICK VIEWS: must be single-select when using domain -->
-                    <filter name="sp_my_drive"
-                            string="My Drive"
-                            select="one"
-                            icon="fa-user"
-                            domain="[('user_id', '=', uid), ('active','=', True)]"/>
-
-                    <filter name="sp_shared_with_me"
-                            string="Shared with me"
-                            select="one"
-                            icon="fa-share-alt"
-                            domain="[('message_follower_ids.partner_id.user_ids','in',[uid]),
-                                    ('user_id','!=',uid), ('active','=', True)]"/>
-
-                    <filter name="sp_recent"
-                            string="Recent"
-                            select="one"
-                            icon="fa-clock-o"
-                            domain="[('write_date','&gt;=', (context_today() - datetime.timedelta(days=7)).strftime('%%Y-%%m-%%d'))]"/>
-
-                    <filter name="sp_trash"
-                            string="Trash"
-                            select="one"
-                            icon="fa-trash-o"
-                            context="{'active_test': False}"
-                            domain="[('active','=', False)]"/>
-
-                    <separator/>
-
-                    <!-- REAL FOLDERS (category) — NO domain here) -->
                     <field name="folder_id"
-                        string="Folders"
-                        select="one"
-                        hierarchize="1"
-                        expand="1"
-                        enable_counters="1"/>
+                           string=""
+                           select="one"
+                           icon="fa-folder-o"
+                           enable_counters="1"
+                           expand="1"
+                           hierarchize="1"
+                           context="{'searchpanel_default_folder_id': self}"/>
                 </searchpanel>
-
 
             </search>
         </field>

@@ -1,0 +1,197 @@
+/* ===================================
+   FOLDER LIST STYLING
+   =================================== */
+
+/* Hide default Create button for folder list */
+.o_list_view.custom_folder_list .o_list_button_add {
+    display: none !important;
+  }
+  
+  /* Folder list row styling */
+  .custom_folder_list {
+    
+    tbody tr.o_data_row {
+      position: relative;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+      
+      &:hover {
+        background-color: #f8f9fa;
+      }
+      
+      /* Folder icon in first column */
+      td:first-child {
+        .btn-link {
+          color: #ffc107; /* Warning color for folder icon */
+          font-size: 18px;
+          
+          &:hover {
+            color: #ff9800;
+          }
+        }
+      }
+      
+      /* Folder name styling */
+      td:nth-child(2) {
+        font-weight: 500;
+        
+        &::before {
+          content: "\f07b"; /* fa-folder */
+          font-family: "FontAwesome";
+          margin-right: 8px;
+          color: #ffc107;
+        }
+      }
+    }
+  }
+  
+  /* Searchpanel folder tree styling */
+  .o_search_panel {
+    .o_search_panel_category_value {
+      &.o_search_panel_active {
+        background-color: #e7f3ff;
+        border-left: 3px solid #0d6efd;
+      }
+      
+      /* Folder icons in sidebar */
+      .o_search_panel_label_title::before {
+        content: "\f07b";
+        font-family: "FontAwesome";
+        margin-right: 6px;
+        color: #ffc107;
+      }
+      
+      /* Indent for hierarchy */
+      &.o_search_panel_level_1 {
+        padding-left: 24px;
+      }
+      
+      &.o_search_panel_level_2 {
+        padding-left: 40px;
+      }
+      
+      &.o_search_panel_level_3 {
+        padding-left: 56px;
+      }
+    }
+  }
+  
+  /* Folder form view enhancements */
+  .o_form_view {
+    .oe_title {
+      i.fa-folder-o {
+        color: #ffc107;
+        font-size: 1.5rem;
+      }
+    }
+    
+    /* Stat buttons for folders */
+    .oe_stat_button {
+      &[name="action_view_folder_documents"] {
+        .o_stat_info .o_stat_text {
+          color: #0d6efd;
+        }
+      }
+      
+      &[name="action_share_folder"] {
+        .o_stat_info .o_stat_text {
+          color: #198754;
+        }
+      }
+    }
+  }
+  
+  /* Folder card/tile view (if you add kanban later) */
+  .o_kanban_view.custom_folder_kanban {
+    .o_kanban_record {
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      }
+      
+      .o_folder_icon {
+        font-size: 3rem;
+        color: #ffc107;
+        margin-bottom: 1rem;
+      }
+      
+      .o_folder_name {
+        font-weight: 600;
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
+      }
+      
+      .o_folder_meta {
+        color: #6c757d;
+        font-size: 0.875rem;
+      }
+    }
+  }
+  
+  /* Breadcrumb for folder navigation (optional) */
+  .o_folder_breadcrumb {
+    background-color: #f8f9fa;
+    padding: 0.75rem 1rem;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+    
+    .breadcrumb {
+      margin-bottom: 0;
+      background: transparent;
+      
+      .breadcrumb-item {
+        a {
+          color: #0d6efd;
+          text-decoration: none;
+          
+          &:hover {
+            text-decoration: underline;
+          }
+        }
+        
+        &.active {
+          color: #6c757d;
+        }
+        
+        &::before {
+          content: "\f054"; /* fa-chevron-right */
+          font-family: "FontAwesome";
+          font-size: 0.75rem;
+          margin: 0 0.5rem;
+        }
+        
+        &:first-child::before {
+          content: none;
+        }
+      }
+    }
+  }
+  
+  /* Mobile responsiveness */
+  @media (max-width: 768px) {
+    .custom_folder_list {
+      tbody tr.o_data_row {
+        td:nth-child(2)::before {
+          font-size: 14px;
+          margin-right: 4px;
+        }
+      }
+    }
+    
+    .o_search_panel {
+      .o_search_panel_category_value {
+        padding-left: 12px !important;
+        
+        &.o_search_panel_level_1 {
+          padding-left: 20px !important;
+        }
+        
+        &.o_search_panel_level_2 {
+          padding-left: 28px !important;
+        }
+      }
+    }
+  }

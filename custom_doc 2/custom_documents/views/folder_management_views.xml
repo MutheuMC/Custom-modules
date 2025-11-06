@@ -1,0 +1,356 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ===========================
+         Enhanced Folder List View
+         =========================== -->
+    <record id="view_custom_document_folder_list_enhanced" model="ir.ui.view">
+        <field name="name">custom.document.folder.list.enhanced</field>
+        <field name="model">custom.document.folder</field>
+        <field name="arch" type="xml">
+            <list string="Folders" 
+                  js_class="custom_folder_list"
+                  class="o_list_compact custom_folder_list"
+                  delete="0"
+                  create="0">
+                
+                <!-- Open Folder Button -->
+                <button name="action_view_folder_documents" 
+                        type="object" 
+                        string="" 
+                        title="View Documents"
+                        icon="fa-folder-open-o" 
+                        class="btn btn-link p-0 text-warning"/>
+                
+                <!-- Folder Icon + Name -->
+                <field name="name" string="Folder Name"/>
+                
+                <!-- Parent Folder -->
+                <field name="parent_id" string="Parent" optional="show"/>
+                
+                <!-- Owner -->
+                <field name="user_id" 
+                       widget="many2one_avatar_user" 
+                       string="Owner"
+                       optional="show"/>
+                
+                <!-- Document Count -->
+                <field name="document_count" string="Documents"/>
+                
+                <!-- Company -->
+                <field name="company_id" 
+                       string="Company" 
+                       groups="base.group_multi_company" 
+                       optional="hide"/>
+                
+                <!-- Is Shared -->
+                <field name="is_shared" 
+                       string="Shared" 
+                       widget="boolean"
+                       optional="show"/>
+                
+                <!-- Last Modified -->
+                <field name="write_date" 
+                       string="Last Updated" 
+                       optional="hide"/>
+                
+                <!-- Share Button (visible if folder is shareable) -->
+                <button name="action_share_folder" 
+                        type="object" 
+                        string="" 
+                        title="Share Folder"
+                        icon="fa-share-alt" 
+                        class="btn btn-link p-0"
+                        invisible="is_virtual"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ===========================
+         Folder Form View
+         =========================== -->
+    <record id="view_custom_document_folder_form" model="ir.ui.view">
+        <field name="name">custom.document.folder.form</field>
+        <field name="model">custom.document.folder</field>
+        <field name="arch" type="xml">
+            <form string="Folder" create="0">
+                <header>
+                    <button name="action_view_folder_documents" 
+                            type="object" 
+                            string="View Documents"
+                            class="btn-primary"
+                            icon="fa-folder-open"/>
+                    
+                    <button name="action_share_folder" 
+                            type="object" 
+                            string="Share"
+                            class="btn-secondary"
+                            icon="fa-share-alt"
+                            invisible="is_virtual"/>
+                </header>
+                
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <!-- Document Count -->
+                        <button name="action_view_folder_documents"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-file-text-o">
+                            <field name="document_count" 
+                                   widget="statinfo" 
+                                   string="Documents"/>
+                        </button>
+                        
+                        <!-- Shared Status -->
+                        <button name="action_share_folder"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-share-alt"
+                                invisible="not is_shared or is_virtual">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_text">Shared</span>
+                            </div>
+                        </button>
+                    </div>
+                    
+                    <div class="oe_title">
+                        <label for="name" class="oe_edit_only"/>
+                        <h1>
+                            <i class="fa fa-folder-o me-2"/>
+                            <field name="name" placeholder="Folder Name"/>
+                        </h1>
+                    </div>
+                    
+                    <group>
+                        <group string="Organization">
+                            <field name="parent_id" 
+                                   options="{'no_create': True}"
+                                   invisible="is_virtual or is_company_root"/>
+                            <field name="sequence"/>
+                            <field name="complete_name" readonly="1"/>
+                            <field name="is_virtual" invisible="1"/>
+                            <field name="is_company_root" invisible="1"/>
+                            <field name="is_employees_root" invisible="1"/>
+                            <field name="virtual_type" invisible="1"/>
+                        </group>
+                        
+                        <group string="Access">
+                            <field name="user_id" 
+                                   widget="many2one_avatar_user"/>
+                            <field name="company_id" 
+                                   groups="base.group_multi_company"/>
+                            <field name="is_shared" readonly="1"/>
+                        </group>
+                    </group>
+                    
+                    <notebook>
+                        <!-- Subfolders Tab -->
+                        <page string="Subfolders" name="subfolders">
+                            <field name="child_ids" 
+                                   context="{'default_parent_id': id}">
+                                <list string="Subfolders">
+                                    <field name="name"/>
+                                    <field name="document_count"/>
+                                    <field name="user_id" widget="many2one_avatar_user"/>
+                                </list>
+                            </field>
+                        </page>
+                        
+                        <!-- Documents Tab -->
+                        <page string="Documents" name="documents">
+                            <field name="document_ids">
+                                <list string="Documents" create="0">
+                                    <field name="name"/>
+                                    <field name="document_type"/>
+                                    <field name="user_id" widget="many2one_avatar_user"/>
+                                    <field name="write_date"/>
+                                </list>
+                            </field>
+                        </page>
+                        
+                        <!-- Sharing Tab -->
+                        <page string="Sharing" 
+                              name="sharing" 
+                              invisible="is_virtual">
+                            <group string="People with Access" 
+                                   invisible="not share_ids">
+                                <field name="share_ids" nolabel="1">
+                                    <list editable="bottom" delete="1" create="0">
+                                        <field name="partner_id"
+                                               widget="many2one_avatar"
+                                               readonly="1"
+                                               options="{'no_open': True}"/>
+                                        <field name="email" readonly="1"/>
+                                        <field name="recursive" string="Include Subfolders"/>
+                                        <field name="create_date" 
+                                               string="Shared On" 
+                                               readonly="1"/>
+                                    </list>
+                                </field>
+                            </group>
+                            
+                            <div class="alert alert-info" 
+                                 invisible="share_ids">
+                                <h4 class="mb-2">
+                                    <i class="fa fa-lock me-2"/>This folder is private
+                                </h4>
+                                <p>Only you can access this folder.</p>
+                                <p class="mb-0">
+                                    Click the <strong>Share</strong> button 
+                                    to share with other users.
+                                </p>
+                            </div>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ===========================
+         Folder Search View with Hierarchical Sidebar
+         =========================== -->
+    <record id="view_custom_document_folder_search" model="ir.ui.view">
+        <field name="name">custom.document.folder.search</field>
+        <field name="model">custom.document.folder</field>
+        <field name="arch" type="xml">
+            <search string="Search Folders">
+                <field name="name" 
+                       string="Folder" 
+                       filter_domain="[('name', 'ilike', self)]"/>
+                <field name="parent_id"/>
+                <field name="user_id"/>
+                <field name="company_id" 
+                       groups="base.group_multi_company"/>
+                
+                <!-- Quick Filters -->
+                <separator/>
+                <filter string="My Folders" 
+                        name="my_folders"
+                        domain="[('user_id', '=', uid), ('is_virtual', '=', False)]"/>
+                
+                <filter string="Company Folders" 
+                        name="company_folders"
+                        domain="[('is_company_root', '=', True)]"/>
+                
+                <filter string="Shared Folders" 
+                        name="shared_folders"
+                        domain="[('is_shared', '=', True)]"/>
+                
+                <separator/>
+                <filter string="Root Folders" 
+                        name="root_folders"
+                        domain="[('parent_id', '=', False), ('is_virtual', '=', False)]"/>
+                
+                <!-- Group By -->
+                <group expand="0" string="Group By">
+                    <filter string="Parent Folder" 
+                            name="parent" 
+                            context="{'group_by': 'parent_id'}"/>
+                    <filter string="Owner" 
+                            name="owner" 
+                            context="{'group_by': 'user_id'}"/>
+                    <filter string="Company" 
+                            name="company" 
+                            context="{'group_by': 'company_id'}"
+                            groups="base.group_multi_company"/>
+                </group>
+                
+                <!-- HIERARCHICAL SIDEBAR (Search Panel) -->
+                <searchpanel>
+                   
+                    <!-- <filter name="sp_all_folders"
+                            string="All Folders"
+                            select="one"
+                            icon="fa-folder"
+                            domain="[('is_virtual', '=', False)]"/>
+                    
+                    <filter name="sp_my_folders"
+                            string="My Folders"
+                            select="one"
+                            icon="fa-user"
+                            domain="[('user_id', '=', uid), ('is_virtual', '=', False)]"/>
+                    
+                    <filter name="sp_shared"
+                            string="Shared with Me"
+                            select="one"
+                            icon="fa-share-alt"
+                            domain="[('share_ids.user_id', '=', uid)]"/>
+                    
+                    <separator/> -->
+                    
+                    <!-- HIERARCHICAL FOLDER TREE -->
+                    <field name="parent_id"
+                           string="Browse Folders"
+                           select="one"
+                           hierarchize="1"
+                           expand="1"
+                           enable_counters="1"
+                           icon="fa-folder-o"/>
+                </searchpanel>
+            </search>
+        </field>
+    </record>
+
+    <!-- ===========================
+         Main Folder Management Action
+         =========================== -->
+    <record id="action_custom_document_folder_manage" model="ir.actions.act_window">
+        <field name="name">Manage Folders</field>
+        <field name="res_model">custom.document.folder</field>
+        <field name="view_mode">list,form</field>
+        <field name="views" eval="[(ref('view_custom_document_folder_list_enhanced'), 'list'),
+                                   (ref('view_custom_document_folder_form'), 'form')]"/>
+        <field name="search_view_id" ref="view_custom_document_folder_search"/>
+        <field name="context">{
+            'search_default_sp_all_folders': 1
+        }</field>
+        <field name="domain">[('is_virtual', '=', False)]</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first folder
+            </p>
+            <p>
+                Organize your documents in folders. 
+                Click a folder in the sidebar to see its subfolders.
+            </p>
+        </field>
+    </record>
+
+    <!-- ===========================
+         Server Action: Open Company Root (for menu)
+         =========================== -->
+    <record id="action_open_company_root_srv" model="ir.actions.server">
+        <field name="name">Company Folders</field>
+        <field name="model_id" ref="model_custom_document_folder"/>
+        <field name="state">code</field>
+        <field name="code">
+action = env['custom.document.folder'].action_open_company_root()
+        </field>
+    </record>
+
+    <!-- ===========================
+         Alternative: Direct Action for Company Root
+         =========================== -->
+    <record id="action_company_root_folders" model="ir.actions.act_window">
+        <field name="name">Company Folders</field>
+        <field name="res_model">custom.document.folder</field>
+        <field name="view_mode">list,form</field>
+        <field name="views" eval="[(ref('view_custom_document_folder_list_enhanced'), 'list'),
+                                   (ref('view_custom_document_folder_form'), 'form')]"/>
+        <field name="search_view_id" ref="view_custom_document_folder_search"/>
+        <field name="context">{
+            'search_default_company_folders': 1
+        }</field>
+        <field name="domain">[('is_virtual', '=', False)]</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No company folders yet
+            </p>
+            <p>
+                Company folders are created automatically. 
+                You can organize company-wide documents here.
+            </p>
+        </field>
+    </record>
+
+</odoo>

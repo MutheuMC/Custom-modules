@@ -1,8 +1,8 @@
 {
-    'name': 'Documents  Management File System',
-    'version': '18.0.22.0.2',
+    'name': 'Documents Management File System',
+    'version': '18.0.22.0.3',
     'category': 'Document Management',
-    'summary': 'Custom Document Management System Systems',
+    'summary': 'Custom Document Management System with Enhanced Folder Navigation',
     'depends': ['base', 'web', 'mail', 'hr'],
     'post_init_hook': 'post_init_hook',
     'data': [
@@ -10,15 +10,16 @@
         'security/document_security.xml',
         'views/document_upload_wizard_views.xml',
         'views/folder_wizard_views.xml',
+        'views/folder_upload_wizard_views.xml',  # NEW: Folder upload with documents
         'views/preview_wizard_views.xml',
         'views/actions_wizard_views.xml',      
         'views/rename_wizard_views.xml',        
         'views/properties_wizard_views.xml',  
         'views/document_views.xml',
         'views/document_list_actions.xml',
+        'views/folder_management_views.xml',
         'views/menu.xml',
-        # 'views/share_templates.xml'
-        'views/share_views.xml'
+        'views/share_views.xml',
     ],
     'assets': {
         'web.assets_backend': [
@@ -26,10 +27,11 @@
             'custom_documents/static/src/views/folder_create_redirect.js',
             'custom_documents/static/src/scss/custom_documents.scss',
             'custom_documents/static/src/xml/custom_document_list_buttons.xml',
+            'custom_documents/static/src/xml/custom_folder_list_buttons.xml',  # NEW
             'custom_documents/static/src/scss/custom_docs.scss',
+            'custom_documents/static/src/scss/custom_folder_list.scss',  # NEW
             'custom_documents/static/src/js/document_list_hover.js', 
             'custom_documents/static/src/scss/share_wizard.scss',
-            
         ],
     },
     'controllers': ['controllers/document_controller.py'],
