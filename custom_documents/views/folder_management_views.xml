@@ -24,6 +24,14 @@
                 <!-- Folder Icon + Name -->
                 <field name="name" string="Folder Name"/>
                 
+                <!-- Rename Button -->
+                <button name="action_menu_rename" 
+                        type="object" 
+                        string="" 
+                        title="Rename Folder"
+                        icon="fa-pencil" 
+                        class="btn btn-link p-0 text-primary"/>
+                
                 <!-- Parent Folder -->
                 <field name="parent_id" string="Parent" optional="show"/>
                 

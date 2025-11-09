@@ -396,3 +396,18 @@ class DocumentFolder(models.Model):
                 'default_folder_id': self.id,
             }
         }
+
+    def action_menu_rename(self):
+        """Open rename wizard for folder"""
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Rename Folder'),
+            'res_model': 'custom.document.folder.rename.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {
+                'default_folder_id': self.id,
+                'default_new_name': self.name,
+            },
+        }

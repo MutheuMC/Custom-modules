@@ -1,6 +1,6 @@
 {
     'name': 'Documents Management File System',
-    'version': '18.0.22.0.3',
+    'version': '18.0.23.0.4',
     'category': 'Document Management',
     'summary': 'Custom Document Management System with Enhanced Folder Navigation',
     'depends': ['base', 'web', 'mail', 'hr'],
@@ -10,6 +10,7 @@
         'security/document_security.xml',
         'views/document_upload_wizard_views.xml',
         'views/folder_wizard_views.xml',
+        'views/folder_rename_wizard_views.xml',
         'views/folder_upload_wizard_views.xml',  # NEW: Folder upload with documents
         'views/preview_wizard_views.xml',
         'views/actions_wizard_views.xml',      

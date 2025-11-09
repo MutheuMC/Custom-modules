@@ -4,6 +4,7 @@ from . import document
 from . import document_upload_wizard
 from . import folder_wizard
 from . import folder_upload_wizard
+from . import folder_rename_wizard
 from . import preview_wizard
 from . import actions_wizard     
 from . import rename_wizard          
