@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<templates xml:space="preserve">
-    <t t-name="custom_documents.KanbanController" t-inherit="web.KanbanView" t-inherit-mode="primary">
-        <xpath expr="//div[hasclass('o_cp_buttons')]" position="inside">
-            <DocumentDropdown t-props="{ folderId: currentFolderId }"/>
-        </xpath>
-    </t>
-</templates>
