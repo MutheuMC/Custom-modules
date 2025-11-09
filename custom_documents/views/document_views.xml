@@ -44,6 +44,16 @@
                 <field name="company_id" string="Contact" groups="base.group_multi_company" optional="show"/>
                 <field name="write_date" string="Last Updated on"/>
                 <field name="file_size" string="File Size" optional="hide"/>
+
+                
+                <field name="shared_with_count" widget="statinfo" string="Shared With"/>
+                <button name="action_share_document"
+                            type="object"
+                            string="Share"
+                            class="btn-secondary"
+                            icon="fa-share-alt"/>
+
+
             </list>
         </field>
     </record>

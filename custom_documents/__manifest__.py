@@ -1,6 +1,6 @@
 {
     'name': 'Documents Management File System',
-    'version': '18.0.23.0.4',
+    'version': '18.0.26.2.5',
     'category': 'Document Management',
     'summary': 'Custom Document Management System with Enhanced Folder Navigation',
     'depends': ['base', 'web', 'mail', 'hr'],
@@ -28,7 +28,6 @@
             'custom_documents/static/src/views/folder_create_redirect.js',
             'custom_documents/static/src/scss/custom_documents.scss',
             'custom_documents/static/src/xml/custom_document_list_buttons.xml',
-            'custom_documents/static/src/xml/custom_folder_list_buttons.xml',  # NEW
             'custom_documents/static/src/scss/custom_docs.scss',
             'custom_documents/static/src/scss/custom_folder_list.scss',  # NEW
             'custom_documents/static/src/js/document_list_hover.js', 

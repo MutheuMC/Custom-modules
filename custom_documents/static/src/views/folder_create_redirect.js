@@ -11,7 +11,7 @@ import { FormController } from "@web/views/form/form_controller";
 import { formView } from "@web/views/form/form_view";
 
 // ============================================
-// FOLDER LIST CONTROLLER
+// FOLDER LIST CONTROLLER - Use Standard New Button
 // ============================================
 class FolderListController extends ListController {
     setup() {
@@ -20,15 +20,13 @@ class FolderListController extends ListController {
         this.orm = useService("orm");
     }
     
-    get createText() {
-        return _t("New Folder");
-    }
-    
     /**
-     * Override to open create folder wizard instead of form
+     * Override createRecord to open wizard instead of form
+     * This is triggered by the standard "New" button
      */
     async createRecord() {
         const parentId = this._getCurrentFolderId();
+        
         await this.action.doAction("custom_documents.action_custom_document_folder_wizard", {
             additionalContext: {
                 default_parent_id: parentId || false,
@@ -80,43 +78,6 @@ class FolderListController extends ListController {
             target: 'current',
         });
     }
-
-    /**
-     * Optional: Add custom button actions
-     */
-    async onCreateFolder() {
-        const parentId = this._getCurrentFolderId();
-        console.log("📂 Create folder clicked, parent:", parentId);
-        
-        await this.action.doAction("custom_documents.action_custom_document_folder_wizard", {
-            additionalContext: {
-                default_parent_id: parentId || false,
-            },
-        });
-    }
-
-    async onViewDocuments() {
-        const folderId = this._getCurrentFolderId();
-        if (!folderId) {
-            console.log("No folder selected");
-            return;
-        }
-        
-        console.log("📄 View documents in folder:", folderId);
-        
-        // Open documents view filtered by this folder
-        return this.action.doAction({
-            type: 'ir.actions.act_window',
-            name: _t('Documents'),
-            res_model: 'custom.document',
-            views: [[false, 'list'], [false, 'form']],
-            domain: [['folder_id', '=', folderId]],
-            context: {
-                default_folder_id: folderId,
-            },
-            target: 'current',
-        });
-    }
 }
 
 // ============================================
@@ -142,12 +103,12 @@ class FolderFormController extends FormController {
 }
 
 // ============================================
-// REGISTER VIEWS
+// REGISTER VIEWS - NO CUSTOM BUTTON TEMPLATE
 // ============================================
 const folderListView = { 
     ...listView, 
     Controller: FolderListController,
-    buttonTemplate: "custom_documents.CustomFolderListButtons", // Optional custom buttons
+    // REMOVED: buttonTemplate - Use default Odoo buttons
 };
 
 const folderFormView = { 
@@ -158,4 +119,4 @@ const folderFormView = {
 registry.category("views").add("custom_folder_list", folderListView);
 registry.category("views").add("custom_folder_form", folderFormView);
 
-console.log("✓ Custom folder views registered with enhanced navigation");
+console.log("✓ Custom folder views registered with standard New button");

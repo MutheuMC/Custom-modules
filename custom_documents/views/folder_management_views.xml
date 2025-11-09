@@ -13,24 +13,20 @@
                   delete="0"
                   create="0">
                 
-                <!-- Open Folder Button -->
-                <button name="action_view_folder_documents" 
+             
+                
+                     <!-- Rename Button -->
+                <button name="action_menu_rename" 
                         type="object" 
-                        string="" 
-                        title="View Documents"
-                        icon="fa-folder-open-o" 
-                        class="btn btn-link p-0 text-warning"/>
+                        string=" " 
+                        title="Rename Folder"
+                        icon="fa-pencil" 
+                        class="btn btn-link p-0 text-primary"/>
                 
                 <!-- Folder Icon + Name -->
                 <field name="name" string="Folder Name"/>
                 
-                <!-- Rename Button -->
-                <button name="action_menu_rename" 
-                        type="object" 
-                        string="" 
-                        title="Rename Folder"
-                        icon="fa-pencil" 
-                        class="btn btn-link p-0 text-primary"/>
+           
                 
                 <!-- Parent Folder -->
                 <field name="parent_id" string="Parent" optional="show"/>
@@ -266,29 +262,11 @@
                 <!-- HIERARCHICAL SIDEBAR (Search Panel) -->
                 <searchpanel>
                    
-                    <!-- <filter name="sp_all_folders"
-                            string="All Folders"
-                            select="one"
-                            icon="fa-folder"
-                            domain="[('is_virtual', '=', False)]"/>
                     
-                    <filter name="sp_my_folders"
-                            string="My Folders"
-                            select="one"
-                            icon="fa-user"
-                            domain="[('user_id', '=', uid), ('is_virtual', '=', False)]"/>
-                    
-                    <filter name="sp_shared"
-                            string="Shared with Me"
-                            select="one"
-                            icon="fa-share-alt"
-                            domain="[('share_ids.user_id', '=', uid)]"/>
-                    
-                    <separator/> -->
                     
                     <!-- HIERARCHICAL FOLDER TREE -->
                     <field name="parent_id"
-                           string="Browse Folders"
+                           string="Folders"
                            select="one"
                            hierarchize="1"
                            expand="1"
