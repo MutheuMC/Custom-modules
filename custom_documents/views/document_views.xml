@@ -46,12 +46,22 @@
                 <field name="file_size" string="File Size" optional="hide"/>
 
                 
-                <!-- <field name="shared_with_count" widget="statinfo" string="Shared With"/> -->
+  
                 <button name="action_share_document"
                             type="object"
-                            string="Share"
-                            class="btn-secondary"
-                            icon="fa-share-alt"/>
+                            string=" "
+                            title="Share"
+                            icon="fa-share"/>
+                <button name="action_rename"
+                            type="object"
+                            string=" "
+                            title="Rename"
+                            icon=" fa-pencil"/>
+                <button name="action_download"
+                            type="object"
+                            string=" "
+                            title="Download"
+                            icon="fa-download"/>
 
 
             </list>

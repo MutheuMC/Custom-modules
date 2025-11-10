@@ -13,28 +13,28 @@
                   class="o_list_compact custom_folder_list"
                   delete="0"
                   create="0">
-                
-                <!-- Open Folder Button -->
-                <button name="action_view_folder_documents" 
-                        type="object" 
-                        title="Open Folder"
-                        icon="fa-folder-open" 
-                        class="btn btn-link p-0 text-warning"/>
 
-                  <!-- Action Buttons -->
-                <button name="action_share_folder" 
-                        type="object" 
-                        title="Share Folder"
-                        icon="fa-share-alt" 
-                        class="btn btn-link p-0 text-primary"
-                        invisible="is_virtual"/>
+                   <field name="is_starred" column_invisible="1"/>
+
+            <!-- ⭐ Unstar button (visible when already starred) -->
+            <button name="action_toggle_star"
+                    type="object"
+                    string=" "
+                    title="Unstar"
+                    icon="fa-star"
+                    class="btn btn-link p-0"
+                    invisible="not is_starred"/>
+
+            <!-- ☆ Star button (visible when not starred) -->
+            <button name="action_toggle_star"
+                    type="object"
+                    string=" "
+                    title="Star"
+                    icon="fa-star-o"
+                    class="btn btn-link p-0"
+                    invisible="is_starred"/>
                 
-                <button name="action_menu_rename" 
-                        type="object" 
-                        title="Rename Folder"
-                        icon="fa-pencil" 
-                        class="btn btn-link p-0 text-secondary"
-                        invisible="is_virtual"/>
+                
                 
                 <!-- Folder Name -->
                 <field name="name" string="Folder Name" class="fw-bold"/>
@@ -67,6 +67,28 @@
                 <field name="write_date" 
                        string="Last Updated" 
                        optional="hide"/>
+
+
+                <!-- Open Folder Button -->
+                <button name="action_view_folder_documents" 
+                        type="object" 
+                        title="Open Folder"
+                        icon="fa-folder-open" 
+                     />
+
+                  <!-- Action Buttons -->
+                <button name="action_share_folder" 
+                        type="object" 
+                        title="Share Folder"
+                        icon="fa-share" 
+                        
+                        invisible="is_virtual"/>
+                
+                <button name="action_menu_rename" 
+                        type="object" 
+                        title="Rename Folder"
+                        icon="fa-pencil" 
+                        invisible="is_virtual"/>
                 
                 <!-- Hidden fields for invisible conditions -->
                 <field name="is_virtual" column_invisible="1"/>
@@ -307,15 +329,6 @@
         </field>
     </record>
 
-    <!-- ===========================
-         REMOVE/ARCHIVE OLD CONFLICTING VIEWS
-         =========================== -->
-    <!-- Archive the old basic folder list view -->
-    <record id="view_custom_document_folder_list" model="ir.ui.view">
-        <field name="name">custom.document.folder.list.OLD</field>
-        <field name="model">custom.document.folder</field>
-        <field name="priority">99</field>  <!-- LOWER PRIORITY -->
-        <field name="active" eval="False"/>  <!-- DISABLE IT -->
-    </record>
+
 
 </odoo>

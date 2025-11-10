@@ -32,7 +32,7 @@
   line-height: 1;      /* tighter vertical alignment */
 }
 .o_list_view .fa {
-  font-size: 20px;     /* small icons like your screenshot */
+  font-size: 16px;   
 }
 
 .btn .btn-link.p-0 .starred{
@@ -49,57 +49,7 @@
 
 
 /* Document hover actions styling */
-.custom_document_list {
-  
-  tbody tr.o_data_row {
-    position: relative;
-    
-    // Hover actions container
-    .o_document_hover_actions {
-      position: absolute;
-      right: 10px;
-      top: 50%;
-      transform: translateY(-50%);
-      display: none;
-      gap: 4px;
-      background: #fff;
-      padding: 4px 8px;
-      border-radius: 6px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-      z-index: 10;
-      
-      .o_document_hover_btn {
-        padding: 4px 8px;
-        margin: 0;
-        color: #6c757d;
-        transition: color 0.2s, background-color 0.2s;
-        border-radius: 4px;
-        
-        &:hover {
-          color: #0d6efd;
-          background-color: #e7f3ff;
-        }
-        
-        i {
-          font-size: 16px;
-        }
-      }
-    }
-    
-    // Show actions on row hover
-    &:hover {
-      .o_document_hover_actions {
-        display: flex;
-      }
-    }
-    
-    // Adjust last cell to accommodate buttons
-    td:last-child {
-      position: relative;
-      min-width: 150px;
-    }
-  }
-}
+
 
 /* Mobile responsiveness */
 @media (max-width: 768px) {
