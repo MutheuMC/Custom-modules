@@ -13,20 +13,15 @@
                   delete="0"
                   create="0">
                 
-             
-                
-                     <!-- Rename Button -->
-                <button name="action_menu_rename" 
+                <!-- Open Folder Button -->
+                <button name="action_view_folder_documents" 
                         type="object" 
-                        string=" " 
-                        title="Rename Folder"
-                        icon="fa-pencil" 
-                        class="btn btn-link p-0 text-primary"/>
+                        title="Open Folder"
+                        icon="fa-folder-open" 
+                        class="btn btn-link p-0 text-warning"/>
                 
                 <!-- Folder Icon + Name -->
-                <field name="name" string="Folder Name"/>
-                
-           
+                <field name="name" string="Folder Name" class="fw-bold"/>
                 
                 <!-- Parent Folder -->
                 <field name="parent_id" string="Parent" optional="show"/>
@@ -57,13 +52,19 @@
                        string="Last Updated" 
                        optional="hide"/>
                 
-                <!-- Share Button (visible if folder is shareable) -->
+                <!-- Action Buttons -->
                 <button name="action_share_folder" 
                         type="object" 
-                        string="" 
                         title="Share Folder"
                         icon="fa-share-alt" 
-                        class="btn btn-link p-0"
+                        class="btn btn-link p-0 text-primary"
+                        invisible="is_virtual"/>
+                
+                <button name="action_menu_rename" 
+                        type="object" 
+                        title="Rename Folder"
+                        icon="fa-pencil" 
+                        class="btn btn-link p-0 text-secondary"
                         invisible="is_virtual"/>
             </list>
         </field>

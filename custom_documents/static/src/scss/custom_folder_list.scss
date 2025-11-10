@@ -35,12 +35,12 @@
       td:nth-child(2) {
         font-weight: 500;
         
-        &::before {
-          content: "\f07b"; /* fa-folder */
-          font-family: "FontAwesome";
-          margin-right: 8px;
-          color: #ffc107;
-        }
+        // &::before {
+        //   content: "\f07b"; /* fa-folder */
+        //   font-family: "FontAwesome";
+        //   margin-right: 8px;
+        //   color: #ffc107;
+        // }
       }
     }
   }
@@ -54,12 +54,7 @@
       }
       
       /* Folder icons in sidebar */
-      .o_search_panel_label_title::before {
-        content: "\f07b";
-        font-family: "FontAwesome";
-        margin-right: 6px;
-        color: #ffc107;
-      }
+   
       
       /* Indent for hierarchy */
       &.o_search_panel_level_1 {
@@ -156,12 +151,12 @@
           color: #6c757d;
         }
         
-        &::before {
-          content: "\f054"; /* fa-chevron-right */
-          font-family: "FontAwesome";
-          font-size: 0.75rem;
-          margin: 0 0.5rem;
-        }
+        // &::before {
+        //   content: "\f054"; /* fa-chevron-right */
+        //   font-family: "FontAwesome";
+        //   font-size: 0.75rem;
+        //   margin: 0 0.5rem;
+        // }
         
         &:first-child::before {
           content: none;
