@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <!-- ===========================
-         Enhanced Folder List View
+          Folder List View
          =========================== -->
     <record id="view_custom_document_folder_list_enhanced" model="ir.ui.view">
         <field name="name">custom.document.folder.list.enhanced</field>
         <field name="model">custom.document.folder</field>
+        <field name="priority">1</field>  
         <field name="arch" type="xml">
             <list string="Folders" 
                   js_class="custom_folder_list"
@@ -19,40 +20,8 @@
                         title="Open Folder"
                         icon="fa-folder-open" 
                         class="btn btn-link p-0 text-warning"/>
-                
-                <!-- Folder Icon + Name -->
-                <field name="name" string="Folder Name" class="fw-bold"/>
-                
-                <!-- Parent Folder -->
-                <field name="parent_id" string="Parent" optional="show"/>
-                
-                <!-- Owner -->
-                <field name="user_id" 
-                       widget="many2one_avatar_user" 
-                       string="Owner"
-                       optional="show"/>
-                
-                <!-- Document Count -->
-                <field name="document_count" string="Documents"/>
-                
-                <!-- Company -->
-                <field name="company_id" 
-                       string="Company" 
-                       groups="base.group_multi_company" 
-                       optional="hide"/>
-                
-                <!-- Is Shared -->
-                <field name="is_shared" 
-                       string="Shared" 
-                       widget="boolean"
-                       optional="show"/>
-                
-                <!-- Last Modified -->
-                <field name="write_date" 
-                       string="Last Updated" 
-                       optional="hide"/>
-                
-                <!-- Action Buttons -->
+
+                  <!-- Action Buttons -->
                 <button name="action_share_folder" 
                         type="object" 
                         title="Share Folder"
@@ -66,6 +35,43 @@
                         icon="fa-pencil" 
                         class="btn btn-link p-0 text-secondary"
                         invisible="is_virtual"/>
+                
+                <!-- Folder Name -->
+                <field name="name" string="Folder Name" class="fw-bold"/>
+                
+                <!-- Parent Folder -->
+                <field name="parent_id" string="Parent" optional="show"/>
+                
+                <!-- Owner -->
+                <field name="user_id" 
+                       widget="many2one_avatar_user" 
+                       string="Owner"
+                       optional="show"/>
+                
+                <!-- Document Count -->
+                <field name="document_count" string="Documents" optional="hide"/>
+                
+                <!-- Company -->
+                <field name="company_id" 
+                       string="Company" 
+                       groups="base.group_multi_company" 
+                       optional="hide"/>
+                
+                <!-- Is Shared -->
+                <field name="is_shared" 
+                       string="Shared" 
+                       widget="boolean"
+                       optional="hide"/>
+                
+                <!-- Last Modified -->
+                <field name="write_date" 
+                       string="Last Updated" 
+                       optional="hide"/>
+                
+                <!-- Hidden fields for invisible conditions -->
+                <field name="is_virtual" column_invisible="1"/>
+                
+              
             </list>
         </field>
     </record>
@@ -76,6 +82,7 @@
     <record id="view_custom_document_folder_form" model="ir.ui.view">
         <field name="name">custom.document.folder.form</field>
         <field name="model">custom.document.folder</field>
+        <field name="priority">1</field>
         <field name="arch" type="xml">
             <form string="Folder" create="0">
                 <header>
@@ -212,11 +219,12 @@
     </record>
 
     <!-- ===========================
-         Folder Search View with Hierarchical Sidebar
+         Folder Search View
          =========================== -->
     <record id="view_custom_document_folder_search" model="ir.ui.view">
         <field name="name">custom.document.folder.search</field>
         <field name="model">custom.document.folder</field>
+        <field name="priority">1</field>
         <field name="arch" type="xml">
             <search string="Search Folders">
                 <field name="name" 
@@ -260,12 +268,8 @@
                             groups="base.group_multi_company"/>
                 </group>
                 
-                <!-- HIERARCHICAL SIDEBAR (Search Panel) -->
+                <!-- Hierarchical Sidebar -->
                 <searchpanel>
-                   
-                    
-                    
-                    <!-- HIERARCHICAL FOLDER TREE -->
                     <field name="parent_id"
                            string="Folders"
                            select="one"
@@ -279,18 +283,18 @@
     </record>
 
     <!-- ===========================
-         Main Folder Management Action
+         MAIN Folder Management Action (CORRECTED)
          =========================== -->
     <record id="action_custom_document_folder_manage" model="ir.actions.act_window">
         <field name="name">Manage Folders</field>
         <field name="res_model">custom.document.folder</field>
         <field name="view_mode">list,form</field>
-        <field name="views" eval="[(ref('view_custom_document_folder_list_enhanced'), 'list'),
-                                   (ref('view_custom_document_folder_form'), 'form')]"/>
+        <!-- EXPLICITLY SET THE VIEW IDS -->
+        <field name="view_ids" 
+               eval="[(5, 0, 0),
+                      (0, 0, {'view_mode': 'list', 'view_id': ref('view_custom_document_folder_list_enhanced')}),
+                      (0, 0, {'view_mode': 'form', 'view_id': ref('view_custom_document_folder_form')})]"/>
         <field name="search_view_id" ref="view_custom_document_folder_search"/>
-        <field name="context">{
-            'search_default_sp_all_folders': 1
-        }</field>
         <field name="domain">[('is_virtual', '=', False)]</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
@@ -304,40 +308,14 @@
     </record>
 
     <!-- ===========================
-         Server Action: Open Company Root (for menu)
+         REMOVE/ARCHIVE OLD CONFLICTING VIEWS
          =========================== -->
-    <record id="action_open_company_root_srv" model="ir.actions.server">
-        <field name="name">Company Folders</field>
-        <field name="model_id" ref="model_custom_document_folder"/>
-        <field name="state">code</field>
-        <field name="code">
-action = env['custom.document.folder'].action_open_company_root()
-        </field>
-    </record>
-
-    <!-- ===========================
-         Alternative: Direct Action for Company Root
-         =========================== -->
-    <record id="action_company_root_folders" model="ir.actions.act_window">
-        <field name="name">Company Folders</field>
-        <field name="res_model">custom.document.folder</field>
-        <field name="view_mode">list,form</field>
-        <field name="views" eval="[(ref('view_custom_document_folder_list_enhanced'), 'list'),
-                                   (ref('view_custom_document_folder_form'), 'form')]"/>
-        <field name="search_view_id" ref="view_custom_document_folder_search"/>
-        <field name="context">{
-            'search_default_company_folders': 1
-        }</field>
-        <field name="domain">[('is_virtual', '=', False)]</field>
-        <field name="help" type="html">
-            <p class="o_view_nocontent_smiling_face">
-                No company folders yet
-            </p>
-            <p>
-                Company folders are created automatically. 
-                You can organize company-wide documents here.
-            </p>
-        </field>
+    <!-- Archive the old basic folder list view -->
+    <record id="view_custom_document_folder_list" model="ir.ui.view">
+        <field name="name">custom.document.folder.list.OLD</field>
+        <field name="model">custom.document.folder</field>
+        <field name="priority">99</field>  <!-- LOWER PRIORITY -->
+        <field name="active" eval="False"/>  <!-- DISABLE IT -->
     </record>
 
 </odoo>

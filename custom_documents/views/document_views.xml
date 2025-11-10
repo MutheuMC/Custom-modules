@@ -46,7 +46,7 @@
                 <field name="file_size" string="File Size" optional="hide"/>
 
                 
-                <field name="shared_with_count" widget="statinfo" string="Shared With"/>
+                <!-- <field name="shared_with_count" widget="statinfo" string="Shared With"/> -->
                 <button name="action_share_document"
                             type="object"
                             string="Share"

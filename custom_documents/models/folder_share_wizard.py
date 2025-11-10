@@ -74,6 +74,17 @@ class CustomFolderShareWizard(models.TransientModel):
         readonly=False,  # allow inline remove
     )
 
+    # ---- Internal users tracking ----
+    internal_not_shared_count = fields.Integer(
+        compute='_compute_internal_share_status',
+        store=False
+    )
+    
+    internal_fully_shared = fields.Boolean(
+        compute='_compute_internal_share_status',
+        store=False
+    )
+
     @api.model
     def default_get(self, fields_list):
         res = super().default_get(fields_list)
@@ -81,6 +92,46 @@ class CustomFolderShareWizard(models.TransientModel):
         if active_id:
             res['folder_id'] = active_id
         return res
+
+    # ---- Helper methods ----
+    def _internal_partner_ids(self):
+        """Get all active internal users (current/folder company)."""
+        self.ensure_one()
+        group_user = self.env.ref('base.group_user')
+        company_id = self.folder_id.company_id.id or self.env.company.id
+        
+        users = self.env['res.users'].search([
+            ('groups_id', 'in', group_user.id),
+            ('active', '=', True),
+            '|', 
+                ('company_id', '=', company_id),
+                ('company_ids', 'in', [company_id]),
+        ])
+        return set(users.mapped('partner_id').ids)
+
+    @api.depends('folder_id', 'folder_id.share_ids.partner_id')
+    def _compute_internal_share_status(self):
+        """Compute how many internal users don't have access yet."""
+        for wiz in self:
+            if not wiz.folder_id:
+                wiz.internal_not_shared_count = 0
+                wiz.internal_fully_shared = False
+                continue
+            
+            internal_set = wiz._internal_partner_ids()
+            
+            # Don't count the owner
+            if wiz.owner_partner_id:
+                internal_set.discard(wiz.owner_partner_id.id)
+            
+            # Get partners who already have access
+            already = set(wiz.folder_id.share_ids.mapped('partner_id').ids)
+            
+            # Calculate who's missing
+            to_add = internal_set - already
+            
+            wiz.internal_not_shared_count = len(to_add)
+            wiz.internal_fully_shared = (len(to_add) == 0)
 
     # ---- Actions ----
     def action_share(self):
@@ -100,24 +151,52 @@ class CustomFolderShareWizard(models.TransientModel):
             }
 
         existing_partner_ids = set(folder.share_ids.mapped('partner_id').ids)
+        shared_count = 0
+        
         for partner in self.partner_ids:
             if partner.id in existing_partner_ids:
                 continue
+            
             self.env['custom.document.folder.share'].create({
                 'folder_id': folder.id,
                 'partner_id': partner.id,
+                'recursive': True,  # Default to include subfolders
             })
-            # (Optional) notify
-            folder.message_post(
-                body=_('%s shared this folder with you') % (folder.user_id.name,),
-                subject=_('Folder Shared: %s') % (folder.name,),
-                message_type='notification',
-                partner_ids=[partner.id],
-                subtype_xmlid='mail.mt_comment',
-            )
+            shared_count += 1
+            
+            # Notify via chatter
+            if hasattr(folder, 'message_post'):
+                folder.message_post(
+                    body=_('This folder has been shared with you by %s') % (folder.user_id.name,),
+                    subject=_('Folder Shared: %s') % (folder.name,),
+                    message_type='notification',
+                    partner_ids=[partner.id],
+                    subtype_xmlid='mail.mt_comment',
+                )
 
         # Clear picker; list refreshes (related O2M)
         self.partner_ids = [(5, 0, 0)]
+
+        # Show success notification
+        if shared_count > 0:
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': _('Success'),
+                    'message': _('Folder shared with %s user(s)') % shared_count,
+                    'type': 'success',
+                    'sticky': False,
+                    'next': {
+                        'type': 'ir.actions.act_window',
+                        'res_model': self._name,
+                        'res_id': self.id,
+                        'view_mode': 'form',
+                        'target': 'new',
+                        'name': _('Share "%s"') % folder.name,
+                    }
+                }
+            }
 
         # Keep wizard open and refreshed
         return {
@@ -127,4 +206,69 @@ class CustomFolderShareWizard(models.TransientModel):
             'view_mode': 'form',
             'target': 'new',
             'name': _('Share "%s"') % folder.name,
+        }
+
+    def action_share_internal(self):
+        """Share with ALL internal users, skip owner/duplicates, keep wizard open."""
+        self.ensure_one()
+        folder = self.folder_id
+        
+        # Get all internal partners
+        internal = self._internal_partner_ids()
+        
+        # Don't share with owner
+        if self.owner_partner_id:
+            internal.discard(self.owner_partner_id.id)
+        
+        # Get existing shares
+        already = set(folder.share_ids.mapped('partner_id').ids)
+        
+        # Calculate who needs access
+        to_add = list(internal - already)
+        
+        if not to_add:
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': _('Already Shared'),
+                    'message': _('This folder is already shared with all internal users.'),
+                    'type': 'info',
+                }
+            }
+        
+        # Create shares
+        self.env['custom.document.folder.share'].create(
+            [{'folder_id': folder.id, 'partner_id': pid, 'recursive': True} 
+             for pid in to_add]
+        )
+        
+        # Send notification to all new recipients
+        if hasattr(folder, 'message_post'):
+            folder.message_post(
+                body=_('This folder has been shared with all internal users by %s') % (folder.user_id.name,),
+                subject=_('Folder Shared: %s') % (folder.name,),
+                message_type='notification',
+                partner_ids=to_add,
+                subtype_xmlid='mail.mt_comment',
+            )
+        
+        # Show success and reopen wizard
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': _('Success'),
+                'message': _('Folder shared with %s internal users') % len(to_add),
+                'type': 'success',
+                'sticky': False,
+                'next': {
+                    'type': 'ir.actions.act_window',
+                    'res_model': self._name,
+                    'res_id': self.id,
+                    'view_mode': 'form',
+                    'target': 'new',
+                    'name': _('Share "%s"') % folder.name,
+                }
+            }
         }

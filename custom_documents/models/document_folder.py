@@ -9,26 +9,26 @@ COMPANY_DEFAULT_CHILDREN = ["Finance", "Legal", "Marketing", "Admin", "Inbox"]
 class DocumentFolder(models.Model):
     _name = 'custom.document.folder'
     _description = 'Document Folder'
-    # _inherit = ['mail.thread', 'mail.activity.mixin']  
+    _inherit = ['mail.thread', 'mail.activity.mixin']  # ADDED MAIL TRACKING
     _parent_name = 'parent_id'
     _parent_store = True
     _rec_name = 'name'
     _order = 'sequence, name'
 
     # --- Core fields ---
-    name = fields.Char('Folder Name', required=True)
+    name = fields.Char('Folder Name', required=True, tracking=True)
     sequence = fields.Integer('Sequence', default=10)
     complete_name = fields.Char('Complete Name', compute='_compute_complete_name', store=True, recursive=True)
     parent_id = fields.Many2one('custom.document.folder', 'Parent Folder', index=True, ondelete='cascade')
     parent_path = fields.Char(index=True)
     child_ids = fields.One2many('custom.document.folder', 'parent_id', 'Child Folders')
     document_ids = fields.One2many('custom.document', 'folder_id', 'Documents')
-    virtual_document_ids = fields.Many2many( 'custom.document', compute='_compute_virtual_documents',string='Virtual Documents')
-    all_document_ids = fields.Many2many( 'custom.document', compute='_compute_all_documents', string='All Documents (Real + Virtual)')
+    virtual_document_ids = fields.Many2many('custom.document', compute='_compute_virtual_documents', string='Virtual Documents')
+    all_document_ids = fields.Many2many('custom.document', compute='_compute_all_documents', string='All Documents (Real + Virtual)')
     document_count = fields.Integer('Document Count', compute='_compute_document_count')
     color = fields.Integer('Color')
     company_id = fields.Many2one('res.company', 'Company', default=lambda self: self.env.company, index=True)
-    user_id = fields.Many2one('res.users', 'Owner', default=lambda self: self.env.user)
+    user_id = fields.Many2one('res.users', 'Owner', default=lambda self: self.env.user, tracking=True)
 
     # Link to employee when this is an "employee folder"
     employee_id = fields.Many2one('hr.employee', string='Employee', index=True)
@@ -44,8 +44,7 @@ class DocumentFolder(models.Model):
         ('trash', 'Trash'),
     ], string='Virtual Type')
 
-
-     # Add sharing fields
+    # Add sharing fields
     share_ids = fields.One2many(
         'custom.document.folder.share',
         'folder_id',
@@ -81,9 +80,8 @@ class DocumentFolder(models.Model):
 
     @api.constrains('parent_id')
     def _check_parent_id(self):
-        # THIS IS THE ONE AND ONLY CORRECT VERSION
         if self._has_cycle():
-         raise ValidationError(_('You cannot create recursive folders.'))
+            raise ValidationError(_('You cannot create recursive folders.'))
 
     # ------------------------------------------------------------
     # Actions
@@ -144,9 +142,6 @@ class DocumentFolder(models.Model):
             'target': 'current',
         }
 
-    
-
-
     # ------------------------------------------------------------
     # Helpers to build the company/employee tree
     # ------------------------------------------------------------
@@ -159,7 +154,6 @@ class DocumentFolder(models.Model):
             ('parent_id', '=', False),
         ], limit=1)
         if not root:
-            # keep name short as in the left tree: "Company"
             root = self.sudo().create({
                 'name': 'Company',
                 'company_id': company.id,
@@ -218,12 +212,10 @@ class DocumentFolder(models.Model):
     def _ensure_employee_folder(self, emp):
         """Create/update the folder for a single employee and return it."""
         emp_root = self._ensure_employees_root(emp.company_id)
-        # One folder per employee per company
         folder = self.sudo().search([
             ('employee_id', '=', emp.id),
             ('company_id', '=', emp.company_id.id),
         ], limit=1)
-        # desired display name (avoid falsey strings)
         wanted_name = emp.name or _("Employee %s") % emp.id
         if folder:
             if folder.parent_id.id != emp_root.id:
@@ -238,7 +230,6 @@ class DocumentFolder(models.Model):
                 'company_id': emp.company_id.id,
                 'user_id': self.env.user.id,
             })
-            # optional child structure under each employee
             for child in EMPLOYEE_DEFAULT_CHILDREN:
                 self.sudo().create({
                     'name': child,
@@ -281,7 +272,6 @@ class DocumentFolder(models.Model):
         selfSudo._ensure_default_company_children(company)
         
         # Create employee folders if hr.employee model exists
-        # FIXED: Check if model is registered
         if 'hr.employee' in self.env.registry:
             selfSudo._ensure_employees_root(company)
             employees = self.env['hr.employee'].sudo().search([('company_id', '=', company.id)])
@@ -307,11 +297,11 @@ class DocumentFolder(models.Model):
             if not folder:
                 self.sudo().create({
                     'name': name,
-                    'company_id': False,  # Not tied to any company
+                    'company_id': False,
                     'is_virtual': True,
                     'virtual_type': vtype,
                     'sequence': seq,
-            })
+                })
 
     @api.depends('is_virtual', 'virtual_type')
     def _compute_virtual_documents(self):
@@ -337,7 +327,6 @@ class DocumentFolder(models.Model):
     def _compute_document_count(self):
         for folder in self:
             if folder.is_virtual:
-                # Compute count based on virtual type
                 folder.document_count = self._get_virtual_folder_count(folder.virtual_type)
             else:
                 folder.document_count = len(folder.document_ids)
@@ -354,10 +343,8 @@ class DocumentFolder(models.Model):
         seven_days_ago = fields.Datetime.now() - timedelta(days=7)
         
         if virtual_type == 'my_drive':
-            # All documents owned by current user (active only)
             return [('user_id', '=', uid), ('active', '=', True)]
         elif virtual_type == 'shared':
-            # Documents shared with me (via lines or internal) but not owned by me
             return [
                 '|',
                     ('share_line_ids.user_id', '=', uid),
@@ -366,17 +353,12 @@ class DocumentFolder(models.Model):
                 ('active', '=', True)
             ]
         elif virtual_type == 'recent':
-            # Documents modified in last 7 days (active only)
             return [('write_date', '>=', seven_days_ago), ('active', '=', True)]
         elif virtual_type == 'trash':
-            # Inactive documents
             return [('active', '=', False)]
         elif virtual_type == 'all':
-            # All active documents
             return [('active', '=', True)]
         return []
-
-
 
     @api.depends('share_ids')
     def _compute_is_shared(self):
@@ -411,3 +393,25 @@ class DocumentFolder(models.Model):
                 'default_new_name': self.name,
             },
         }
+    
+    def _check_user_has_access(self, user):
+        """Check if user has access to this folder (directly or via sharing)"""
+        self.ensure_one()
+        
+        # Owner has access
+        if self.user_id.id == user.id:
+            return True
+        
+        # Admin has access
+        if user.has_group('base.group_system'):
+            return True
+        
+        # Check if directly shared
+        if user.id in self.share_ids.mapped('user_id').ids:
+            return True
+        
+        # Check parent folders (recursive check)
+        if self.parent_id:
+            return self.parent_id._check_user_has_access(user)
+        
+        return False

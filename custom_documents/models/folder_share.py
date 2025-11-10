@@ -1,4 +1,8 @@
 from odoo import models, fields, api, _
+import logging
+
+_logger = logging.getLogger(__name__)
+
 
 class CustomDocumentFolderShare(models.Model):
     _name = 'custom.document.folder.share'
@@ -33,11 +37,11 @@ class CustomDocumentFolderShare(models.Model):
     )
 
     email = fields.Char(
-    string='Email',
-    related='partner_id.email',
-    readonly=True,
-    store=True
-)
+        string='Email',
+        related='partner_id.email',
+        readonly=True,
+        store=True
+    )
     
     _sql_constraints = [
         ('unique_folder_partner',
@@ -56,17 +60,32 @@ class CustomDocumentFolderShare(models.Model):
         
         # Send notification
         for rec in records:
-            rec.folder_id.message_post(
-                body=_('%s shared this folder with you') % rec.folder_id.user_id.name,
-                subject=_('Folder Shared: %s') % rec.folder_id.name,
-                message_type='notification',
-                partner_ids=[rec.partner_id.id],
-                subtype_xmlid='mail.mt_comment',
-            )
-            
-            # Subscribe to folder updates
-            rec.folder_id.message_subscribe(partner_ids=[rec.partner_id.id])
+            try:
+                # Check if folder has message_post (should have it via mail.thread)
+                if hasattr(rec.folder_id, 'message_post'):
+                    rec.folder_id.message_post(
+                        body=_('%s shared this folder with you') % rec.folder_id.user_id.name,
+                        subject=_('Folder Shared: %s') % rec.folder_id.name,
+                        message_type='notification',
+                        partner_ids=[rec.partner_id.id],
+                        subtype_xmlid='mail.mt_comment',
+                    )
+                    
+                    # Subscribe to folder updates
+                    rec.folder_id.message_subscribe(partner_ids=[rec.partner_id.id])
+                else:
+                    _logger.warning(
+                        "Folder %s (ID: %s) does not have message_post method. "
+                        "Make sure custom.document.folder inherits from mail.thread",
+                        rec.folder_id.name,
+                        rec.folder_id.id
+                    )
+            except Exception as e:
+                _logger.error(
+                    "Failed to send notification for folder share: %s",
+                    str(e),
+                    exc_info=True
+                )
+                # Don't block the share operation if notification fails
         
         return records
-
-
