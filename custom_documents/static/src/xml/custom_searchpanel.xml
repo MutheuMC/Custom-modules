@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+  <!-- Renders Quick Access above the normal folder tree -->
+  <t t-name="custom_documents.VirtualFolders" owl="1">
+    <div class="o_search_panel_section custom-vf">
+      <div class="o_search_panel_category">
+        <div class="o_search_panel_category_title">Quick Access</div>
+        <ul class="o_search_panel_category_values">
+          <t t-foreach="getVirtualFolders()" t-as="vf" t-key="vf.id">
+            <li t-att-class="'o_search_panel_category_value ' + (getActiveVirtualFolder()===vf.id ? 'o_selected' : '')"
+                t-on-click="() => onVirtualFolderClick(vf.id, vf.filter)">
+              <i t-att-class="'fa ' + vf.icon" class="me-2" aria-hidden="true"/>
+              <span t-esc="vf.name"/>
+            </li>
+          </t>
+        </ul>
+      </div>
+    </div>
+  </t>
+
+  <!-- Prepend our block to the SearchPanel -->
+  <t t-extend="web.SearchPanel" owl="1">
+    <t t-jquery="div.o_search_panel" t-operation="prepend">
+      <t t-call="custom_documents.VirtualFolders"/>
+    </t>
+  </t>
+
+</templates>

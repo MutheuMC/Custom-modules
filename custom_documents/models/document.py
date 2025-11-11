@@ -3,10 +3,11 @@ import base64
 import mimetypes
 import re
 from datetime import timedelta
-from secrets import token_urlsafe
 
 from odoo import api, fields, models, _
-from odoo.exceptions import UserError, ValidationError
+from odoo.exceptions import UserError, ValidationError, AccessError
+from odoo.osv import expression
+
 
 
 class CustomDocument(models.Model):
@@ -44,8 +45,7 @@ class CustomDocument(models.Model):
     # Organization
     folder_id = fields.Many2one(
         'custom.document.folder', 'Folder',
-        ondelete='cascade', index=True,
-        domain="[('is_virtual', '=', False)]"
+        ondelete='cascade', index=True
     )
 
     # Kept for compatibility (used only if you reference it elsewhere)
@@ -82,7 +82,7 @@ class CustomDocument(models.Model):
     is_starred = fields.Boolean('Starred', default=False)
 
     # -------------------------------------------------------------------------
-    # SHARE FIELDS - UPDATED FOR GOOGLE DOCS-STYLE SHARING
+    # SHARE FIELDS
     # -------------------------------------------------------------------------
     share_access = fields.Selection([
         ('private', 'Private (Only me)'),
@@ -108,15 +108,18 @@ class CustomDocument(models.Model):
         store=True
     )
 
-    # Virtual folders (computed membership)
-    virtual_folder_ids = fields.Many2many(
-        'custom.document.folder', compute='_compute_virtual_folder_ids',
-        string='Virtual Folders', store=False
+    sidebar_category = fields.Selection(
+        [('my', 'My Drive'),
+         ('shared', 'Shared with Me'),
+         ('recent', 'Recent'),
+         ('trash', 'Trash')],  # We can add Trash back in!
+        string="Filter",
+        search='_search_sidebar_category'  # This is the magic part
     )
 
-    # Search-only helpers for SearchPanel filters
-    is_recent = fields.Boolean(string='Recent', store=False, search='_search_is_recent')
-    is_shared_with_me = fields.Boolean(string='Shared with Me', store=False, search='_search_shared_with_me')
+
+    
+
 
     # -------------------------------------------------------------------------
     # Computes & Constraints
@@ -209,7 +212,7 @@ class CustomDocument(models.Model):
             doc.computed_folder_id = doc.folder_id
 
     def _search_display_folder(self, operator, value):
-        """Enable searching by a 'virtual' folder value (if ever used)."""
+        """Enable searching by folder (including subfolders)."""
         if not value:
             return [('folder_id', operator, value)]
 
@@ -223,10 +226,7 @@ class CustomDocument(models.Model):
         if not folder.exists():
             return [('id', '=', False)]
 
-        if folder.is_virtual:
-            # Delegate to folder's virtual domain
-            return folder._get_virtual_folder_domain(folder.virtual_type)
-        # Real folder: include subfolders
+        # Search in folder and all subfolders
         return [('folder_id', 'child_of', value)]
 
     # -------------------------------------------------------------------------
@@ -242,12 +242,9 @@ class CustomDocument(models.Model):
         for doc in self:
             doc.shared_with_count = len(doc.share_line_ids)
 
-
-
-
-        # Add this method to your CustomDocument class in document.py
-    # This enhances the existing access control
-
+    # -------------------------------------------------------------------------
+    # Access Control
+    # -------------------------------------------------------------------------
     def _check_user_access(self):
         """Check if current user has access to this document"""
         self.ensure_one()
@@ -266,10 +263,48 @@ class CustomDocument(models.Model):
             return True
         
         # Internal sharing
-        if self.share_access in ('internal_view', 'internal_edit'):
+        if self.share_access == 'internal':
             return True
         
         return False
+
+    def _search_sidebar_category(self, operator, value):
+        user_id = self.env.uid
+        
+        # We only support clicking one filter at a time (operator='=')
+        if operator != '=':
+            return []
+        
+        # DOMAIN FOR "MY DRIVE"
+        if value == 'my':
+            # This domain comes from your action_my_drive
+            return [('user_id', '=', user_id), ('active', '=', True)]
+        
+        # DOMAIN FOR "SHARED WITH ME"
+        if value == 'shared':
+            # This domain comes from your action_shared_with_me
+            return [
+                '|', ('share_line_ids.user_id', '=', user_id), 
+                     ('share_access', '=', 'internal'), 
+                ('user_id', '!=', user_id), 
+                ('active', '=', True)
+            ]
+            
+        # DOMAIN FOR "RECENT"
+        if value == 'recent':
+            # This domain comes from your 'recent' filter in document_views.xml
+            domain_date = (fields.Date.context_today(self) - timedelta(days=7)).strftime('%Y-%m-%d')
+            return [('write_date', '>=', domain_date), ('active', '=', True)]
+            
+        # DOMAIN FOR "TRASH"
+        if value == 'trash':
+            # This domain comes from your action_trash
+            # We must also add active_test=False to the context
+            self.env.context = dict(self.env.context, active_test=False)
+            return [('active', '=', False)]
+        
+        # Fallback
+        return []
 
     @api.model
     def search(self, args, offset=0, limit=None, order=None, count=False):
@@ -281,19 +316,43 @@ class CustomDocument(models.Model):
                 '|', '|',
                     ('user_id', '=', user.id),
                     ('share_line_ids.user_id', '=', user.id),
-                    ('share_access', 'in', ['internal_view', 'internal_edit'])
+                    ('share_access', '=', 'internal')
             ]
             args = expression.AND([args, access_domain])
         
         return super().search(args, offset=offset, limit=limit, order=order, count=count)
 
-    def read(self, fields=None, load='_classic_read'):
-        """Override read to check access"""
-        # Check access before reading
-        for doc in self:
-            if not doc._check_user_access():
-                raise AccessError(_('You do not have access to this document.'))
-        return super().read(fields=fields, load=load)
+    def check_access_rights(self, operation, raise_exception=True):
+        """Allow read access for shared documents"""
+        res = super().check_access_rights(operation, raise_exception)
+        if operation == 'read':
+            return True  # Read access handled by record rules
+        return res
+
+    def _check_can_access(self):
+        """Check if current user can access this document"""
+        self.ensure_one()
+        user = self.env.user
+        
+        # Owner always has access
+        if self.user_id == user:
+            return True
+        
+        # Admin always has access
+        if user.has_group('base.group_system'):
+            return True
+        
+        # Directly shared
+        if user.id in self.share_line_ids.mapped('user_id').ids:
+            return True
+        
+        # Check if in a shared folder (recursive check)
+        if self.folder_id:
+            folder_model = self.env['custom.document.folder']
+            if hasattr(folder_model, '_check_user_has_access'):
+                return self.folder_id._check_user_has_access(user)
+        
+        return False
 
     # -------------------------------------------------------------------------
     # CRUD
@@ -315,7 +374,6 @@ class CustomDocument(models.Model):
                         vals['mimetype'] = mt
         return super().create(vals_list)
     
-
     def _is_editor(self):
         """Who can edit this document? Owner, Admin, or explicitly shared user."""
         self.ensure_one()
@@ -329,7 +387,7 @@ class CustomDocument(models.Model):
         if self.user_id.id == user.id:
             return True
 
-        # Anyone explicitly shared on this doc (since your sharing model has no per-line permission flag)
+        # Anyone explicitly shared on this doc
         if user.id in self.share_line_ids.mapped('user_id').ids:
             return True
 
@@ -351,7 +409,6 @@ class CustomDocument(models.Model):
                     vals['mimetype'] = mt
         return super().write(vals)
 
-   
     # -------------------------------------------------------------------------
     # Actions
     # -------------------------------------------------------------------------
@@ -562,130 +619,20 @@ class CustomDocument(models.Model):
             },
         }
 
-    # -------------------------------------------------------------------------
-    # Module init: ensure seed folders
-    # -------------------------------------------------------------------------
-    @api.model
-    def init(self):
-        """Initialize the folder structure on module installation."""
-        super().init()
-        company = self.env.company
-        Folder = self.env['custom.document.folder'].sudo()
-        Folder._get_company_root(company)
-        Folder._ensure_default_company_children(company)
-        if 'hr.employee' in self.env:
-            employees = self.env['hr.employee'].search([('company_id', '=', company.id)])
-            for emp in employees:
-                Folder._ensure_employee_folder(emp)
-
-    # -------------------------------------------------------------------------
-    # Virtual folder membership + Search helpers
-    # -------------------------------------------------------------------------
-    @api.depends('user_id', 'write_date', 'active', 'message_partner_ids', 'share_line_ids', 'share_access')
-    def _compute_virtual_folder_ids(self):
-        """Compute which virtual folders this document belongs to."""
-        VirtualFolder = self.env['custom.document.folder'].sudo()
-
-        my_drive_folder = VirtualFolder.search([('virtual_type', '=', 'my_drive')], limit=1)
-        shared_folder = VirtualFolder.search([('virtual_type', '=', 'shared')], limit=1)
-        recent_folder = VirtualFolder.search([('virtual_type', '=', 'recent')], limit=1)
-        trash_folder = VirtualFolder.search([('virtual_type', '=', 'trash')], limit=1)
-
-        uid = self.env.uid
-        partner_id = self.env.user.partner_id.id
-        seven_days_ago = fields.Datetime.now() - timedelta(days=7)
-
-        for doc in self:
-            vf = []
-            
-            # My Drive: all documents I own (active only)
-            if doc.user_id.id == uid and doc.active and my_drive_folder:
-                vf.append(my_drive_folder.id)
-            
-            # Shared with Me: (via lines or internal) but not owner (active only)
-            is_shared_internally = doc.share_access in ('internal_view', 'internal_edit')
-            is_shared_directly = uid in doc.share_line_ids.user_id.ids
-            
-            if (is_shared_internally or is_shared_directly) and (doc.user_id.id != uid) and doc.active and shared_folder:
-                vf.append(shared_folder.id)
-            
-            # Recent: modified in last 7 days (active only)
-            if (doc.write_date and doc.write_date >= seven_days_ago) and doc.active and recent_folder:
-                vf.append(recent_folder.id)
-            
-            # Trash: inactive documents
-            if not doc.active and trash_folder:
-                vf.append(trash_folder.id)
-            
-            doc.virtual_folder_ids = [(6, 0, vf)]
-
-    def _search_is_recent(self, operator, value):
-        """True if write_date is within the last 7 days (active only)."""
-        if operator not in ('=', '=='):
-            return []
-        seven_days_ago = fields.Datetime.now() - timedelta(days=7)
-        if value:
-            return [('write_date', '>=', seven_days_ago), ('active', '=', True)]
-        return ['|', ('write_date', '=', False), ('write_date', '<', seven_days_ago)]
-
-    def _search_shared_with_me(self, operator, value):
-        """True if current user is shared (directly or internal) but not the owner (active)."""
-        if operator not in ('=', '=='):
-            return []
-        uid = self.env.uid
-        
-        # This is the domain for "Shared with me"
-        shared_domain = [
-            '|',
-                ('share_line_ids.user_id', '=', uid),
-                ('share_access', 'in', ['internal_view', 'internal_edit']),
-            ('user_id', '!=', uid),
-            ('active', '=', True)
-        ]
-        
-        if value:
-            return shared_domain
-        else:
-            # Return the negation of the domain
-            return ['!'] + shared_domain
-
-
-    # -------------------------------------------------------------------------
-    # Access Control
-    # -------------------------------------------------------------------------
-    def check_access_rights(self, operation, raise_exception=True):
-        """Allow read access for shared documents"""
-        res = super().check_access_rights(operation, raise_exception)
-        if operation == 'read':
-            return True  # Read access handled by record rules
-        return res
-
-    def _check_can_access(self):
-        """Check if current user can access this document"""
+    def action_rename(self):
         self.ensure_one()
-        user = self.env.user
-        
-        # Owner always has access
-        if self.user_id == user:
-            return True
-        
-        # Admin always has access
-        if user.has_group('base.group_system'):
-            return True
-        
-        # Directly shared
-        if user.id in self.share_line_ids.mapped('user_id').ids:
-            return True
-        
-        # Check if in a shared folder (recursive check)
-        if self.folder_id:
-            return self.folder_id._check_user_has_access(user)
-        
-        return False
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Rename Document'),
+            'res_model': 'custom.document.rename.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {
+                'default_document_id': self.id,
+                'default_new_name': self.name,
+            },
+        }
 
-    # -------------------------------------------------------------------------
-    # SHARE METHODS
-    # -------------------------------------------------------------------------
     def action_share_document(self):
         """Open share wizard"""
         self.ensure_one()
@@ -703,7 +650,6 @@ class CustomDocument(models.Model):
     def action_open_upload_wizard(self):
         """Open the document upload wizard prefilled with this record."""
         self.ensure_one()
-        # If your XML ids differ, adjust the .ref() below.
         view = self.env.ref('custom_documents.view_custom_document_upload_wizard_form')
         return {
             'type': 'ir.actions.act_window',
@@ -723,7 +669,3 @@ class CustomDocument(models.Model):
                 'default_description': self.description,
             },
         }
-
-
-
- 

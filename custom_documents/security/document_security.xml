@@ -1,52 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <data>
-        <!-- FIXED: Access rule that shows only documents user owns or has been shared with -->
-        <record id="custom_document_access_rule" model="ir.rule">
-            <field name="name">Custom Document: User Access</field>
-            <field name="model_id" ref="model_custom_document"/>
-            <field name="groups" eval="[(4, ref('base.group_user'))]"/>
-            <field name="perm_read" eval="True"/>
-            <field name="perm_write" eval="True"/>
-            <field name="perm_create" eval="True"/>
-            <field name="perm_unlink" eval="True"/>
-            <field name="domain_force">
-                ['|', '|',
-                    ('user_id', '=', user.id),
-                    ('share_line_ids.user_id', '=', user.id),
-                    ('share_access', 'in', ['internal_view', 'internal_edit'])
-                ]
-            </field>
-        </record>
-        
-        <!-- Admin bypass rule (optional - admins see everything) -->
-        <record id="custom_document_admin_access_rule" model="ir.rule">
-            <field name="name">Custom Document: Admin Full Access</field>
-            <field name="model_id" ref="model_custom_document"/>
-            <field name="groups" eval="[(4, ref('base.group_system'))]"/>
-            <field name="perm_read" eval="True"/>
-            <field name="perm_write" eval="True"/>
-            <field name="perm_create" eval="True"/>
-            <field name="perm_unlink" eval="True"/>
-            <field name="domain_force">[(1, '=', 1)]</field>
-        </record>
-        
-        <!-- Folder access rule - users see folders in their companies -->
-        <record id="custom_document_folder_access_rule" model="ir.rule">
-            <field name="name">Custom Folder: User Access</field>
-            <field name="model_id" ref="model_custom_document_folder"/>
-            <field name="groups" eval="[(4, ref('base.group_user'))]"/>
-            <field name="perm_read" eval="True"/>
-            <field name="perm_write" eval="True"/>
-            <field name="perm_create" eval="True"/>
-            <field name="perm_unlink" eval="True"/>
-            <field name="domain_force">
-                ['|', '|',
-                    ('is_virtual', '=', True),
-                    ('company_id', '=', False),
-                    ('company_id', 'in', company_ids)
-                ]
-            </field>
-        </record>
-    </data>
+  <data noupdate="1">
+
+    <!-- Documents: owner OR directly shared OR internal -->
+    <record id="custom_document_access_rule" model="ir.rule">
+      <field name="name">Custom Document: User Access</field>
+      <field name="model_id" ref="model_custom_document"/>
+      <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+      <field name="perm_read" eval="True"/>
+      <field name="perm_write" eval="True"/>
+      <field name="perm_create" eval="True"/>
+      <field name="perm_unlink" eval="True"/>
+      <field name="domain_force">
+        ['|','|',
+          ('user_id', '=', user.id),
+          ('share_line_ids.user_id', '=', user.id),
+          ('share_access', '=', 'internal')
+        ]
+      </field>
+    </record>
+
+    <!-- Admin bypass (see everything) -->
+    <record id="custom_document_admin_access_rule" model="ir.rule">
+      <field name="name">Custom Document: Admin Full Access</field>
+      <field name="model_id" ref="model_custom_document"/>
+      <field name="groups" eval="[(4, ref('base.group_system'))]"/>
+      <field name="perm_read" eval="True"/>
+      <field name="perm_write" eval="True"/>
+      <field name="perm_create" eval="True"/>
+      <field name="perm_unlink" eval="True"/>
+      <field name="domain_force">[(1, '=', 1)]</field>
+    </record>
+
+    <!-- Folders: company-aware (False OR in user's companies) -->
+    <record id="custom_document_folder_access_rule" model="ir.rule">
+      <field name="name">Custom Folder: User Access</field>
+      <field name="model_id" ref="model_custom_document_folder"/>
+      <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+      <field name="perm_read" eval="True"/>
+      <field name="perm_write" eval="True"/>
+      <field name="perm_create" eval="True"/>
+      <field name="perm_unlink" eval="True"/>
+      <field name="domain_force">
+        ['|',
+          ('company_id', '=', False),
+          ('company_id', 'in', user.company_ids.ids)
+        ]
+      </field>
+    </record>
+
+  </data>
 </odoo>

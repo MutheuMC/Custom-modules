@@ -80,18 +80,12 @@
                 <button name="action_share_folder" 
                         type="object" 
                         title="Share Folder"
-                        icon="fa-share" 
-                        
-                        invisible="is_virtual"/>
+                        icon="fa-share"/>
                 
                 <button name="action_menu_rename" 
                         type="object" 
                         title="Rename Folder"
-                        icon="fa-pencil" 
-                        invisible="is_virtual"/>
-                
-                <!-- Hidden fields for invisible conditions -->
-                <field name="is_virtual" column_invisible="1"/>
+                        icon="fa-pencil"/>
                 
               
             </list>
@@ -118,8 +112,7 @@
                             type="object" 
                             string="Share"
                             class="btn-secondary"
-                            icon="fa-share-alt"
-                            invisible="is_virtual"/>
+                            icon="fa-share-alt"/>
                 </header>
                 
                 <sheet>
@@ -139,7 +132,7 @@
                                 type="object"
                                 class="oe_stat_button"
                                 icon="fa-share-alt"
-                                invisible="not is_shared or is_virtual">
+                                invisible="not is_shared">
                             <div class="o_field_widget o_stat_info">
                                 <span class="o_stat_text">Shared</span>
                             </div>
@@ -158,13 +151,11 @@
                         <group string="Organization">
                             <field name="parent_id" 
                                    options="{'no_create': True}"
-                                   invisible="is_virtual or is_company_root"/>
+                                   invisible="is_company_root"/>
                             <field name="sequence"/>
                             <field name="complete_name" readonly="1"/>
-                            <field name="is_virtual" invisible="1"/>
                             <field name="is_company_root" invisible="1"/>
                             <field name="is_employees_root" invisible="1"/>
-                            <field name="virtual_type" invisible="1"/>
                         </group>
                         
                         <group string="Access">
@@ -202,9 +193,7 @@
                         </page>
                         
                         <!-- Sharing Tab -->
-                        <page string="Sharing" 
-                              name="sharing" 
-                              invisible="is_virtual">
+                        <page string="Sharing" name="sharing">
                             <group string="People with Access" 
                                    invisible="not share_ids">
                                 <field name="share_ids" nolabel="1">
@@ -261,7 +250,7 @@
                 <separator/>
                 <filter string="My Folders" 
                         name="my_folders"
-                        domain="[('user_id', '=', uid), ('is_virtual', '=', False)]"/>
+                        domain="[('user_id', '=', uid)]"/>
                 
                 <filter string="Company Folders" 
                         name="company_folders"
@@ -274,7 +263,7 @@
                 <separator/>
                 <filter string="Root Folders" 
                         name="root_folders"
-                        domain="[('parent_id', '=', False), ('is_virtual', '=', False)]"/>
+                        domain="[('parent_id', '=', False)]"/>
                 
                 <!-- Group By -->
                 <group expand="0" string="Group By">
@@ -317,7 +306,6 @@
                       (0, 0, {'view_mode': 'list', 'view_id': ref('view_custom_document_folder_list_enhanced')}),
                       (0, 0, {'view_mode': 'form', 'view_id': ref('view_custom_document_folder_form')})]"/>
         <field name="search_view_id" ref="view_custom_document_folder_search"/>
-        <field name="domain">[('is_virtual', '=', False)]</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
                 Create your first folder

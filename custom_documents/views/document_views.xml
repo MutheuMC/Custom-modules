@@ -56,7 +56,7 @@
                             type="object"
                             string=" "
                             title="Rename"
-                            icon=" fa-pencil"/>
+                            icon="fa-solid fa-pencil"/>
                 <button name="action_download"
                             type="object"
                             string=" "
@@ -316,41 +316,68 @@
         <field name="model">custom.document</field>
         <field name="arch" type="xml">
             <search string="Search Documents">
-                <field name="name" string="Document" filter_domain="['|', ('name', 'ilike', self), ('description', 'ilike', self)]"/>
+                <field name="name" string="Document" 
+                       filter_domain="['|', ('name', 'ilike', self), ('description', 'ilike', self)]"/>
                 <field name="folder_id"/>
                 <field name="user_id"/>
                 <field name="tag_ids"/>
 
-                <!-- Filters for virtual folders -->
+                <!-- IMPORTANT: These filters must match the filter names in JS -->
                 <filter string="My Drive" name="my_drive"
                         domain="[('user_id', '=', uid), ('active', '=', True)]"/>
+                        
                 <filter string="Shared with me" name="shared_with_me"
-                        domain="[('message_follower_ids.partner_id.user_ids', 'in', [uid]), ('user_id', '!=', uid), ('active', '=', True)]"/>
+                        domain="['|', ('share_line_ids.user_id', '=', uid), ('share_access', '=', 'internal'), ('user_id', '!=', uid), ('active', '=', True)]"/>
+                        
                 <filter string="Recent" name="recent"
                         domain="[('write_date', '&gt;=', (context_today() - datetime.timedelta(days=7)).strftime('%Y-%m-%d')), ('active', '=', True)]"/>
+                        
+                <filter string="Starred" name="starred"
+                        domain="[('is_starred', '=', True), ('active', '=', True)]"/>
+                        
                 <filter string="Trash" name="trash"
                         domain="[('active', '=', False)]"
                         context="{'active_test': False}"/>
 
+                <separator/>
+                
+                <!-- Type filters -->
+                <filter string="PDFs" name="filter_pdf"
+                        domain="[('file_kind', '=', 'pdf')]"/>
+                <filter string="Files" name="filter_file"
+                        domain="[('file_kind', '=', 'file')]"/>
+                <filter string="Links" name="filter_url"
+                        domain="[('document_type', '=', 'url')]"/>
+
                 <group expand="0" string="Group By">
-                    <filter string="Type"          name="type"   context="{'group_by': 'document_type'}"/>
-                    <filter string="Folder"        name="folder" context="{'group_by': 'folder_id'}"/>
-                    <filter string="Owner"         name="owner"  context="{'group_by': 'user_id'}"/>
+                    <filter string="Type" name="type" context="{'group_by': 'document_type'}"/>
+                    <filter string="Folder" name="folder" context="{'group_by': 'folder_id'}"/>
+                    <filter string="Owner" name="owner" context="{'group_by': 'user_id'}"/>
                     <filter string="Creation Date" name="create" context="{'group_by': 'create_date:month'}"/>
                 </group>
 
-                <!-- LEFT SIDEBAR with Hierarchical Folders -->
+                <!-- LEFT SIDEBAR with Virtual Folders + Physical Folders -->
                 <searchpanel>
+                    <!-- Virtual folders will be injected here by JS -->
+                    
+                    <!-- Physical Folders (Hierarchical) -->
                     <field name="folder_id"
-                           string=""
+                           string="Folders"
                            select="one"
                            icon="fa-folder-o"
                            enable_counters="1"
                            expand="1"
-                           hierarchize="1"
-                           context="{'searchpanel_default_folder_id': self}"/>
-                </searchpanel>
+                           hierarchize="1"/>
 
+                    <!-- <field name="sidebar_category"
+                               string="Quick Access"
+                               select="one"
+                               icon="fa-filter"
+                               enable_counters="1"/> -->
+                    
+                    <!-- Tags (Multi-select) -->
+                   
+                </searchpanel>
             </search>
         </field>
     </record>

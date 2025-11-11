@@ -1,6 +1,6 @@
 {
     'name': 'Documents Management File System',
-    'version': '18.0.26.2.8',
+    'version': '18.0.27.6.9',
     'category': 'Document Management',
     'summary': 'Custom Document Management System with Enhanced Folder Navigation',
     'depends': ['base', 'web', 'mail', 'hr'],
@@ -11,7 +11,7 @@
         'views/document_upload_wizard_views.xml',
         'views/folder_wizard_views.xml',
         'views/folder_rename_wizard_views.xml',
-        'views/folder_upload_wizard_views.xml',  # NEW: Folder upload with documents
+        'views/folder_upload_wizard_views.xml',
         'views/preview_wizard_views.xml',
         'views/actions_wizard_views.xml',      
         'views/rename_wizard_views.xml',        
@@ -20,6 +20,7 @@
         'views/document_list_actions.xml',
         'views/folder_management_views.xml',
         'views/menu.xml',
+       
         'views/share_views.xml',
     ],
     'assets': {
@@ -29,12 +30,16 @@
             'custom_documents/static/src/scss/custom_documents.scss',
             'custom_documents/static/src/xml/custom_document_list_buttons.xml',
             'custom_documents/static/src/scss/custom_docs.scss',
-            'custom_documents/static/src/scss/custom_folder_list.scss',  # NEW
+            'custom_documents/static/src/scss/custom_folder_list.scss',
             'custom_documents/static/src/js/document_list_hover.js', 
             'custom_documents/static/src/scss/share_wizard.scss',
+            'custom_documents/static/src/js/custom_searchpanel.js',
+            'custom_documents/static/src/scss/custom_searchpanel.scss',
+        ],
+        "web.assets_qweb": [
+              'custom_documents/static/src/xml/custom_searchpanel.xml',
         ],
     },
-    'controllers': ['controllers/document_controller.py'],
     'installable': True,
     'application': True,
     'license': 'LGPL-3',
