@@ -6,10 +6,10 @@
               sequence="10"
               web_icon="custom_documents,static/description/icon.png"/>
 
-    <!-- ==================================
-         SMART FILTER ACTIONS (Google Drive Style)
-         ================================== -->
-    
+    <!-- ==============================
+         ACTIONS
+         ============================== -->
+
     <!-- My Drive Action -->
     <record id="action_my_drive" model="ir.actions.act_window">
         <field name="name">My Drive</field>
@@ -18,9 +18,7 @@
         <field name="domain">[('user_id', '=', uid), ('active', '=', True)]</field>
         <field name="context">{'search_default_my_drive': 1}</field>
         <field name="help" type="html">
-            <p class="o_view_nocontent_smiling_face">
-                Your drive is empty
-            </p>
+            <p class="o_view_nocontent_smiling_face">Your drive is empty</p>
             <p>Upload your first document to get started.</p>
         </field>
     </record>
@@ -30,12 +28,11 @@
         <field name="name">Shared with Me</field>
         <field name="res_model">custom.document</field>
         <field name="view_mode">list,form</field>
+        <!-- keep your domain/context as you had -->
         <field name="domain">['|', ('share_line_ids.user_id', '=', uid), ('share_access', '=', 'internal'), ('user_id', '!=', uid), ('active', '=', True)]</field>
         <field name="context">{'search_default_shared_with_me': 1}</field>
         <field name="help" type="html">
-            <p class="o_view_nocontent_smiling_face">
-                No shared documents
-            </p>
+            <p class="o_view_nocontent_smiling_face">No shared documents</p>
             <p>Documents shared with you will appear here.</p>
         </field>
     </record>
@@ -48,9 +45,7 @@
         <field name="domain">[('active', '=', True)]</field>
         <field name="context">{'search_default_recent': 1}</field>
         <field name="help" type="html">
-            <p class="o_view_nocontent_smiling_face">
-                No recent documents
-            </p>
+            <p class="o_view_nocontent_smiling_face">No recent documents</p>
             <p>Recently modified documents will appear here.</p>
         </field>
     </record>
@@ -62,9 +57,7 @@
         <field name="view_mode">list,form</field>
         <field name="domain">[('active', '=', True)]</field>
         <field name="help" type="html">
-            <p class="o_view_nocontent_smiling_face">
-                Create your first document
-            </p>
+            <p class="o_view_nocontent_smiling_face">Create your first document</p>
             <p>Upload files or create URL links to organize your documents.</p>
         </field>
     </record>
@@ -77,9 +70,7 @@
         <field name="domain">[('active', '=', False)]</field>
         <field name="context">{'active_test': False, 'search_default_trash': 1}</field>
         <field name="help" type="html">
-            <p class="o_view_nocontent_smiling_face">
-                Trash is empty
-            </p>
+            <p class="o_view_nocontent_smiling_face">Trash is empty</p>
             <p>Deleted documents will appear here.</p>
         </field>
     </record>
@@ -90,67 +81,67 @@
         <field name="res_model">custom.document.tag</field>
         <field name="view_mode">list,form</field>
         <field name="help" type="html">
-            <p class="o_view_nocontent_smiling_face">
-                Create your first tag
-            </p>
+            <p class="o_view_nocontent_smiling_face">Create your first tag</p>
             <p>Tags help you organize and categorize documents.</p>
         </field>
     </record>
 
-    <!-- ==================================
-         MENU ITEMS
-         ================================== -->
-    
-    <!-- My Drive Menu -->
+    <!-- ==============================
+         MENU ITEMS (ORDERED)
+         ============================== -->
+
+    <!-- 1) All Documents -->
+    <menuitem id="menu_all_documents"
+              name="All Documents"
+              parent="menu_documents_root"
+              action="action_custom_document"
+              sequence="1"/>
+
+    <!-- 2) My Drive -->
     <menuitem id="menu_my_drive"
               name="My Drive"
               parent="menu_documents_root"
               action="action_my_drive"
-              sequence="1"/>
-
-    <!-- Shared with Me Menu -->
-    <menuitem id="menu_shared_with_me"
-              name="Shared with Me"
-              parent="menu_documents_root"
-              action="action_shared_with_me"
               sequence="2"/>
 
-    <!-- Recent Menu -->
+    <!-- 3) Recent -->
     <menuitem id="menu_recent"
               name="Recent"
               parent="menu_documents_root"
               action="action_recent"
               sequence="3"/>
 
-    <!-- All Documents Menu -->
-    <menuitem id="menu_all_documents"
-              name="All Documents"
+    <!-- 4) Shared with Me -->
+    <menuitem id="menu_shared_with_me"
+              name="Shared with Me"
               parent="menu_documents_root"
-              action="action_custom_document"
-              sequence="10"/>
+              action="action_shared_with_me"
+              sequence="4"/>
 
-    <!-- Manage Folders Menu -->
-    <menuitem id="menu_custom_document_folders" 
-              name="Manage Folders" 
-              parent="menu_documents_root" 
-              action="action_custom_document_folder_manage" 
-              sequence="20"/>
-
-    <!-- Trash Menu -->
+      <!-- 6) Trash -->
     <menuitem id="menu_trash"
               name="Trash"
               parent="menu_documents_root"
               action="action_trash"
-              sequence="40"/>
+              sequence="6"/>
 
-    <!-- Configuration Menu -->
+    <!-- 5) Manage Folders -->
+    <menuitem id="menu_custom_document_folders"
+              name="Manage Folders"
+              parent="menu_documents_root"
+              action="action_custom_document_folder_manage"
+              sequence="5"/>
+
+  
+
+    <!-- 7) Configuration -->
     <menuitem id="menu_documents_config"
               name="Configuration"
               parent="menu_documents_root"
               sequence="100"
               groups="base.group_system"/>
 
-    <!-- Tags Menu -->
+    <!-- Tags under Configuration -->
     <menuitem id="menu_document_tags"
               name="Tags"
               parent="menu_documents_config"

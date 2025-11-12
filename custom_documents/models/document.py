@@ -117,7 +117,28 @@ class CustomDocument(models.Model):
         search='_search_sidebar_category'  # This is the magic part
     )
 
+    write_datetime_display = fields.Char(
+        string='Last Updated on',
+        compute='_compute_write_datetime_display',
+        readonly=True
+    )
 
+    @staticmethod
+    def _ordinal(n):
+        # 1st, 2nd, 3rd, 4th...
+        return f"{n}{'th' if 11 <= (n % 100) <= 13 else {1:'st', 2:'nd', 3:'rd'}.get(n % 10, 'th')}"
+
+    @api.depends('write_date')
+    def _compute_write_datetime_display(self):
+        for rec in self:
+            if not rec.write_date:
+                rec.write_datetime_display = False
+                continue
+            # Convert server UTC write_date to user's timezone
+            local_dt = fields.Datetime.context_timestamp(rec, rec.write_date)
+            day = self._ordinal(local_dt.day)
+            # Example: "3rd Oct 2025 05:11"
+            rec.write_datetime_display = f"{day} {local_dt.strftime('%b %Y %H:%M')}"
     
 
 

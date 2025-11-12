@@ -20,7 +20,6 @@
         'views/document_list_actions.xml',
         'views/folder_management_views.xml',
         'views/menu.xml',
-       
         'views/share_views.xml',
     ],
     'assets': {
@@ -33,12 +32,10 @@
             'custom_documents/static/src/scss/custom_folder_list.scss',
             'custom_documents/static/src/js/document_list_hover.js', 
             'custom_documents/static/src/scss/share_wizard.scss',
-            'custom_documents/static/src/js/custom_searchpanel.js',
-            'custom_documents/static/src/scss/custom_searchpanel.scss',
+          
+           
         ],
-        "web.assets_qweb": [
-              'custom_documents/static/src/xml/custom_searchpanel.xml',
-        ],
+    
     },
     'installable': True,
     'application': True,

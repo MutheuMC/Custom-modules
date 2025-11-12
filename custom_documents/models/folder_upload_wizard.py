@@ -149,17 +149,23 @@ class FolderUploadWizard(models.TransientModel):
                 _logger.info(f"Processing ZIP with {len(file_list)} items")
                 
                 for file_path in file_list:
-                    # Skip directories and hidden files
-                    if file_path.endswith('/') or file_path.startswith('.') or '/.':
-                        continue
+                    # --- THIS IS THE FIX ---
+                    # Skip directories and system files (like .DS_Store or __MACOSX)
+                    is_dir = file_path.endswith('/')
+                    is_system_file = (
+                        file_path.startswith('.') or 
+                        '/.' in file_path or 
+                        '__MACOSX' in file_path
+                    )
                     
+                    if is_dir or is_system_file:
+                        _logger.info(f"Skipping system file or directory: {file_path}")
+                        continue
+                    # --- END OF FIX ---
+                        
                     # Get file info
                     filename = os.path.basename(file_path)
                     folder_path = os.path.dirname(file_path)
-                    
-                    # Skip __MACOSX and other system folders
-                    if '__MACOSX' in file_path or '.DS_Store' in file_path:
-                        continue
                     
                     # Create folder structure if enabled
                     target_folder = self.parent_folder_id
@@ -171,12 +177,14 @@ class FolderUploadWizard(models.TransientModel):
                     
                     # Create document
                     self._create_document(filename, file_data, target_folder, folder_path)
-                    
+                        
         except zipfile.BadZipFile:
             raise UserError(_('Invalid ZIP file. Please upload a valid ZIP archive.'))
         except Exception as e:
             _logger.error(f"Error processing ZIP file: {str(e)}")
             raise UserError(_('Error processing ZIP file: %s') % str(e))
+                    
+                   
 
     def _process_multiple_files(self):
         """Process multiple uploaded files"""
@@ -237,6 +245,7 @@ class FolderUploadWizard(models.TransientModel):
                         'view_mode': 'list,form',
                         'domain': [('folder_id', '=', self.parent_folder_id.id if self.parent_folder_id else False)],
                         'context': {'default_folder_id': self.parent_folder_id.id if self.parent_folder_id else False},
+                        'target': 'current',
                     }
                 }
             }

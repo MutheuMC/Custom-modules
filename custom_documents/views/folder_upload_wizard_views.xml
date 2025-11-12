@@ -50,31 +50,8 @@
                                     <field name="zip_filename" invisible="1"/>
                                 </group>
                                 <group>
-                                    <div class="alert alert-success">
-                                        <h5><i class="fa fa-lightbulb-o me-2"/>Tips for ZIP Upload:</h5>
-                                        <ul class="mb-0">
-                                            <li>ZIP file can contain folders and subfolders</li>
-                                            <li>All file types are supported</li>
-                                            <li>Folder structure will be preserved</li>
-                                            <li>Hidden files (starting with .) are skipped</li>
-                                            <li>System folders (__MACOSX, .DS_Store) are ignored</li>
-                                        </ul>
-                                    </div>
+                                   
                                 </group>
-                            </group>
-                            
-                            <group string="Example ZIP Structure">
-                                <div class="text-muted small">
-                                    <pre style="background: #f8f9fa; padding: 1rem; border-radius: 4px;">
-my-folder.zip
-├── Documents/
-│   ├── report.pdf
-│   └── presentation.pptx
-├── Images/
-│   ├── photo1.jpg
-│   └── photo2.png
-└── readme.txt</pre>
-                                </div>
                             </group>
                         </page>
 
