@@ -2,7 +2,7 @@ from odoo import models, fields, api, _
 from odoo.exceptions import ValidationError
 
 EMPLOYEE_DEFAULT_CHILDREN = ["Contracts"]
-COMPANY_DEFAULT_CHILDREN = ["Finance", "Legal", "Marketing", "Admin", "Inbox"]
+COMPANY_DEFAULT_CHILDREN = ["Projects", "Equipment", "Finance", "Marketing", "Admin", "Inbox"]
 
 
 class DocumentFolder(models.Model):

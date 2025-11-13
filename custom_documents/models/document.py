@@ -108,14 +108,6 @@ class CustomDocument(models.Model):
         store=True
     )
 
-    sidebar_category = fields.Selection(
-        [('my', 'My Drive'),
-         ('shared', 'Shared with Me'),
-         ('recent', 'Recent'),
-         ('trash', 'Trash')],  # We can add Trash back in!
-        string="Filter",
-        search='_search_sidebar_category'  # This is the magic part
-    )
 
     write_datetime_display = fields.Char(
         string='Last Updated on',
@@ -289,43 +281,6 @@ class CustomDocument(models.Model):
         
         return False
 
-    def _search_sidebar_category(self, operator, value):
-        user_id = self.env.uid
-        
-        # We only support clicking one filter at a time (operator='=')
-        if operator != '=':
-            return []
-        
-        # DOMAIN FOR "MY DRIVE"
-        if value == 'my':
-            # This domain comes from your action_my_drive
-            return [('user_id', '=', user_id), ('active', '=', True)]
-        
-        # DOMAIN FOR "SHARED WITH ME"
-        if value == 'shared':
-            # This domain comes from your action_shared_with_me
-            return [
-                '|', ('share_line_ids.user_id', '=', user_id), 
-                     ('share_access', '=', 'internal'), 
-                ('user_id', '!=', user_id), 
-                ('active', '=', True)
-            ]
-            
-        # DOMAIN FOR "RECENT"
-        if value == 'recent':
-            # This domain comes from your 'recent' filter in document_views.xml
-            domain_date = (fields.Date.context_today(self) - timedelta(days=7)).strftime('%Y-%m-%d')
-            return [('write_date', '>=', domain_date), ('active', '=', True)]
-            
-        # DOMAIN FOR "TRASH"
-        if value == 'trash':
-            # This domain comes from your action_trash
-            # We must also add active_test=False to the context
-            self.env.context = dict(self.env.context, active_test=False)
-            return [('active', '=', False)]
-        
-        # Fallback
-        return []
 
     @api.model
     def search(self, args, offset=0, limit=None, order=None, count=False):

@@ -1,142 +1,801 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <data noupdate="1">
-        
-        <!-- Demo Categories -->
-        <record id="category_monitors" model="equipment.category">
-            <field name="name">Monitors</field>
-            <field name="code">MON</field>
-            <field name="requires_approval" eval="False"/>
-            <field name="max_borrow_days">14</field>
-            <field name="sequence">10</field>
-        </record>
+  <data noupdate="1">
 
-        <record id="category_plc" model="equipment.category">
-            <field name="name">PLCs and Controllers</field>
-            <field name="code">PLC</field>
-            <field name="requires_approval" eval="True"/>
-            <field name="max_borrow_days">7</field>
-            <field name="sequence">20</field>
-        </record>
+    <record id="location_main_store" model="equipment.location">
+      <field name="name">Main Store</field>
+      <field name="code">STORE</field>
+    </record>
 
-        <record id="category_instruments" model="equipment.category">
-            <field name="name">Laboratory Instruments</field>
-            <field name="code">INST</field>
-            <field name="requires_approval" eval="True"/>
-            <field name="max_borrow_days">7</field>
-            <field name="sequence">30</field>
-        </record>
+    <record id="cat_furniture" model="equipment.category"><field name="name">Furniture</field><field name="code">FUR</field></record>
+    <record id="cat_screens" model="equipment.category"><field name="name">Screens</field><field name="code">SCR</field></record>
+    <record id="cat_monitor" model="equipment.category"><field name="name">Monitor</field><field name="code">MON</field></record>
+    <record id="cat_mouse" model="equipment.category"><field name="name">Mouse</field><field name="code">MOS</field></record>
+    <record id="cat_keyboards" model="equipment.category"><field name="name">Keyboards</field><field name="code">KEB</field></record>
+    <record id="cat_headsets" model="equipment.category"><field name="name">Headsets</field><field name="code">HST</field></record>
+    <record id="cat_cpu" model="equipment.category"><field name="name">CPU</field><field name="code">CPU</field></record>
+    <record id="cat_routers" model="equipment.category"><field name="name">Routers</field><field name="code">RTR</field></record>
+    <record id="cat_ufactory" model="equipment.category"><field name="name">Ufactory</field><field name="code">UFA</field></record>
+    <record id="cat_comunication_cables" model="equipment.category"><field name="name">Comunication cables</field><field name="code">CABLES</field></record>
+    <record id="cat_power_cables" model="equipment.category"><field name="name">Power cables</field><field name="code">PCBL</field></record>
+    <record id="cat_extentions" model="equipment.category"><field name="name">Extentions</field><field name="code">EXTS</field></record>
+    <record id="cat_ups" model="equipment.category"><field name="name">UPS</field><field name="code">UPS</field></record>
+    <record id="cat_printer" model="equipment.category"><field name="name">Printer</field><field name="code">PRN</field></record>
+    <record id="cat_siemens_scalance" model="equipment.category"><field name="name">Siemens Scalance</field><field name="code">SIS</field></record>
+    <record id="cat_siemens_power_supply" model="equipment.category"><field name="name">Siemens Power supply</field><field name="code">SISPS</field></record>
+    <record id="cat_siemens_plc" model="equipment.category"><field name="name">Siemens PLC</field><field name="code">SPLC</field></record>
+    <record id="cat_siemens_analogue_module" model="equipment.category"><field name="name">Siemens Analogue Module</field><field name="code">SAM</field></record>
+    <record id="cat_siemens_iot_2040" model="equipment.category"><field name="name">Siemens iot 2040</field><field name="code">SIOT</field></record>
+    <record id="cat_siemens_et_200sp" model="equipment.category"><field name="name">Siemens ET 200SP</field><field name="code">SET</field></record>
+    <record id="cat_siemens_hmi" model="equipment.category"><field name="name">Siemens HMI</field><field name="code">SHMI</field></record>
+    <record id="cat_siemens_drive" model="equipment.category"><field name="name">Siemens Drive</field><field name="code">SDR</field></record>
+    <record id="cat_siemens_as_interface_module" model="equipment.category"><field name="name">Siemens AS-Interface module</field><field name="code">SAS-M-AS</field></record>
+    <record id="cat_siemens_communication_module" model="equipment.category"><field name="name">Siemens Communication module</field><field name="code">SAS-M-COM</field></record>
+    <record id="cat_siemens_io_link_module" model="equipment.category"><field name="name">Siemens IO Link Module</field><field name="code">SIO-LM</field></record>
+    <record id="cat_siemens_miscellaneous_components" model="equipment.category"><field name="name">Siemens miscellaneous components</field><field name="code">SI-MC</field></record>
+    <record id="cat_siemens_contactors" model="equipment.category"><field name="name">Siemens Contactors</field><field name="code">SIC</field></record>
+    <record id="cat_schneider_electric_products" model="equipment.category"><field name="name">Schneider Electric products</field><field name="code">SIEPLC</field></record>
+    <record id="cat_chnt" model="equipment.category"><field name="name">CHNT</field><field name="code">CHNT</field></record>
+    <record id="cat_festo_siemens_products" model="equipment.category"><field name="name">Festo /Siemens products</field><field name="code">FSI</field></record>
+    <record id="cat_festo" model="equipment.category"><field name="name">Festo</field><field name="code">FES</field></record>
+    <record id="cat_amatrol" model="equipment.category"><field name="name">Amatrol</field><field name="code">AMT</field></record>
+    <record id="cat_custom_station" model="equipment.category"><field name="name">Custom Station</field><field name="code">CUS</field></record>
+    <record id="cat_tektronix" model="equipment.category"><field name="name">TEKTRONIX</field><field name="code">TEK</field></record>
+    <record id="cat_electrical_components" model="equipment.category"><field name="name">Electrical components</field><field name="code">ELC</field></record>
+    <record id="cat_cameras" model="equipment.category"><field name="name">Cameras</field><field name="code">CAM</field></record>
+    <record id="cat_electro_mechanical_components" model="equipment.category"><field name="name">Electro-mechanical components</field><field name="code">EL-MC</field></record>
+    <record id="cat_chemical_reagents" model="equipment.category"><field name="name">Chemical reagents</field><field name="code">CHR</field></record>
+    <record id="cat_3d_printer" model="equipment.category"><field name="name">3D printer</field><field name="code">3DP</field></record>
+    <record id="cat_tools" model="equipment.category"><field name="name">Tools</field><field name="code">TOL</field></record>
 
-        <record id="category_power" model="equipment.category">
-            <field name="name">Power Equipment</field>
-            <field name="code">PWR</field>
-            <field name="requires_approval" eval="False"/>
-            <field name="max_borrow_days">30</field>
-            <field name="sequence">40</field>
-        </record>
+    <record id="item_08f83k4w600435e" model="equipment.item">
+      <field name="name">Samsung smart tv</field><field name="model">UA50CU7000UXTW</field><field name="serial_number">08F83K4W600435E</field>
+      <field name="category_id" ref="cat_screens"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_08f83k4w600526n" model="equipment.item">
+      <field name="name">Samsung smart tv</field><field name="model">UA50CU7000UXTW</field><field name="serial_number">08F83K4W600526N</field>
+      <field name="category_id" ref="cat_screens"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_08f83k4w300014m" model="equipment.item">
+      <field name="name">Samsung smart tv</field><field name="model">UA50CU7000UXLY</field><field name="serial_number">08F83K4W300014M</field>
+      <field name="category_id" ref="cat_screens"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_059d3k4n600187z" model="equipment.item">
+      <field name="name">Samsung smart tv</field><field name="model">UA49RU7300KXKE</field><field name="serial_number">059D3K4N600187Z</field>
+      <field name="category_id" ref="cat_screens"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_103egztk7469" model="equipment.item">
+      <field name="name">LG tv</field><field name="model">50UN7340PCV</field><field name="serial_number">103EGZTK7469</field>
+      <field name="category_id" ref="cat_screens"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_013735" model="equipment.item">
+      <field name="name">Lenovo Think Vision</field><field name="model">A22270QT0</field><field name="serial_number">013735</field>
+      <field name="category_id" ref="cat_monitor"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_013713" model="equipment.item">
+      <field name="name">Lenovo Think Vision</field><field name="model">A22270QT0</field><field name="serial_number">013713</field>
+      <field name="category_id" ref="cat_monitor"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_013719" model="equipment.item">
+      <field name="name">Lenovo Think Vision</field><field name="model">A22270QT0</field><field name="serial_number">013719</field>
+      <field name="category_id" ref="cat_monitor"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_013706" model="equipment.item">
+      <field name="name">Lenovo Think Vision</field><field name="model">A22270QT0</field><field name="serial_number">013706</field>
+      <field name="category_id" ref="cat_monitor"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_013093" model="equipment.item">
+      <field name="name">Lenovo Think Vision</field><field name="model">A22270QT0</field><field name="serial_number">013093</field>
+      <field name="category_id" ref="cat_monitor"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_004462" model="equipment.item">
+      <field name="name">Dell Monitor</field><field name="model">E1910HC</field><field name="serial_number">004462</field>
+      <field name="category_id" ref="cat_monitor"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_bzveh4zn800194x" model="equipment.item">
+      <field name="name">Samsung Monitor</field><field name="model">U28ES70D</field><field name="serial_number">BZVEH4ZN800194X</field>
+      <field name="category_id" ref="cat_monitor"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_013634" model="equipment.item">
+      <field name="name">HP 27-inch Monitor</field><field name="model">M27F</field><field name="serial_number">013634</field>
+      <field name="category_id" ref="cat_monitor"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_013630" model="equipment.item">
+      <field name="name">HP 27-inch Monitor</field><field name="model">M27F</field><field name="serial_number">013630</field>
+      <field name="category_id" ref="cat_monitor"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_013613" model="equipment.item">
+      <field name="name">HP V197 Monitor</field><field name="model">V197</field><field name="serial_number">013613</field>
+      <field name="category_id" ref="cat_monitor"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_b1m270200202747" model="equipment.item">
+      <field name="name">HP gaming mouse</field><field name="model">7ZZ87AA#UUF</field><field name="serial_number">B1M270200202747</field>
+      <field name="category_id" ref="cat_mouse"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_b1m270200202745" model="equipment.item">
+      <field name="name">HP gaming mouse</field><field name="model">7ZZ87AA#UUF</field><field name="serial_number">B1M270200202745</field>
+      <field name="category_id" ref="cat_mouse"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_flvwt0ahdh80ez" model="equipment.item">
+      <field name="name">HP mouse</field><field name="model">M54850-001</field><field name="serial_number">FLVWT0AHDH80EZ</field>
+      <field name="category_id" ref="cat_mouse"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_flvwt0ahdic0os" model="equipment.item">
+      <field name="name">HP mouse</field><field name="model">M54850-001</field><field name="serial_number">FLVWT0AHDIC0OS</field>
+      <field name="category_id" ref="cat_mouse"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_flvwt0ahdhy2b4" model="equipment.item">
+      <field name="name">HP mouse</field><field name="model">M54850-001</field><field name="serial_number">FLVWT0AHDHY2B4</field>
+      <field name="category_id" ref="cat_mouse"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_flvwt0ahdhx0gy" model="equipment.item">
+      <field name="name">HP mouse</field><field name="model">M54850-001</field><field name="serial_number">FLVWT0AHDHX0GY</field>
+      <field name="category_id" ref="cat_mouse"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_flvwt0acbge1c4" model="equipment.item">
+      <field name="name">HP mouse</field><field name="model">M54850-002</field><field name="serial_number">FLVWT0ACBGE1C4</field>
+      <field name="category_id" ref="cat_mouse"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_blvwr0btjic0os" model="equipment.item">
+      <field name="name">HP keyboard</field><field name="model">TPC-P001K</field><field name="serial_number">BLVWR0BTJIC0OS</field>
+      <field name="category_id" ref="cat_keyboards"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_9gkmkb180227514" model="equipment.item">
+      <field name="name">HP keyboard</field><field name="model">3CY44PA#AB2</field><field name="serial_number">9GKMKB180227514</field>
+      <field name="category_id" ref="cat_keyboards"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_9cq82803yg" model="equipment.item">
+      <field name="name">HP keyboard</field><field name="model">HAS-DK003K</field><field name="serial_number">9CQ82803YG</field>
+      <field name="category_id" ref="cat_keyboards"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_9cq82803yh" model="equipment.item">
+      <field name="name">HP keyboard</field><field name="model">HAS-DK003K</field><field name="serial_number">9CQ82803YH</field>
+      <field name="category_id" ref="cat_keyboards"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_9cq8280bd3" model="equipment.item">
+      <field name="name">HP keyboard</field><field name="model">HAS-DK003K</field><field name="serial_number">9CQ8280BD3</field>
+      <field name="category_id" ref="cat_keyboards"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_blvwr0btjhy2b4" model="equipment.item">
+      <field name="name">HP keyboard</field><field name="model">M54849-001</field><field name="serial_number">BLVWR0BTJHY2B4</field>
+      <field name="category_id" ref="cat_keyboards"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_blvwr0btjhx0gy" model="equipment.item">
+      <field name="name">HP keyboard</field><field name="model">M54849-001</field><field name="serial_number">BLVWR0BTJHX0GY</field>
+      <field name="category_id" ref="cat_keyboards"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_blvwr0btjg41b4" model="equipment.item">
+      <field name="name">HP keyboard</field><field name="model">M54849-002</field><field name="serial_number">BLVWR0BTJG41B4</field>
+      <field name="category_id" ref="cat_keyboards"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_cn_063y55_lo300_21i_0845_a00" model="equipment.item">
+      <field name="name">Dell keyboard</field><field name="model">KB216t1</field><field name="serial_number">CN-063Y55-LO300-21I-0845-A00</field>
+      <field name="category_id" ref="cat_keyboards"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_cn_0w7658_37172_4cm_06t2" model="equipment.item">
+      <field name="name">Dell keyboard</field><field name="model">RT7D50</field><field name="serial_number">CN-0W7658-37172-4CM-06T2</field>
+      <field name="category_id" ref="cat_keyboards"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_cn_0rx6rm_l0300_167_00wz_a04" model="equipment.item">
+      <field name="name">Dell keyboard</field><field name="model">KB216t1</field><field name="serial_number">CN-0RX6RM-L0300-167-00WZ-A04</field>
+      <field name="category_id" ref="cat_keyboards"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_2g0yc1zf8l0flb" model="equipment.item">
+      <field name="name">Oculus quest 3 headset</field><field name="model">S3A</field><field name="serial_number">2G0YC1ZF8L0FLB</field>
+      <field name="category_id" ref="cat_headsets"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_2g0yc1zfcq01pt" model="equipment.item">
+      <field name="name">Oculus quest 3 headset</field><field name="model">S3A</field><field name="serial_number">2G0YC1ZFCQ01PT</field>
+      <field name="category_id" ref="cat_headsets"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_2g0yc1zfph06qg" model="equipment.item">
+      <field name="name">Oculus quest 3 headset</field><field name="model">S3A</field><field name="serial_number">2G0YC1ZFPH06QG</field>
+      <field name="category_id" ref="cat_headsets"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_013737" model="equipment.item">
+      <field name="name">HP OMEN 45L Gaming Desktop</field><field name="model">GT22-1067C</field><field name="serial_number">013737</field>
+      <field name="category_id" ref="cat_cpu"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_013707" model="equipment.item">
+      <field name="name">HP OMEN 45L Gaming Desktop</field><field name="model">GT22-1067C</field><field name="serial_number">013707</field>
+      <field name="category_id" ref="cat_cpu"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_013731" model="equipment.item">
+      <field name="name">HP OMEN 45L Gaming Desktop</field><field name="model">GT22-1067C</field><field name="serial_number">013731</field>
+      <field name="category_id" ref="cat_cpu"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_013708" model="equipment.item">
+      <field name="name">HP OMEN 45L Gaming Desktop</field><field name="model">GT22-1067C</field><field name="serial_number">013708</field>
+      <field name="category_id" ref="cat_cpu"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_013736" model="equipment.item">
+      <field name="name">HP OMEN 45L Gaming Desktop</field><field name="model">GT22-1067C</field><field name="serial_number">013736</field>
+      <field name="category_id" ref="cat_cpu"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_8cg95005w4" model="equipment.item">
+      <field name="name">HP OMEN Obelisk Desktop</field><field name="model">TPC-W058-MT</field><field name="serial_number">8CG95005W4</field>
+      <field name="category_id" ref="cat_cpu"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_pd97265ng" model="equipment.item">
+      <field name="name">OMEN by HP Gaming Desktop</field><field name="model">TPC-M025-MT</field><field name="serial_number">PD97265NG</field>
+      <field name="category_id" ref="cat_cpu"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_tx2_rtl8821ce" model="equipment.item">
+      <field name="name">OMEN by HP Gaming Desktop</field><field name="model">TPC-M025-MT</field><field name="serial_number">TX2-RTL8821CE</field>
+      <field name="category_id" ref="cat_cpu"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_8cg1171v2t" model="equipment.item">
+      <field name="name">HP OMEN 25L Gaming Desktop</field><field name="model">GT12-0717JP</field><field name="serial_number">8CG1171V2T</field>
+      <field name="category_id" ref="cat_cpu"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_8cg0426b28" model="equipment.item">
+      <field name="name">HP OMEN 30L Gaming Desktop</field><field name="model">TPC-W058-MT</field><field name="serial_number">8CG0426B28</field>
+      <field name="category_id" ref="cat_cpu"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_008777" model="equipment.item">
+      <field name="name">HP pro 3500 series mt</field><field name="model">D5S82EA#BH5</field><field name="serial_number">008777</field>
+      <field name="category_id" ref="cat_cpu"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_012716" model="equipment.item">
+      <field name="name">Dell Core i3</field><field name="model">D29M</field><field name="serial_number">012716</field>
+      <field name="category_id" ref="cat_cpu"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_22070n3008401" model="equipment.item">
+      <field name="name">TP-Link</field><field name="model">TL-WR840N(EU)</field><field name="serial_number">22070N3008401</field>
+      <field name="category_id" ref="cat_routers"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_ac130303a300d2" model="equipment.item">
+      <field name="name">XARM AC Control Box</field><field name="model">AC1300</field><field name="serial_number">AC130303A300D2</field>
+      <field name="category_id" ref="cat_ufactory"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_xs130405c33b10" model="equipment.item">
+      <field name="name">XARM 7</field><field name="model">XS1304</field><field name="serial_number">XS130405C33B10</field>
+      <field name="category_id" ref="cat_ufactory"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_ai130205230020" model="equipment.item">
+      <field name="name">6AXIS Force Torque Sensor</field><field name="model">AI1302</field><field name="serial_number">AI130205230020</field>
+      <field name="category_id" ref="cat_ufactory"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_ag101110230025" model="equipment.item">
+      <field name="name">XARM Gripper</field><field name="model">AG1011</field><field name="serial_number">AG101110230025</field>
+      <field name="category_id" ref="cat_ufactory"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_013755" model="equipment.item">
+      <field name="name">APC by Schneider Electric</field><field name="model">BV1000I-MSX</field><field name="serial_number">013755</field>
+      <field name="category_id" ref="cat_ups"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_013726" model="equipment.item">
+      <field name="name">APC by Schneider Electric</field><field name="model">BV1000I-MSX</field><field name="serial_number">013726</field>
+      <field name="category_id" ref="cat_ups"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_013711" model="equipment.item">
+      <field name="name">APC by Schneider Electric</field><field name="model">BV1000I-MSX</field><field name="serial_number">013711</field>
+      <field name="category_id" ref="cat_ups"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_013725" model="equipment.item">
+      <field name="name">APC by Schneider Electric</field><field name="model">BV1000I-MSX</field><field name="serial_number">013725</field>
+      <field name="category_id" ref="cat_ups"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_013781" model="equipment.item">
+      <field name="name">APC by Schneider Electric</field><field name="model">BV1000I-MSX</field><field name="serial_number">013781</field>
+      <field name="category_id" ref="cat_ups"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_012517" model="equipment.item">
+      <field name="name">HP Laser Jet Pro MFP M428FDW</field><field name="model">W1A30A</field><field name="serial_number">012517</field>
+      <field name="category_id" ref="cat_printer"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_vguk229295" model="equipment.item">
+      <field name="name">Epson L220 I nk Jet Printer</field><field name="model">C462H</field><field name="serial_number">VGUK229295</field>
+      <field name="category_id" ref="cat_printer"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_vp_j8185200" model="equipment.item">
+      <field name="name">Scalance XB005</field><field name="model">6GK5005-0BA00-1AB2</field><field name="serial_number">(S) VP J8185200</field>
+      <field name="condition">good</field><field name="category_id" ref="cat_siemens_scalance"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_vp_j8200878" model="equipment.item">
+      <field name="name">Scalance XB005</field><field name="model">6GK5005-0BA00-1AB2</field><field name="serial_number">(S) VP J8200878</field>
+      <field name="condition">good</field><field name="category_id" ref="cat_siemens_scalance"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_vp_j8185199" model="equipment.item">
+      <field name="name">Scalance XB005</field><field name="model">6GK5005-0BA00-1AB2</field><field name="serial_number">(S) VP J8185199</field>
+      <field name="condition">damaged</field><field name="condition_notes">Spoilt.</field><field name="category_id" ref="cat_siemens_scalance"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_vp_j8200876" model="equipment.item">
+      <field name="name">Scalance XB005</field><field name="model">6GK5005-0BA00-1AB2</field><field name="serial_number">(S) VP J8200876</field>
+      <field name="condition">good</field><field name="category_id" ref="cat_siemens_scalance"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_vp_j8200877" model="equipment.item">
+      <field name="name">Scalance XB005</field><field name="model">6GK5005-0BA00-1AB2</field><field name="serial_number">(S) VP J8200877</field>
+      <field name="condition">good</field><field name="category_id" ref="cat_siemens_scalance"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_vp_s6321512" model="equipment.item">
+      <field name="name">Scalance XB005</field><field name="model">6GK5005-0BA00-1AB2</field><field name="serial_number">(S) VP S6321512</field>
+      <field name="condition">good</field><field name="category_id" ref="cat_siemens_scalance"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_vp_s6321591" model="equipment.item">
+      <field name="name">Scalance XB005</field><field name="model">6GK5005-0BA00-1AB2</field><field name="serial_number">(S) VP S6321591</field>
+      <field name="condition">good</field><field name="category_id" ref="cat_siemens_scalance"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_vp_s7a01gp5" model="equipment.item">
+      <field name="name">Scalance XB005</field><field name="model">6GK5005-0BA00-1AB2</field><field name="serial_number">(S) VP S7A01GP5</field>
+      <field name="condition">good</field><field name="category_id" ref="cat_siemens_scalance"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_q6j9al0vgc6" model="equipment.item">
+      <field name="name">Power supply OUTPUT DC 24V/4A</field><field name="model">6EP3333-6SB00-0AY0</field><field name="serial_number">S Q6J9AL0VGC6</field>
+      <field name="condition">good</field><field name="category_id" ref="cat_siemens_power_supply"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_q6j9ajdsgc8" model="equipment.item">
+      <field name="name">Power supply OUTPUT DC 24V/4A</field><field name="model">6EP3333-6SB00-0AY0</field><field name="serial_number">S Q6J9AJDSGC8</field>
+      <field name="condition">good</field><field name="category_id" ref="cat_siemens_power_supply"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_q6j9alxkgc8" model="equipment.item">
+      <field name="name">Power supply OUTPUT DC 24V/4A</field><field name="model">6EP3333-6SB00-0AY0</field><field name="serial_number">S Q6J9ALXKGC8</field>
+      <field name="condition">good</field><field name="category_id" ref="cat_siemens_power_supply"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_q6j9alvhgc8" model="equipment.item">
+      <field name="name">Power supply OUTPUT DC 24V/4A</field><field name="model">6EP3333-6SB00-0AY0</field><field name="serial_number">S Q6J9ALVHGC8</field>
+      <field name="condition">good</field><field name="category_id" ref="cat_siemens_power_supply"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_q6j9ajd2gc8" model="equipment.item">
+      <field name="name">Power supply OUTPUT DC 24V/4A</field><field name="model">6EP3333-6SB00-0AY0</field><field name="serial_number">S Q6J9AJD2GC8</field>
+      <field name="condition">good</field><field name="category_id" ref="cat_siemens_power_supply"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_q6j9al0egc8" model="equipment.item">
+      <field name="name">Power supply OUTPUT DC 24V/4A</field><field name="model">6EP3333-6SB00-0AY0</field><field name="serial_number">S Q6J9AL0EGC8</field>
+      <field name="condition">good</field><field name="category_id" ref="cat_siemens_power_supply"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_q6j9alx9gc8" model="equipment.item">
+      <field name="name">Power supply OUTPUT DC 24V/4A</field><field name="model">6EP3333-6SB00-0AY0</field><field name="serial_number">S Q6J9ALX9GC8</field>
+      <field name="condition">good</field><field name="category_id" ref="cat_siemens_power_supply"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_q6j9ajdvgc8" model="equipment.item">
+      <field name="name">Power supply OUTPUT DC 24V/4A</field><field name="model">6EP3333-6SB00-0AY0</field><field name="serial_number">S Q6J9AJDVGC8</field>
+      <field name="condition">good</field><field name="category_id" ref="cat_siemens_power_supply"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_q6j9ajcwgc8" model="equipment.item">
+      <field name="name">Power supply OUTPUT DC 24V/4A</field><field name="model">6EP3333-6SB00-0AY0</field><field name="serial_number">S Q6J9AJCWGC8</field>
+      <field name="condition">good</field><field name="category_id" ref="cat_siemens_power_supply"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_q6j9ajczgc8" model="equipment.item">
+      <field name="name">Power supply OUTPUT DC 24V/4A</field><field name="model">6EP3333-6SB00-0AY0</field><field name="serial_number">S Q6J9AJCZGC8</field>
+      <field name="condition">good</field><field name="category_id" ref="cat_siemens_power_supply"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_q6j9alydgc8" model="equipment.item">
+      <field name="name">Power supply OUTPUT DC 24V/4A</field><field name="model">6EP3333-6SB00-0AY0</field><field name="serial_number">S Q6J9ALYDGC8</field>
+      <field name="condition">good</field><field name="category_id" ref="cat_siemens_power_supply"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_q6j9amgxgc8" model="equipment.item">
+      <field name="name">Power supply OUTPUT DC 24V/4A</field><field name="model">6EP3333-6SB00-0AY0</field><field name="serial_number">S Q6J9AMGXGC8</field>
+      <field name="condition">good</field><field name="category_id" ref="cat_siemens_power_supply"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_q6j9ajdggc8" model="equipment.item">
+      <field name="name">Power supply OUTPUT DC 24V/4A</field><field name="model">6EP3333-6SB00-0AY0</field><field name="serial_number">S Q6J9AJDGGC8</field>
+      <field name="condition">good</field><field name="category_id" ref="cat_siemens_power_supply"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_q6m2bnd0gsv" model="equipment.item">
+      <field name="name">Power supply OUTPUT DC 24V/2,5A</field><field name="model">6EP3332-6SB00-0AY0</field><field name="serial_number">S Q6M2BND0GSV</field>
+      <field name="condition">good</field><field name="category_id" ref="cat_siemens_power_supply"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_q6m4acr1grm" model="equipment.item">
+      <field name="name">Simatic PM 1507</field><field name="model">6EP1333-4BA00</field><field name="serial_number">S Q6M4ACR1GRM</field>
+      <field name="condition">good</field><field name="category_id" ref="cat_siemens_power_supply"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_q6j9ajcfgc8" model="equipment.item">
+      <field name="name">Power supply OUTPUT DC 24V/4A</field><field name="model">6EP3333-6SB00-0AY0</field><field name="serial_number">S Q6J9AJCFGC8</field>
+      <field name="condition">damaged</field><field name="condition_notes">Spoilt internal components.</field><field name="category_id" ref="cat_siemens_power_supply"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_q6j9al0mgc8" model="equipment.item">
+      <field name="name">Power supply OUTPUT DC 24V/4A</field><field name="model">6EP3333-6SB00-0AY0</field><field name="serial_number">S Q6J9AL0MGC8</field>
+      <field name="condition">damaged</field><field name="condition_notes">Spoilt internal components</field><field name="category_id" ref="cat_siemens_power_supply"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_c_j9k26306_2017" model="equipment.item">
+      <field name="name">PLC CPU 1214C DC/DC/DC</field><field name="model">6ES7214-1AG40-0XB0</field><field name="serial_number">S C-J9K26306 2017</field>
+      <field name="condition">good</field><field name="category_id" ref="cat_siemens_plc"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_c_j9k21847_2017" model="equipment.item">
+      <field name="name">PLC CPU 1214C DC/DC/DC</field><field name="model">6ES7214-1AG40-0XB0</field><field name="serial_number">S C-J9K21847 2017</field>
+      <field name="condition">good</field><field name="category_id" ref="cat_siemens_plc"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_c_j9k22038_2017" model="equipment.item">
+      <field name="name">PLC CPU 1214C DC/DC/DC</field><field name="model">6ES7214-1AG40-0XB0</field><field name="serial_number">S C-J9K22038 2017</field>
+      <field name="condition">good</field><field name="category_id" ref="cat_siemens_plc"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_c_j9k20411_2017" model="equipment.item">
+      <field name="name">PLC CPU 1214C DC/DC/DC</field><field name="model">6ES7 214-1AG40-0XB0</field><field name="serial_number">S C-J9K20411 2017</field>
+      <field name="condition">good</field><field name="category_id" ref="cat_siemens_plc"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_c_j9k24444_2017" model="equipment.item">
+      <field name="name">PLC CPU 1214C DC/DC/DC</field><field name="model">6ES7 214-1AG40-0XB0</field><field name="serial_number">S C-J9K24444 2017</field>
+      <field name="condition">good</field><field name="category_id" ref="cat_siemens_plc"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_c_j9k21222_2017" model="equipment.item">
+      <field name="name">PLC CPU 1214C DC/DC/DC</field><field name="model">6ES7 214-1AG40-0XB0</field><field name="serial_number">S C-J9K21222 2017</field>
+      <field name="condition">good</field><field name="category_id" ref="cat_siemens_plc"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_c_j9k24165_2017" model="equipment.item">
+      <field name="name">PLC CPU 1214C DC/DC/DC</field><field name="model">6ES7 214-1AG40-0XB0</field><field name="serial_number">S C-J9K24165 2017</field>
+      <field name="condition">good</field><field name="category_id" ref="cat_siemens_plc"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_c_j9k25789_2017" model="equipment.item">
+      <field name="name">PLC CPU 1214C DC/DC/DC</field><field name="model">6ES7 214-1AG40-0XB0</field><field name="serial_number">S C-J9K25789 2017</field>
+      <field name="condition">good</field><field name="category_id" ref="cat_siemens_plc"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_c_j9k25222_2017" model="equipment.item">
+      <field name="name">PLC CPU 1214C DC/DC/DC</field><field name="model">6ES7 214-1AG40-0XB0</field><field name="serial_number">S C-J9K25222 2017</field>
+      <field name="condition">good</field><field name="category_id" ref="cat_siemens_plc"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_c_j8mu0143_2017" model="equipment.item">
+      <field name="name">PLC CPU 1214C DC/DC/DC</field><field name="model">6ES7 214-1AG40-0XB0</field><field name="serial_number">S C-J8MU0143 2017</field>
+      <field name="condition">good</field><field name="category_id" ref="cat_siemens_plc"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_c_j8p40338_2017" model="equipment.item">
+      <field name="name">PLC CPU 1214C DC/DC/DC</field><field name="model">6ES7 214-1AG40-0XB0</field><field name="serial_number">S C-J8P40338 2017</field>
+      <field name="condition">good</field><field name="category_id" ref="cat_siemens_plc"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_c_j9k25697_2017" model="equipment.item">
+      <field name="name">PLC CPU 1214C DC/DC/DC</field><field name="model">6ES7 214-1AG40-0XB0</field><field name="serial_number">S C-J9K25697 2017</field>
+      <field name="condition">good</field><field name="category_id" ref="cat_siemens_plc"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_c_j9k25515_2017" model="equipment.item">
+      <field name="name">PLC CPU 1214C DC/DC/DC</field><field name="model">6ES7 214-1AG40-0XB0</field><field name="serial_number">S C-J9K25515 2017</field>
+      <field name="condition">good</field><field name="category_id" ref="cat_siemens_plc"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_c_j8p38226_2017" model="equipment.item">
+      <field name="name">PLC CPU 1214C DC/DC/DC</field><field name="model">6ES7 214-1AG40-0XB0</field><field name="serial_number">S C-J8P38226 2017</field>
+      <field name="condition">good</field><field name="category_id" ref="cat_siemens_plc"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_c_j9k25268_2017" model="equipment.item">
+      <field name="name">PLC CPU 1214C DC/DC/DC</field><field name="model">6ES7 214-1AG40-0XB0</field><field name="serial_number">S C-J9K25268 2017</field>
+      <field name="condition">good</field><field name="category_id" ref="cat_siemens_plc"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_v_m7d32619_2020" model="equipment.item">
+      <field name="name">PLC CPU 1212C DC/DC/DC</field><field name="model">6ES7 212-1AE40-0XB0</field><field name="serial_number">S V-M7D32619 2020</field>
+      <field name="condition">good</field><field name="category_id" ref="cat_siemens_plc"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_v_m7d32545_2020" model="equipment.item">
+      <field name="name">PLC CPU 1212C DC/DC/DC</field><field name="model">6ES7 212-1AE40-0XB0</field><field name="serial_number">S V-M7D32545 2020</field>
+      <field name="condition">good</field><field name="category_id" ref="cat_siemens_plc"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_v_m5bh6657_2020" model="equipment.item">
+      <field name="name">PLC CPU 1214C DC/DC/RLY</field><field name="model">6ES7 214-1HG40-0XB0</field><field name="serial_number">S V-M5BH6657 2020</field>
+      <field name="condition">good</field><field name="category_id" ref="cat_siemens_plc"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_v_knck4166_2018" model="equipment.item">
+      <field name="name">PLC CPU 1512C-1 PN</field><field name="model">6ES7 512-1CK01-0AB0</field><field name="serial_number">S V-KNCK4166 2018</field>
+      <field name="condition">good</field><field name="category_id" ref="cat_siemens_plc"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_v_kda87659_2018" model="equipment.item">
+      <field name="name">PLC CPU 1512C-1 PN</field><field name="model">6ES7 512-1CK01-0AB0</field><field name="serial_number">S V-KDA87659 2018</field>
+      <field name="condition">good</field><field name="category_id" ref="cat_siemens_plc"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_v_m2b45819_2020" model="equipment.item">
+      <field name="name">PLC CPU 1512C-1 PN</field><field name="model">6ES7 512-1CK01-0AB1</field><field name="serial_number">S V-M2B45819 2020</field>
+      <field name="condition">good</field><field name="category_id" ref="cat_siemens_plc"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_c_j9k18667_2017" model="equipment.item">
+      <field name="name">PLC CPU 1214C DC/DC/DC</field><field name="model">6ES7 214-1AG40-0XB0</field><field name="serial_number">S C-J9K18667 2017</field>
+      <field name="condition">damaged</field><field name="condition_notes">Has an error</field><field name="category_id" ref="cat_siemens_plc"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_c_j9k19471_2017" model="equipment.item">
+      <field name="name">PLC CPU 1214C DC/DC/DC</field><field name="model">6ES7 214-1AG40-0XB0</field><field name="serial_number">S C-J9K19471 2017</field>
+      <field name="condition">poor</field><field name="condition_notes">Password protected</field><field name="category_id" ref="cat_siemens_plc"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_v_m4c93491_2020" model="equipment.item">
+      <field name="name">ANALOGUE MODULE SM 1234 AI/AQ</field><field name="model">6ES7 234-4HE32-0XB0</field><field name="serial_number">S V-M4C93491 2020</field>
+      <field name="category_id" ref="cat_siemens_analogue_module"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_v_m4c96021_2020" model="equipment.item">
+      <field name="name">ANALOGUE MODULE SM 1234 AI/AQ</field><field name="model">6ES7 234-4HE32-0XB0</field><field name="serial_number">S V-M4C96021 2020</field>
+      <field name="category_id" ref="cat_siemens_analogue_module"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_v_m4c95220_2020" model="equipment.item">
+      <field name="name">ANALOGUE MODULE SM 1234 AI/AQ</field><field name="model">6ES7 234-4HE32-0XB0</field><field name="serial_number">S V-M4C95220 2020</field>
+      <field name="category_id" ref="cat_siemens_analogue_module"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_v_m4c93459_2020" model="equipment.item">
+      <field name="name">ANALOGUE MODULE SM 1234 AI/AQ</field><field name="model">6ES7 234-4HE32-0XB0</field><field name="serial_number">S V-M4C93459 2020</field>
+      <field name="category_id" ref="cat_siemens_analogue_module"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_v_m4c93031_2020" model="equipment.item">
+      <field name="name">ANALOGUE MODULE SM 1234 AI/AQ</field><field name="model">6ES7 234-4HE32-0XB0</field><field name="serial_number">S V-M4C93031 2020</field>
+      <field name="category_id" ref="cat_siemens_analogue_module"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_v_m7bj2732_2020" model="equipment.item">
+      <field name="name">ANALOGUE MODULE SM 1234 AI/AQ</field><field name="model">6ES7 234-4HE32-0XB0</field><field name="serial_number">S V-M7BJ2732 2020</field>
+      <field name="category_id" ref="cat_siemens_analogue_module"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_v_m4c95398_2020" model="equipment.item">
+      <field name="name">ANALOGUE MODULE SM 1234 AI/AQ</field><field name="model">6ES7 234-4HE32-0XB0</field><field name="serial_number">S V-M4C95398 2020</field>
+      <field name="category_id" ref="cat_siemens_analogue_module"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_v_m4cl0854" model="equipment.item">
+      <field name="name">SIMATIC 10T2040 BASIC PROFINET INTERFACE</field><field name="model">6ES7 647-0AA00-1YA2</field><field name="serial_number">S V-M4CL0854</field>
+      <field name="category_id" ref="cat_siemens_iot_2040"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_v_m3bm9568" model="equipment.item">
+      <field name="name">SIMATIC 10T2040 BASIC PROFINET INTERFACE</field><field name="model">6ES7 647-0AA00-1YA2</field><field name="serial_number">S V-M3BM9568</field>
+      <field name="category_id" ref="cat_siemens_iot_2040"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_c_m3ft4670" model="equipment.item">
+      <field name="name">SIMATIC ET 200SP</field><field name="model">6ES7 155-6AU01-0CN0</field><field name="serial_number">S C-M3FT4670</field>
+      <field name="category_id" ref="cat_siemens_et_200sp"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_c_m5cf7479" model="equipment.item">
+      <field name="name">SIMATIC ET 200SP</field><field name="model">6ES7 155-6AU01-0CN0</field><field name="serial_number">S C-M5CF7479</field>
+      <field name="category_id" ref="cat_siemens_et_200sp"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_c_m3h98403" model="equipment.item">
+      <field name="name">SIMATIC ET 200SP INPUT</field><field name="model">6ES7 131-6BF00-0CA0</field><field name="serial_number">S C-M3H98403</field>
+      <field name="category_id" ref="cat_siemens_et_200sp"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_c_m3h98389" model="equipment.item">
+      <field name="name">SIMATIC ET 200SP INPUT</field><field name="model">6ES7 131-6BF00-0CA0</field><field name="serial_number">S C-M3H98389</field>
+      <field name="category_id" ref="cat_siemens_et_200sp"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_c_m4d99419" model="equipment.item">
+      <field name="name">SIMATIC ET 200SP OUTPUT</field><field name="model">6ES7 132-6BF00-0CA0</field><field name="serial_number">S C-M4D99419</field>
+      <field name="category_id" ref="cat_siemens_et_200sp"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_c_m3cf7529" model="equipment.item">
+      <field name="name">SIMATIC ET 200SP SERMODULEVER</field><field name="model">6ES7 193-6PA00-0AA0</field><field name="serial_number">S C-M3CF7529</field>
+      <field name="category_id" ref="cat_siemens_et_200sp"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_c_m5dg6421" model="equipment.item">
+      <field name="name">SIMATIC ET 200SP INPUT</field><field name="model">6ES7 131-6BF00-0CA0</field><field name="serial_number">S C-M5DG6421</field>
+      <field name="category_id" ref="cat_siemens_et_200sp"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_c_m5df1128" model="equipment.item">
+      <field name="name">SIMATIC ET 200SP INPUT</field><field name="model">6ES7 131-6BF00-0CA0</field><field name="serial_number">S C-M5DF1128</field>
+      <field name="category_id" ref="cat_siemens_et_200sp"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_c_m4d98863" model="equipment.item">
+      <field name="name">SIMATIC ET 200SP OUTPUT</field><field name="model">6ES7 132-6BF00-0CA0</field><field name="serial_number">S C-M4D98863</field>
+      <field name="category_id" ref="cat_siemens_et_200sp"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_c_m4f58104" model="equipment.item">
+      <field name="name">SIMATIC ET 200SP OUTPUT</field><field name="model">6ES7 132-6BF00-0CA0</field><field name="serial_number">S C-M4F58104</field>
+      <field name="category_id" ref="cat_siemens_et_200sp"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_c_m4f58992" model="equipment.item">
+      <field name="name">SIMATIC ET 200SP OUTPUT</field><field name="model">6ES7 132-6BF00-0CA0</field><field name="serial_number">S C-M4F58992</field>
+      <field name="category_id" ref="cat_siemens_et_200sp"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_c_m3f49383" model="equipment.item">
+      <field name="name">SIMATIC ET 200SP AI ENERGY METER</field><field name="model">6ES7 134-6PA20-0BD0</field><field name="serial_number">S C-M3F49383</field>
+      <field name="category_id" ref="cat_siemens_et_200sp"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_c_m3db9300" model="equipment.item">
+      <field name="name">SIMATIC ET 200SP AI ENERGY METER</field><field name="model">6ES7 134-6PA20-0BD0</field><field name="serial_number">S C-M3DB9300</field>
+      <field name="category_id" ref="cat_siemens_et_200sp"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_c_m4gd9379" model="equipment.item">
+      <field name="name">SIMATIC ET 200SP SERVER MODULE</field><field name="model">6ES7 193-6PA00-0AA0</field><field name="serial_number">S C-M4GD9379</field>
+      <field name="category_id" ref="cat_siemens_et_200sp"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_v_j7a45162" model="equipment.item">
+      <field name="name">SIMATIC HMI KTP700 BASIC</field><field name="model">6AV2 123-2GB03-0AX0</field><field name="serial_number">S V-J7A45162</field>
+      <field name="condition">good</field><field name="category_id" ref="cat_siemens_hmi"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_v_ldd03203" model="equipment.item">
+      <field name="name">SIMATIC HMI KTP700 BASIC</field><field name="model">6AV2 123-2GB03-0AX0</field><field name="serial_number">S V-LDD03203</field>
+      <field name="condition">good</field><field name="category_id" ref="cat_siemens_hmi"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_v_j7a41731" model="equipment.item">
+      <field name="name">SIMATIC HMI KTP700 BASIC</field><field name="model">6AV2 123-2GB03-0AX0</field><field name="serial_number">S V-J7A41731</field>
+      <field name="condition">good</field><field name="category_id" ref="cat_siemens_hmi"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_v_j7a92108" model="equipment.item">
+      <field name="name">SIMATIC HMI KTP700 BASIC</field><field name="model">6AV2 123-2GB03-0AX0</field><field name="serial_number">S V-J7A92108</field>
+      <field name="condition">good</field><field name="category_id" ref="cat_siemens_hmi"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_c_m5bc3898" model="equipment.item">
+      <field name="name">SIMATIC HMI TP700 COMFORT</field><field name="model">6AV2 124-0GC01-0AX0</field><field name="serial_number">S C-M5BC3898</field>
+      <field name="condition">good</field><field name="category_id" ref="cat_siemens_hmi"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_c_m4b86729" model="equipment.item">
+      <field name="name">SIMATIC HMI TP700 COMFORT</field><field name="model">6AV2 124-0GC01-0AX0</field><field name="serial_number">S C-M4B86729</field>
+      <field name="condition">good</field><field name="category_id" ref="cat_siemens_hmi"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_v_j7a45148" model="equipment.item">
+      <field name="name">SIMATIC HMI KTP700 BASIC</field><field name="model">6AV2 123-2GB03-0AX0</field><field name="serial_number">S V-J7A45148</field>
+      <field name="condition">damaged</field><field name="condition_notes">Unresponsive</field><field name="category_id" ref="cat_siemens_hmi"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_v_j7a41732" model="equipment.item">
+      <field name="name">SIMATIC HMI KTP700 BASIC</field><field name="model">6AV2 123-2GB03-0AX0</field><field name="serial_number">S V-J7A41732</field>
+      <field name="condition">damaged</field><field name="condition_notes">Not powering on</field><field name="category_id" ref="cat_siemens_hmi"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_xam417_002011" model="equipment.item">
+      <field name="name">SINAMICS G120 POWER MODULE PM240-2</field><field name="model">6SL3210-1PB13-8UL0</field><field name="serial_number">S XAM417-002011</field>
+      <field name="category_id" ref="cat_siemens_drive"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_xam414_004997" model="equipment.item">
+      <field name="name">SINAMICS CU250S-2 PN</field><field name="model">6SL3246-0BA22-1FA0</field><field name="serial_number">S XAM414-004997</field>
+      <field name="category_id" ref="cat_siemens_drive"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_xam310_004933" model="equipment.item">
+      <field name="name">SINAMIC 10P-2</field><field name="model">6SL3255-0AA00-4JA2</field><field name="serial_number">S XAM310-004933</field>
+      <field name="category_id" ref="cat_siemens_drive"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_xam506_023101" model="equipment.item">
+      <field name="name">SINAMICS G120 POWER MODULE PM240-2</field><field name="model">6SL3210-1PB13-8UL1</field><field name="serial_number">S XAM506-023101</field>
+      <field name="category_id" ref="cat_siemens_drive"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_xam506_024521" model="equipment.item">
+      <field name="name">SINAMICS CU250S-2 PN</field><field name="model">6SL3246-0BA22-1FA1</field><field name="serial_number">S XAM506-024521</field>
+      <field name="category_id" ref="cat_siemens_drive"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_xam408_004504" model="equipment.item">
+      <field name="name">SINAMIC 10P-2</field><field name="model">6SL3255-0AA00-4JA2</field><field name="serial_number">S XAM408-004504</field>
+      <field name="category_id" ref="cat_siemens_drive"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_l0_180404" model="equipment.item">
+      <field name="name">AS-Interface module</field><field name="model">3SU1400-1EK10-6AA0</field><field name="serial_number">L0/180404</field>
+      <field name="category_id" ref="cat_siemens_as_interface_module"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_l0_180411" model="equipment.item">
+      <field name="name">AS-Interface module</field><field name="model">3SU1400-1EK10-6AA0</field><field name="serial_number">L0/180411</field>
+      <field name="category_id" ref="cat_siemens_as_interface_module"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_lbm_3565042" model="equipment.item">
+      <field name="name">SIMATIC PN/CAN LINK</field><field name="model">6BK 1620-0AA00-0AA0</field><field name="serial_number">S LBM 3565042</field>
+      <field name="category_id" ref="cat_siemens_communication_module"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_lbm_4321210" model="equipment.item">
+      <field name="name">SIMATIC PN/CAN LINK</field><field name="model">6BK 1620-0AA00-0AA0</field><field name="serial_number">S LBM 4321210</field>
+      <field name="category_id" ref="cat_siemens_communication_module"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_lbm_1536135" model="equipment.item">
+      <field name="name">SIMATIC PN/BACnet LINK</field><field name="model">6BK 1621-0AA00-0AA0</field><field name="serial_number">S LBM 1536135</field>
+      <field name="category_id" ref="cat_siemens_communication_module"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_lbm_1536067" model="equipment.item">
+      <field name="name">SIMATIC PN/BACnet LINK</field><field name="model">6BK 1621-0AA00-0AA0</field><field name="serial_number">S LBM 1536067</field>
+      <field name="category_id" ref="cat_siemens_communication_module"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_l0191211" model="equipment.item">
+      <field name="name">IO LINK MODULE K20</field><field name="model">3RK5010-0CA00-0AA0</field><field name="serial_number">L0191211</field>
+      <field name="category_id" ref="cat_siemens_io_link_module"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_l0200321" model="equipment.item">
+      <field name="name">IO LINK MODULE K20</field><field name="model">3RK5010-0CA00-0AA0</field><field name="serial_number">L0200321</field>
+      <field name="category_id" ref="cat_siemens_io_link_module"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_g_181220" model="equipment.item">
+      <field name="name">CONTACTOR</field><field name="model">3RT2015-1BB42</field><field name="serial_number">G/181220</field>
+      <field name="category_id" ref="cat_siemens_contactors"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_g_190107" model="equipment.item">
+      <field name="name">CONTACTOR</field><field name="model">3RT2016-1BB42</field><field name="serial_number">G/190107</field>
+      <field name="category_id" ref="cat_siemens_contactors"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_g_220825" model="equipment.item">
+      <field name="name">CONTACTOR</field><field name="model">3RH2131-1BB40</field><field name="serial_number">G/220825</field>
+      <field name="category_id" ref="cat_siemens_contactors"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_g_220823" model="equipment.item">
+      <field name="name">CONTACTOR</field><field name="model">3RH2122-1BB40</field><field name="serial_number">G/220823</field>
+      <field name="category_id" ref="cat_siemens_contactors"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_g104611" model="equipment.item">
+      <field name="name">CONTACTOR</field><field name="model">LC1D12 BD</field><field name="serial_number">G104611</field>
+      <field name="category_id" ref="cat_schneider_electric_products"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_g102911" model="equipment.item">
+      <field name="name">CONTACTOR</field><field name="model">LC1D12 BD</field><field name="serial_number">G102911</field>
+      <field name="category_id" ref="cat_schneider_electric_products"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_g102551" model="equipment.item">
+      <field name="name">CONTACTOR</field><field name="model">LC1D12 BD</field><field name="serial_number">G102551</field>
+      <field name="category_id" ref="cat_schneider_electric_products"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_g103761" model="equipment.item">
+      <field name="name">CONTACTOR</field><field name="model">LC1D12 BD</field><field name="serial_number">G103761</field>
+      <field name="category_id" ref="cat_schneider_electric_products"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_g104861" model="equipment.item">
+      <field name="name">CONTACTOR</field><field name="model">LC1D12 BD</field><field name="serial_number">3G104861</field>
+      <field name="category_id" ref="cat_schneider_electric_products"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_g174911" model="equipment.item">
+      <field name="name">CONTACTOR</field><field name="model">LC1D09 BD</field><field name="serial_number">G174911</field>
+      <field name="category_id" ref="cat_schneider_electric_products"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_274421422186800305" model="equipment.item">
+      <field name="name">CONTACTOR</field><field name="model">NC1-2510</field><field name="serial_number">274421422186800305</field>
+      <field name="category_id" ref="cat_chnt"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_264030724133500005" model="equipment.item">
+      <field name="name">CONTACTOR</field><field name="model">NC1-1210</field><field name="serial_number">264030724133500005</field>
+      <field name="category_id" ref="cat_chnt"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_c_knp62919_2018" model="equipment.item">
+      <field name="name">FESTO DIDACTIC EDU-TRAINER</field><field name="model">6ES7 374-2XH01-0AA0</field><field name="serial_number">S C-KNP62919 2018</field>
+      <field name="category_id" ref="cat_festo_siemens_products"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_k80901" model="equipment.item">
+      <field name="name">Festo Didactic 150768</field><field name="model">150768</field><field name="serial_number">K80901</field>
+      <field name="category_id" ref="cat_festo"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_35060" model="equipment.item">
+      <field name="name">Virtual instrument</field><field name="model">1250-20</field><field name="serial_number">35060</field>
+      <field name="category_id" ref="cat_festo"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_12190204" model="equipment.item">
+      <field name="name">MPS PA Compact Workstation</field><field name="model">8076852 L306</field><field name="serial_number">12190204</field>
+      <field name="category_id" ref="cat_festo"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_g_399036" model="equipment.item">
+      <field name="name">Electriv Power Generation Training System</field><field name="model">8110852</field><field name="serial_number">G-399036</field>
+      <field name="category_id" ref="cat_festo"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_004478" model="equipment.item">
+      <field name="name">Process control System</field><field name="model">T5552</field><field name="serial_number">004478</field>
+      <field name="category_id" ref="cat_amatrol"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_004471" model="equipment.item">
+      <field name="name">Thermal Process Control System</field><field name="model">T5553</field><field name="serial_number">004471</field>
+      <field name="category_id" ref="cat_amatrol"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_004472" model="equipment.item">
+      <field name="name">Analytical Process Control System</field><field name="model">T5554</field><field name="serial_number">004472</field>
+      <field name="category_id" ref="cat_amatrol"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_004438" model="equipment.item">
+      <field name="name">Electronic Drives Systems</field><field name="model">85-MT10</field><field name="serial_number">004438</field>
+      <field name="category_id" ref="cat_amatrol"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_c051738" model="equipment.item">
+      <field name="name">Digital Oscilloscope</field><field name="model">TBS 1052B-EDU</field><field name="serial_number">C051738</field>
+      <field name="category_id" ref="cat_tektronix"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_008534145047" model="equipment.item">
+      <field name="name">Microsoft Kinect for Xbox One</field><field name="serial_number">008534145047</field>
+      <field name="category_id" ref="cat_cameras"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_s_120_12" model="equipment.item">
+      <field name="name">Power supply OUTPUT +12V/10A</field><field name="serial_number">S-120-12</field>
+      <field name="category_id" ref="cat_electrical_components"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_072712i080" model="equipment.item">
+      <field name="name">Pressure Transducer</field><field name="model">PX319-001G</field><field name="serial_number">072712I080</field>
+      <field name="category_id" ref="cat_electrical_components"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_200670712" model="equipment.item">
+      <field name="name">Presure Transmiter</field><field name="model">GPT230</field><field name="serial_number">200670712</field>
+      <field name="category_id" ref="cat_electrical_components"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_200670711" model="equipment.item">
+      <field name="name">Presure Transmiter</field><field name="model">GPT231</field><field name="serial_number">200670711</field>
+      <field name="category_id" ref="cat_electrical_components"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_dta44c16w19150001" model="equipment.item">
+      <field name="name">PID/On-Off Temperature Controller</field><field name="model">DTA4848</field><field name="serial_number">DTA44C16W19150001</field>
+      <field name="category_id" ref="cat_electrical_components"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_221202fh7001" model="equipment.item">
+      <field name="name">Line-speed and Tachomerer</field><field name="model">PF-AR167A</field><field name="serial_number">221202FH7001</field>
+      <field name="category_id" ref="cat_electrical_components"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_np2717l" model="equipment.item">
+      <field name="name">Baldor Industrial Motor</field><field name="model">36B001S811H1</field><field name="serial_number">NP2717L</field>
+      <field name="category_id" ref="cat_electro_mechanical_components"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_fn100021_5_170811" model="equipment.item">
+      <field name="name">Wind Turbine Generator</field><field name="model">FN2. 1-1KW</field><field name="serial_number">FN100021-5-170811</field>
+      <field name="category_id" ref="cat_electro_mechanical_components"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_c3h1005162" model="equipment.item">
+      <field name="name">Kamoer DIPump550</field><field name="serial_number">1C3H1005162</field>
+      <field name="category_id" ref="cat_electro_mechanical_components"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_01_078985813411345" model="equipment.item">
+      <field name="name">MakerBot Replicator 5th Generation</field><field name="serial_number">(01)078985813411345</field>
+      <field name="category_id" ref="cat_3d_printer"/><field name="location_id" ref="location_main_store"/>
+    </record>
+    <record id="item_c211447235" model="equipment.item">
+      <field name="name">Mini Anemometer</field><field name="model">UNI-T UT363BT</field><field name="serial_number">C211447235</field>
+      <field name="category_id" ref="cat_tools"/><field name="location_id" ref="location_main_store"/>
+    </record>
 
-        <!-- Demo Locations -->
-        <record id="location_main_store" model="equipment.location">
-            <field name="name">Main Store</field>
-            <field name="code">STORE</field>
-            <field name="location_type">warehouse</field>
-            <field name="building">Building A</field>
-            <field name="floor">Ground Floor</field>
-            <field name="room">R001</field>
-        </record>
-
-        <record id="location_lab_a" model="equipment.location">
-            <field name="name">Laboratory A</field>
-            <field name="code">LABA</field>
-            <field name="location_type">lab</field>
-            <field name="building">Building B</field>
-            <field name="floor">1st Floor</field>
-            <field name="room">R101</field>
-        </record>
-
-        <record id="location_lab_b" model="equipment.location">
-            <field name="name">Laboratory B</field>
-            <field name="code">LABB</field>
-            <field name="location_type">lab</field>
-            <field name="building">Building B</field>
-            <field name="floor">2nd Floor</field>
-            <field name="room">R201</field>
-        </record>
-
-        <record id="location_workshop" model="equipment.location">
-            <field name="name">Workshop</field>
-            <field name="code">SHOP</field>
-            <field name="location_type">workshop</field>
-            <field name="building">Building C</field>
-            <field name="floor">Ground Floor</field>
-        </record>
-
-        <!-- Demo Equipment Items -->
-        <record id="equipment_monitor_001" model="equipment.item">
-            <field name="name">Dell 24" Monitor</field>
-            <field name="barcode">EQP000001</field>
-            <field name="serial_number">DELL-2024-001</field>
-            <field name="category_id" ref="category_monitors"/>
-            <field name="location_id" ref="location_main_store"/>
-            <field name="state">available</field>
-            <field name="manufacturer">Dell</field>
-            <field name="model">P2422H</field>
-            <field name="condition">good</field>
-            <field name="purchase_date" eval="(DateTime.now() - timedelta(days=365)).strftime('%Y-%m-%d')"/>
-        </record>
-
-        <record id="equipment_monitor_002" model="equipment.item">
-            <field name="name">HP 27" Monitor</field>
-            <field name="barcode">EQP000002</field>
-            <field name="serial_number">HP-2024-002</field>
-            <field name="category_id" ref="category_monitors"/>
-            <field name="location_id" ref="location_lab_a"/>
-            <field name="state">available</field>
-            <field name="manufacturer">HP</field>
-            <field name="model">EliteDisplay E273</field>
-            <field name="condition">excellent</field>
-            <field name="purchase_date" eval="(DateTime.now() - timedelta(days=180)).strftime('%Y-%m-%d')"/>
-        </record>
-
-        <record id="equipment_oscilloscope_001" model="equipment.item">
-            <field name="name">Digital Oscilloscope</field>
-            <field name="barcode">EQP000003</field>
-            <field name="serial_number">RIGOL-DS1054Z-001</field>
-            <field name="category_id" ref="category_instruments"/>
-            <field name="location_id" ref="location_lab_a"/>
-            <field name="state">available</field>
-            <field name="manufacturer">Rigol</field>
-            <field name="model">DS1054Z</field>
-            <field name="condition">good</field>
-            <field name="specifications">50 MHz bandwidth, 4 channels, 1 GSa/s sample rate</field>
-            <field name="purchase_date" eval="(DateTime.now() - timedelta(days=730)).strftime('%Y-%m-%d')"/>
-        </record>
-
-        <record id="equipment_multimeter_001" model="equipment.item">
-            <field name="name">Digital Multimeter</field>
-            <field name="barcode">EQP000004</field>
-            <field name="serial_number">FLUKE-87V-001</field>
-            <field name="category_id" ref="category_instruments"/>
-            <field name="location_id" ref="location_workshop"/>
-            <field name="state">available</field>
-            <field name="manufacturer">Fluke</field>
-            <field name="model">87V</field>
-            <field name="condition">excellent</field>
-            <field name="purchase_date" eval="(DateTime.now() - timedelta(days=90)).strftime('%Y-%m-%d')"/>
-        </record>
-
-        <record id="equipment_power_supply_001" model="equipment.item">
-            <field name="name">DC Power Supply 30V 5A</field>
-            <field name="barcode">EQP000005</field>
-            <field name="serial_number">PS-305D-001</field>
-            <field name="category_id" ref="category_power"/>
-            <field name="location_id" ref="location_lab_b"/>
-            <field name="state">available</field>
-            <field name="manufacturer">Generic</field>
-            <field name="model">PS-305D</field>
-            <field name="condition">good</field>
-            <field name="specifications">0-30V, 0-5A, Digital display</field>
-        </record>
-
-    </data>
+  </data>
 </odoo>

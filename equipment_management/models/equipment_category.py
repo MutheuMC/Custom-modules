@@ -45,7 +45,7 @@ class EquipmentCategory(models.Model):
     # Borrowing Rules
     requires_approval = fields.Boolean(
         string='Requires Approval',
-        default=False,
+        default=True,
         tracking=True,
         help='Check if loans for this category need manager approval'
     )
@@ -57,7 +57,7 @@ class EquipmentCategory(models.Model):
     )
     allow_external_borrowing = fields.Boolean(
         string='Allow External Borrowing',
-        default=False,
+        default=True,
         tracking=True,
         help='Allow people outside the organization to borrow'
     )

@@ -12,6 +12,7 @@
             <field name="category_id"/>
             <field name="location_id"/>
             <field name="custodian_id" optional="hide"/>
+            <field name="document_count" string="Docs" optional="show"/>
             <field name="state"
                 decoration-success="state=='available'"
                 decoration-info="state=='borrowed'"
@@ -30,31 +31,30 @@
     </record>
 
     <!-- Equipment Item Form View -->
-    <record id="view_equipment_item_form" model="ir.ui.view">
+     <record id="view_equipment_item_form" model="ir.ui.view">
         <field name="name">equipment.item.form</field>
         <field name="model">equipment.item</field>
         <field name="arch" type="xml">
             <form string="Equipment Item">
                 <header>
+                    <button name="action_open_assign_wizard" string="Assign" type="object"
+                            class="btn-secondary"
+                            invisible="holder_type != 'none' or state in ('borrowed','maintenance','retired','lost')"
+                            groups="equipment_management.group_equipment_manager"/>
 
-                  <button name="action_open_assign_wizard" string="Assign" type="object"
-                        class="btn-secondary"
-                        invisible="holder_type != 'none' or state in ('borrowed','maintenance','retired','lost')"
-                        groups="equipment_management.group_equipment_manager"/>
-
-                <button name="action_open_unassign_wizard" string="Unassign" type="object"
-                        invisible="holder_type == 'none' or state == 'borrowed'"
-                        groups="equipment_management.group_equipment_manager"/>
+                    <button name="action_open_unassign_wizard" string="Unassign" type="object"
+                            invisible="holder_type == 'none' or state == 'borrowed'"
+                            groups="equipment_management.group_equipment_manager"/>
 
                     <button name="action_move_to_store" string="Move to Store" type="object"
                             groups="equipment_management.group_equipment_manager"
                             invisible="not (state in ['available','assigned','reserved','maintenance'])"/>
                     
-                    <button name="action_borrow" string="Borrow" type="object" class="oe_highlight"
+                    <button name="action_borrow" string="Borrow" type="object"
                             invisible="state not in ('available','reserved')"
                             groups="equipment_management.group_equipment_user"/>
 
-                    <button name="action_return" string="Return" type="object" class="oe_highlight"
+                    <button name="action_return" string="Return" type="object"
                             invisible="state != 'borrowed'"
                             groups="equipment_management.group_equipment_user"/>
 
@@ -83,14 +83,17 @@
 
                 <sheet>
                     <div class="oe_button_box" name="button_box">
+                        <!-- NEW: Documents button -->
+                        <button name="action_view_documents" type="object" 
+                                class="oe_stat_button" icon="fa-folder-open">
+                            <field name="document_count" widget="statinfo" string="Documents"/>
+                        </button>
+                        
                         <button name="action_view_loans" type="object" 
                                 class="oe_stat_button" icon="fa-history">
                             <field name="loan_count" widget="statinfo" string="Loans"/>
                         </button>
-                        <button name="action_view_attachments" type="object" 
-                                class="oe_stat_button" icon="fa-files-o">
-                            <field name="attachment_count" widget="statinfo" string="Documents"/>
-                        </button>
+                        
                         <button name="toggle_active" type="object" 
                                 class="oe_stat_button" icon="fa-archive">
                             <field name="active" widget="boolean_button" 
@@ -110,7 +113,7 @@
                     <group>
                         <group>
                             <field name="category_id" options="{'no_create': True}"/>
-                            <!-- <field name="barcode" widget="barcode_handler"/> -->
+                            <field name="barcode"/>
                             <field name="serial_number"/>
                             <field name="asset_tag"/>
                             <field name="model_number"/>
@@ -133,6 +136,52 @@
                     </group>
                     
                     <notebook>
+                        <!-- NEW: Documents Tab -->
+                        <page string="Documents" name="documents" autofocus="1">
+                            <div class="row mt16 mb16">
+                                <div class="col-12">
+                                    <button name="action_upload_document" 
+                                            string="Upload Document" 
+                                            type="object" 
+                                            class="btn-primary"
+                                            icon="fa-upload"/>
+                                    <button name="action_view_folder" 
+                                            string="Open in Document Manager" 
+                                            type="object" 
+                                            class="btn-secondary ml8"
+                                            icon="fa-folder-open"/>
+                                </div>
+                            </div>
+                            
+                            <group>
+                                <field name="equipment_folder_id" readonly="1" 
+                                       string="Document Folder"/>
+                            </group>
+                            
+                            <field name="document_ids" 
+                                   context="{'default_folder_id': equipment_folder_id, 'default_equipment_id': id}">
+                                <list editable="bottom">
+                                    <field name="name"/>
+                                    <field name="document_type" column_invisible="1"/>
+                                    <field name="file_kind" string="Type" widget="badge"/>
+                                    <field name="folder_id"/>
+                                    <field name="file_size" widget="file_size"/>
+                                    <field name="write_datetime_display" string="Modified"/>
+                                    <button name="action_view_file" type="object" 
+                                            icon="fa-eye" title="View"
+                                            invisible="document_type != 'file'"/>
+                                    <button name="action_download" type="object" 
+                                            icon="fa-download" title="Download"/>
+                                </list>
+                            </field>
+                            
+                            <div class="alert alert-info mt16" role="alert">
+                                <i class="fa fa-info-circle"/> 
+                                <strong>Tip:</strong> Upload purchase documents, warranties, manuals, 
+                                and photos here. They will be organized in the equipment's dedicated folder.
+                            </div>
+                        </page>
+                        
                         <page string="Equipment Details" name="details">
                             <group>
                                 <group string="Technical Information">
@@ -152,30 +201,30 @@
                             <field name="specifications" placeholder="Enter detailed technical specifications..."/>
                         </page>
 
-                        <page string = "Assignment information" name="assign">
-                        <group string="Assignment">
+                        <page string="Assignment Information" name="assign">
+                            <group string="Assignment">
                                 <group>
                                     <field name="holder_type"/>
                                     <field name="employee_id"
-                                        invisible="holder_type != 'employee'"
-                                        required="holder_type == 'employee'"/>
+                                           invisible="holder_type != 'employee'"
+                                           required="holder_type == 'employee'"/>
                                     <field name="department_id"
-                                        string="Department/Unit"
-                                        invisible="holder_type != 'department'"
-                                        required="holder_type == 'department'"/>
+                                           string="Department/Unit"
+                                           invisible="holder_type != 'department'"
+                                           required="holder_type == 'department'"/>
                                     <field name="custodian_partner_id"
-                                        string="External Custodian"
-                                        invisible="holder_type != 'other'"
-                                        required="holder_type == 'other'"/>
+                                           string="External Custodian"
+                                           invisible="holder_type != 'other'"
+                                           required="holder_type == 'other'"/>
                                     <field name="assigned_date"
-                                        invisible="holder_type == 'none'"
-                                        required="holder_type != 'none'"/>
+                                           invisible="holder_type == 'none'"
+                                           required="holder_type != 'none'"/>
                                 </group>
-                                </group>
+                            </group>
                         </page>
                         
-                        <page string = "Assignment History" name="assign">
-                        <field name="assignment_ids" readonly="1" >
+                        <page string="Assignment History" name="assign_history">
+                            <field name="assignment_ids" readonly="1">
                                 <list>
                                     <field name="holder_type"/>
                                     <field name="employee_id" optional="show"/>
@@ -196,7 +245,7 @@
                                     <field name="purchase_value"/>
                                     <field name="currency_id" invisible="1"/>
                                     <field name="vendor_id"/>
-                                    <field name="purchase_order_id"/>
+                                    <field name="purchase_order_ref"/>
                                 </group>
                                 <group string="Warranty">
                                     <field name="warranty_start_date"/>
@@ -204,6 +253,13 @@
                                     <field name="warranty_active" widget="boolean"/>
                                 </group>
                             </group>
+                            
+                            <div class="alert alert-warning mt16" role="alert" 
+                                 invisible="not document_count or document_count > 0">
+                                <i class="fa fa-exclamation-triangle"/> 
+                                <strong>Reminder:</strong> Upload purchase invoices and receipts 
+                                in the Documents tab.
+                            </div>
                         </page>
                         
                         <page string="Loan History" name="loans">
@@ -281,10 +337,10 @@
                                     <field name="category_id"/>
                                 </div>
                                 <div>
-                                    <i class="fa fa-map-marker"/> <field name="location_id"/>
+                                    <i class="fa fa-map-marker" title="Location"/> <field name="location_id"/>
                                 </div>
                                 <div t-if="record.custodian_id.value">
-                                    <i class="fa fa-user"/> <field name="custodian_id"/>
+                                    <i class="fa fa-user" title="Custodian"/> <field name="custodian_id"/>
                                 </div>
                                 <div class="mt-2">
                                     <field name="state" widget="badge" 

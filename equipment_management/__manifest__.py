@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Lab Equipment Management',
-    'version': '18.0.1.0.1',
+    'version': '18.0.2.2.1',
     'category': 'Inventory/Inventory',
     'summary': 'Manage lab equipment borrowing, tracking, and reservations',
     'description': """
@@ -14,15 +14,15 @@
         * Maintenance scheduling
         * Mobile-friendly interface
     """,
-    'author': 'Your Company',
-    'website': 'https://www.yourcompany.com',
+    'author': 'Virtual Mechatronics labs',
+    'website': 'https://vml.dkut.ac.ke/',
     'depends': [
         'base',
         'mail',
         'web',
         'barcodes',
         'portal',
-        'purchase',
+        # 'custom_documents'
     ],
     'data': [
         # Security

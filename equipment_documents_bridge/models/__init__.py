@@ -1,0 +1,1 @@
+from . import document_equipment_bridge
