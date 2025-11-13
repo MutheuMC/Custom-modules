@@ -6,8 +6,9 @@ from odoo import models, fields, api, _
 class CustomDocumentEquipmentBridge(models.Model):
     _inherit = 'custom.document'
 
-    # ------------- Equipment Link -------------
-
+    # ------------------------------------------------------------
+    # Link: Document → Equipment
+    # ------------------------------------------------------------
     equipment_id = fields.Many2one(
         'equipment.item',
         string='Related Equipment',
@@ -16,16 +17,16 @@ class CustomDocumentEquipmentBridge(models.Model):
         ondelete='cascade',
     )
 
-    # ------------- Folder → Equipment Resolver -------------
-
+    # ------------------------------------------------------------
+    # Helper: Folder → Equipment
+    # ------------------------------------------------------------
     def _find_equipment_from_folder(self, folder_id):
         """
         Find equipment by traversing folder hierarchy upward.
         Returns equipment ID or False.
 
         Assumes:
-        - equipment.item model exists (because this module depends on the
-          equipment module),
+        - equipment.item exists (because this module depends on equipment module)
         - equipment.item has a Many2one to custom.document.folder named
           'equipment_folder_id'.
         """
@@ -53,43 +54,46 @@ class CustomDocumentEquipmentBridge(models.Model):
 
         return False
 
-    # ------------- Create / Write Hooks -------------
-
+    # ------------------------------------------------------------
+    # Create / Write hooks
+    # ------------------------------------------------------------
     @api.model_create_multi
     def create(self, vals_list):
         """
-        After creating the document(s), automatically link to equipment
-        if a folder implies an equipment, and equipment_id is not already set.
+        After creating document(s), automatically attach to equipment
+        based on the folder hierarchy, if not explicitly set.
         """
-        records = super().create(vals_list)
+        docs = super().create(vals_list)
 
-        # Use context flag to avoid infinite loops if we need to write again
+        # Avoid recursive calls when we write equipment_id below
         if self.env.context.get('skip_equipment_autolink'):
-            return records
+            return docs
 
-        for doc in records:
+        for doc in docs:
+            # Only auto-link if:
+            # - no equipment set yet
+            # - folder is set
             if not doc.equipment_id and doc.folder_id:
                 equipment_id = doc._find_equipment_from_folder(doc.folder_id.id)
                 if equipment_id:
-                    # Avoid re-triggering our own logic
                     doc.with_context(skip_equipment_autolink=True).write({
                         'equipment_id': equipment_id
                     })
 
-        return records
+        return docs
 
     def write(self, vals):
         """
-        When folder changes (and equipment_id not explicitly given),
-        re-evaluate which equipment (if any) this document should belong to.
+        When folder changes (and equipment_id is not explicitly provided),
+        recompute which equipment (if any) this document should belong to.
         """
-        # If we are already in an internal write from our own logic, skip
+        # If this write is triggered from our own autolink, don't loop
         if self.env.context.get('skip_equipment_autolink'):
             return super().write(vals)
 
         res = super().write(vals)
 
-        # Only do work if folder changed and caller did NOT explicitly set equipment_id
+        # Only react when folder changed and caller did NOT explicitly set equipment_id
         if 'folder_id' in vals and 'equipment_id' not in vals:
             for doc in self:
                 if doc.folder_id:

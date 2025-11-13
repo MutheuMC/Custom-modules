@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Add Equipment field to Document form -->
+    <record id="view_custom_document_equipment_form" model="ir.ui.view">
+        <field name="name">custom.document.form.equipment.bridge</field>
+        <field name="model">custom.document</field>
+        <field name="inherit_id" ref="custom_documents.view_custom_document_form_rich"/>
+        <field name="arch" type="xml">
+            <!--
+            Under the "Details" page, after the first inner group,
+            add a group with the equipment field.
+            Adjust xpath if your view changes.
+            -->
+            <xpath expr="//page[@name='details']/group/group[1]" position="after">
+                <group string="Equipment">
+                    <field name="equipment_id"
+                           options="{'no_create_edit': True}"
+                           context="{'default_equipment_folder_id': folder_id}"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

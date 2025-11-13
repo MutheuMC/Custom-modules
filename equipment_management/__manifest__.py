@@ -22,7 +22,7 @@
         'web',
         'barcodes',
         'portal',
-        # 'custom_documents'
+        'custom_documents'
     ],
     'data': [
         # Security
