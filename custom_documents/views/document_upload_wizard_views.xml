@@ -38,7 +38,7 @@
         <field name="view_mode">form</field>
         <field name="view_id" ref="view_custom_document_upload_file_form"/>
         <field name="target">new</field>
-        <field name="context">{'default_document_type': 'file'}</field>
+        <field name="context"> {'from_documents': True}</field>
     </record>
 
     <!-- ============================================

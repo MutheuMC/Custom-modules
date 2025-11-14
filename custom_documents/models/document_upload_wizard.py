@@ -73,9 +73,8 @@ class DocumentUploadWizard(models.TransientModel):
             self.name = self.url.split('/')[-1] or 'URL Document'
 
     def action_upload(self):
-        """Create the document and close wizard"""
         self.ensure_one()
-        
+
         vals = {
             'name': self.name or self.file_name or self.url or 'New Document',
             'document_type': self.document_type,
@@ -83,7 +82,7 @@ class DocumentUploadWizard(models.TransientModel):
             'tag_ids': [(6, 0, self.tag_ids.ids)],
             'description': self.description,
         }
-        
+
         if self.document_type == 'file':
             vals.update({
                 'file': self.file,
@@ -91,11 +90,28 @@ class DocumentUploadWizard(models.TransientModel):
             })
         else:
             vals['url'] = self.url
-        
+
         doc = self.env['custom.document'].create(vals)
-        
-        _logger.info(f"✓ Created document: {doc.name} (ID: {doc.id}) in folder: {doc.folder_id.name if doc.folder_id else 'None'}")
-        
-        return self.env['ir.actions.act_window']._for_xml_id(
-            'custom_documents.action_custom_document'
+        _logger.info(
+            "✓ Created document: %s (ID: %s) in folder: %s",
+            doc.name, doc.id, doc.folder_id.name if doc.folder_id else 'None'
         )
+
+                # 👇 If opened from equipment: just close (your nice behaviour)
+        if self.env.context.get('default_equipment_id'):
+            return {'type': 'ir.actions.act_window_close'}
+
+        # 👇 If opened from Documents: close & gently reload the documents view only
+        if self.env.context.get('from_documents'):
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'reload_documents_view',  # 👈 our custom client action
+                'context': {
+                    # Preserve current folder filter if possible
+                    'search_default_folder_id': self.folder_id.id if self.folder_id else False,
+                },
+            }
+
+        # Fallback: just close
+        return {'type': 'ir.actions.act_window_close'}
+
