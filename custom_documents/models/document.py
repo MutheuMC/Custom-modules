@@ -123,6 +123,34 @@ class CustomDocument(models.Model):
         readonly=True
     )
 
+        # -------------------------------------------------------------------------
+    # Reference Numbering
+    # -------------------------------------------------------------------------
+    reference_department = fields.Selection([
+        ('hr', 'Human Resource'),
+        ('proc', 'Procurement'),
+        ('vc', 'Vice Chancellor'),
+        ('dvaf', 'DVC A&F'),
+    ], string='Department', tracking=True)
+
+    reference_number = fields.Char(
+        string='Reference Number',
+        copy=False,
+        tracking=True,
+        index=True,
+    )
+
+    reference_seq = fields.Integer(
+        string='Reference Sequence',
+        copy=False
+    )
+
+    reference_year = fields.Char(
+        string='Reference Year (YY)',
+        size=2,
+        copy=False
+    )
+
     @staticmethod
     def _ordinal(n):
         # 1st, 2nd, 3rd, 4th...
@@ -688,5 +716,19 @@ class CustomDocument(models.Model):
                 'default_folder_id': self.folder_id.id if self.folder_id else False,
                 'default_tag_ids': [(6, 0, self.tag_ids.ids)],
                 'default_description': self.description,
+            },
+        }
+    
+    def action_open_reference_wizard(self):
+        """Open wizard to generate reference number based on department."""
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': 'custom.document.reference.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {
+                'default_document_id': self.id,
+                'default_department': self.reference_department or False,
             },
         }

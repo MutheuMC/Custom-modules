@@ -136,51 +136,7 @@
                     </group>
                     
                     <notebook>
-                        <!-- NEW: Documents Tab -->
-                        <page string="Documents" name="documents" autofocus="1">
-                            <div class="row mt16 mb16">
-                                <div class="col-12">
-                                    <button name="action_upload_document" 
-                                            string="Upload Document" 
-                                            type="object" 
-                                            class="btn-primary"
-                                            icon="fa-upload"/>
-                                    <button name="action_view_folder" 
-                                            string="Open in Document Manager" 
-                                            type="object" 
-                                            class="btn-secondary ml8"
-                                            icon="fa-folder-open"/>
-                                </div>
-                            </div>
-                            
-                            <group>
-                                <field name="equipment_folder_id" readonly="1" 
-                                       string="Document Folder"/>
-                            </group>
-                            
-                            <field name="document_ids" 
-                                   context="{'default_folder_id': equipment_folder_id, 'default_equipment_id': id}">
-                                <list editable="bottom">
-                                    <field name="name"/>
-                                    <field name="document_type" column_invisible="1"/>
-                                    <field name="file_kind" string="Type" widget="badge"/>
-                                    <field name="folder_id"/>
-                                    <field name="file_size" widget="file_size"/>
-                                    <field name="write_datetime_display" string="Modified"/>
-                                    <button name="action_view_file" type="object" 
-                                            icon="fa-eye" title="View"
-                                            invisible="document_type != 'file'"/>
-                                    <button name="action_download" type="object" 
-                                            icon="fa-download" title="Download"/>
-                                </list>
-                            </field>
-                            
-                            <div class="alert alert-info mt16" role="alert">
-                                <i class="fa fa-info-circle"/> 
-                                <strong>Tip:</strong> Upload purchase documents, warranties, manuals, 
-                                and photos here. They will be organized in the equipment's dedicated folder.
-                            </div>
-                        </page>
+
                         
                         <page string="Equipment Details" name="details">
                             <group>
@@ -259,6 +215,35 @@
                                 <i class="fa fa-exclamation-triangle"/> 
                                 <strong>Reminder:</strong> Upload purchase invoices and receipts 
                                 in the Documents tab.
+                            </div>
+                        </page>
+
+                                                <!-- NEW: Documents Tab -->
+                        <page string="Documents" name="documents" autofocus="1">
+                            <div class="row mt16 mb16">
+                                <div class="col-12">
+                                    <button name="action_upload_document" 
+                                            string="Upload Document" 
+                                            type="object" 
+                                            class="btn-primary"
+                                            icon="fa-upload"/>
+                                    <button name="action_view_folder" 
+                                            string="Open in Document Manager" 
+                                            type="object" 
+                                            class="btn-secondary ml8"
+                                            icon="fa-folder-open"/>
+                                </div>
+                            </div>
+                            
+                            <group>
+                                <field name="equipment_folder_id" readonly="1" 
+                                       string="Document Folder"/>
+                            </group>
+                            
+                            <div class="alert alert-info mt16" role="alert">
+                                <i class="fa fa-info-circle"/> 
+                                <strong>Tip:</strong> Upload purchase documents, warranties, manuals, 
+                                and photos here. They will be organized in the equipment's dedicated folder.
                             </div>
                         </page>
                         

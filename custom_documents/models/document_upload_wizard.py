@@ -101,17 +101,22 @@ class DocumentUploadWizard(models.TransientModel):
         if self.env.context.get('default_equipment_id'):
             return {'type': 'ir.actions.act_window_close'}
 
-        # 👇 If opened from Documents: close & gently reload the documents view only
-        if self.env.context.get('from_documents'):
-            return {
-                'type': 'ir.actions.client',
-                'tag': 'reload_documents_view',  # 👈 our custom client action
-                'context': {
-                    # Preserve current folder filter if possible
-                    'search_default_folder_id': self.folder_id.id if self.folder_id else False,
+         # 👇 Smart reload: just refresh the model, no UI rebuild
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': 'Success',
+                'message': f'Document "{doc.name}" uploaded successfully',
+                'type': 'success',
+                'sticky': False,
+                'next': {
+                    'type': 'ir.actions.client',
+                    'tag': 'reload_documents_view',
+                    'context': {
+                        'search_default_folder_id': self.folder_id.id if self.folder_id else False,
+                    },
                 },
             }
-
-        # Fallback: just close
-        return {'type': 'ir.actions.act_window_close'}
+        }
 

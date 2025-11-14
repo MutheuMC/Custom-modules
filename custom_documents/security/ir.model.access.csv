@@ -15,3 +15,4 @@ access_custom_document_share_line_user,custom.document.share.line,model_custom_d
 access_custom_document_share_wizard_user,custom.document.share.wizard,model_custom_document_share_wizard,base.group_user,1,1,1,1
 access_custom_document_folder_share_user,custom.document.folder.share,model_custom_document_folder_share,base.group_user,1,1,1,1
 access_custom_folder_share_wizard_user,custom.folder.share.wizard,model_custom_folder_share_wizard,base.group_user,1,1,1,1
+access_custom_document_reference_wizard,access_custom_document_reference_wizard,model_custom_document_reference_wizard,base.group_user,1,1,1,1

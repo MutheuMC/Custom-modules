@@ -113,11 +113,11 @@ class EquipmentItem(models.Model):
         readonly=True
     )
     
-    document_ids = fields.One2many(
-        'custom.document',
-        'equipment_id',
-        string='Documents'
-    )
+    # document_ids = fields.One2many(
+    #     'custom.document',
+    #     'equipment_id',
+    #     string='Documents'
+    # )
     
     document_count = fields.Integer(
         string='Documents',
@@ -428,7 +428,7 @@ class EquipmentItem(models.Model):
             ], order='scheduled_date asc', limit=1)
             item.next_maintenance_date = next_maintenance.scheduled_date if next_maintenance else False
 
-    @api.depends('document_ids')
+    @api.depends('equipment_folder_id')
     def _compute_document_count(self):
         """Count documents in equipment folder and subfolders"""
         for item in self:
@@ -439,7 +439,7 @@ class EquipmentItem(models.Model):
                 ])
                 item.document_count = count
             else:
-                item.document_count = len(item.document_ids)
+                item.document_count = 0
 
     def _compute_attachment_count(self):
         """Keep legacy attachment count for backward compatibility"""

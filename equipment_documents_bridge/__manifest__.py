@@ -5,7 +5,6 @@
     'category': 'Document Management',
     'summary': 'Auto-link equipment items with documents via folders.',
     'depends': [
-        'custom_documents',        # your document module
         'equipment_management',    # TODO: replace with actual equipment module name
     ],
     'data': [

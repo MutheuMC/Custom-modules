@@ -1,6 +1,6 @@
 {
     'name': 'Documents Management File System',
-    'version': '18.0.2.4.9',
+    'version': '18.0.2.5.9',
     'category': 'Document Management',
     'summary': 'Custom Document Management System with Enhanced Folder Navigation',
     'depends': ['base', 'web', 'mail', 'hr'],
@@ -21,6 +21,7 @@
         'views/folder_management_views.xml',
         'views/menu.xml',
         'views/share_views.xml',
+         'views/document_reference_wizard_views.xml',
     ],
     'assets': {
         'web.assets_backend': [
@@ -32,7 +33,7 @@
             'custom_documents/static/src/scss/custom_folder_list.scss',
             'custom_documents/static/src/js/document_list_hover.js', 
             'custom_documents/static/src/scss/share_wizard.scss',
-            'custom_documents/static/src/actions/reload_documents_view.js',
+            'custom_documents/static/src/action/reload_documents_view.js',  # Fixed: action not actions
           
            
         ],

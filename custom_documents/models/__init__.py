@@ -4,6 +4,7 @@
 from . import document_tag
 from . import document_folder
 from . import document
+from . import document_reference_wizard
 from . import share_line
 from . import folder_share
 from . import hr_employee

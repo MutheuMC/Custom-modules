@@ -108,6 +108,10 @@ class CustomDocumentKanbanController extends KanbanController {
     );
     return found ? found[2] : false;
   }
+  async onReferenceCreate() {
+    await this.action.doAction("custom_documents.action_open_reference_wizard"
+     );
+  }
 
   async onUploadFile() {
     const folderId = this._getCurrentFolderId();

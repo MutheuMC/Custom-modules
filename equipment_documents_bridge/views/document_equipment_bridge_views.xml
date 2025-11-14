@@ -1,23 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <!-- Add Equipment field to Document form -->
-    <record id="view_custom_document_equipment_form" model="ir.ui.view">
-        <field name="name">custom.document.form.equipment.bridge</field>
-        <field name="model">custom.document</field>
-        <field name="inherit_id" ref="custom_documents.view_custom_document_form_rich"/>
+    <!-- Add inline Documents list to the Equipment form via bridge -->
+    <record id="view_equipment_item_form_documents_bridge" model="ir.ui.view">
+        <field name="name">equipment.item.form.documents.bridge</field>
+        <field name="model">equipment.item</field>
+        <field name="inherit_id" ref="equipment_management.view_equipment_item_form"/>
         <field name="arch" type="xml">
-            <!--
-            Under the "Details" page, after the first inner group,
-            add a group with the equipment field.
-            Adjust xpath if your view changes.
-            -->
-            <xpath expr="//page[@name='details']/group/group[1]" position="after">
-                <group string="Equipment">
-                    <field name="equipment_id"
-                           options="{'no_create_edit': True}"
-                           context="{'default_equipment_folder_id': folder_id}"/>
-                </group>
+            <!-- Insert inside the existing Documents page -->
+            <xpath expr="//page[@name='documents']" position="inside">
+
+                <!-- Inline documents list -->
+                <field name="document_ids"
+                       context="{
+                            'default_folder_id': equipment_folder_id,
+                            'default_equipment_id': id
+                        }">
+                    <list editable="bottom" class="o_list_compact">
+                        <field name="name"/>
+                        <field name="document_type" column_invisible="1"/>
+                        <field name="file_kind" string="Type" widget="badge"/>
+                        <field name="folder_id"/>
+                        <field name="file_size" widget="file_size"/>
+                        <field name="write_datetime_display" string="Modified"/>
+                        <button name="action_view_file" type="object"
+                                icon="fa-eye" title="View"
+                                invisible="document_type != 'file'"/>
+                        <button name="action_download" type="object"
+                                icon="fa-download" title="Download"/>
+                    </list>
+                </field>
+
             </xpath>
         </field>
     </record>

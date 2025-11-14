@@ -10,6 +10,14 @@
           <i class="fa fa-plus me-1"></i>New
         </button>
         <ul class="dropdown-menu">
+        <li>
+            <a class="dropdown-item" 
+               href="#" 
+               role="menuitem"
+               t-on-click.prevent="() => this.onReferenceCreate()">
+              <i class="fa fa-upload fa-fw me-2"></i>Generate REF
+            </a>
+          </li>
           <li>
             <a class="dropdown-item" 
                href="#" 
